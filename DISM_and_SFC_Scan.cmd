@@ -1,6 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set "SFC_SUCCESS=0"
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -18,6 +20,7 @@ echo Checking integrity of all protected system files...
 call sfc /scannow >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to check integrity of all protected system files.
+    SFC_SUCCESS=1
 )
 
 echo Checking for corruption in the local Windows image...
@@ -37,10 +40,12 @@ if %errorlevel% neq 0 (
     echo Failed to repair corruption in the local Windows image.
 )
 
-echo Checking integrity of all protected system files...
-call sfc /scannow >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to check integrity of all protected system files.
+if %SFC_SUCCESS% neq 0 (
+    echo Checking integrity of all protected system files...
+    call sfc /scannow >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to check integrity of all protected system files.
+    )
 )
 
 echo Deleting resources associated with corrupted mounted images...
