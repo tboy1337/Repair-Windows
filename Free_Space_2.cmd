@@ -9,12 +9,12 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "%SystemDrive%" >nul 2>&1
+cd /d "C:" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive% drive.
+    echo Failed to change to C: drive.
 )
 
-echo Setting registry keys on %SystemDrive% drive...
+echo Setting registry keys on C: drive...
 call REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Active Setup Temp Folders" /v StateFlags9999 /t REG_DWORD /d 00000002 /f >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to set registry key.
@@ -160,10 +160,10 @@ if %errorlevel% neq 0 (
     echo Failed to set registry key.
 )
 
-echo Freeing up space on %SystemDrive% drive...
+echo Freeing up space on C: drive...
 call cleanmgr /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %SystemDrive% drive.
+    echo Failed to free up space on C: drive.
 )
 
 timeout /t 5 /nobreak
