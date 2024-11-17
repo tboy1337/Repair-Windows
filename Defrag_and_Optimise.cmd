@@ -9,9 +9,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "%SystemDrive%" >nul 2>&1
+cd /d "C:" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive% drive.
+    echo Failed to change to C: drive.
 )
 
 echo Analysing all drives...
@@ -21,7 +21,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Performing boot optimization on system drive...
-call defrag "%SystemDrive%" /B /H >nul 2>&1
+call defrag "C:" /B /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to perform boot optimization on system drive.
 )
