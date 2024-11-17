@@ -9,9 +9,9 @@ if %errorlevel% neq 0 (
     exit /b 2
 )
 
-cd /d "%SystemDrive%" >nul 2>&1
+cd /d "C:" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive% drive.
+    echo Failed to change to C: drive.
 )
 
 echo Resetting winsock...
