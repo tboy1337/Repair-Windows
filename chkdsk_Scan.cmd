@@ -41,3 +41,9 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File Sys
             exit /b 1
     )
 )
+
+echo Found no issues with C: file system.
+
+timeout /t 5 /nobreak
+
+exit /b 0
