@@ -19,26 +19,28 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File Sys
     if not errorlevel 1 (
         echo The C: drive is FAT-based.
         echo Checking C: file system...
-        call chkdsk "C:" >nul 2>&1
-        if %errorlevel% neq 0 (
+        chkdsk "C:" >nul 2>&1
+        if !errorlevel! neq 0 (
             echo Issues found with C: file system.
-            echo y | call chkdsk "C:" /R /X >nul 2>&1
+            echo y | chkdsk "C:" /R /X >nul 2>&1
             echo Restarting system to complete repairs.
             timeout /t 30 /nobreak
-            call shutdown /r /f /t 0 >nul 2>&1
+            shutdown /r /f /t 0 >nul 2>&1
             exit /b 1
+        )
     ) else (
         echo The C: drive is not FAT-based.
         echo Checking C: file system...
-        call chkdsk "C:" >nul 2>&1
-        if %errorlevel% neq 0 (
+        chkdsk "C:" >nul 2>&1
+        if !errorlevel! neq 0 (
             echo Issues found with C: file system.
-            echo y | call chkdsk "C:" /F /X /B /scan /perf >nul 2>&1
+            echo y | chkdsk "C:" /F /X /B /scan /perf >nul 2>&1
             echo Restarting system to complete repairs.
             echo Run chkdsk "C:" /sdcleanup after repair finishes.
             timeout /t 30 /nobreak
-            call shutdown /r /f /t 0 >nul 2>&1
+            shutdown /r /f /t 0 >nul 2>&1
             exit /b 1
+        )
     )
 )
 
