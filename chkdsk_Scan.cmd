@@ -21,7 +21,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File Sys
         echo Checking C: file system...
         chkdsk "C:" >nul 2>&1
         if !errorlevel! neq 0 (
-            echo Issues found with C: file system.
+            echo Repairing C: file system...
             echo y | chkdsk "C:" /R /X >nul 2>&1
             echo Restarting system to complete repairs.
             timeout /t 30 /nobreak
@@ -33,7 +33,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File Sys
         echo Checking C: file system...
         chkdsk "C:" >nul 2>&1
         if !errorlevel! neq 0 (
-            echo Issues found with C: file system.
+            echo Repairing C: file system...
             echo y | chkdsk "C:" /F /X /B /scan /perf >nul 2>&1
             echo Restarting system to complete repairs.
             echo Run chkdsk "C:" /sdcleanup after repair finishes.
