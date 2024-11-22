@@ -38,8 +38,8 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 ### 7. `bootrec.cmd`
    - Utilizes the `bootrec` tool to fix boot sector issues, which can help resolve problems with booting Windows (need to be in WindowsRE to use this).
 
-### 8. `chkdsk_Scan_FAT.cmd` & `chkdsk_Scan_NTFS.cmd`
-   - Runs the CHKDSK utility for FAT and NTFS drives, respectively, to check and repair file system errors.
+### 8. `chkdsk_Scan.cmd`
+   - Runs the CHKDSK utility for FAT and NTFS drives to check and repair file system errors.
 
 ## Usage
 
