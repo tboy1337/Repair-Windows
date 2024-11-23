@@ -1,6 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set "SET_PATH=C:\Windows\System32"
+set "OS_DRIVE=C:"
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -9,7 +12,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "C:" >nul 2>&1
+cd /d "%SET_PATH%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to C: drive.
 )
@@ -161,7 +164,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Freeing up space on C: drive...
-call cleanmgr /sagerun:9999 >nul 2>&1
+call cleanmgr /d "%OS_DRIVE%" /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to free up space on C: drive.
 )
