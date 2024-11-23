@@ -1,6 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set "SET_DRIVE=C:"
 set "SFC_SUCCESS=0"
 
 net session >nul 2>&1
@@ -11,9 +12,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "C:" >nul 2>&1
+cd /d "%SET_DRIVE%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to C: drive.
+    echo Failed to change to %SET_DRIVE% drive.
 )
 
 echo Checking integrity of all protected system files...
