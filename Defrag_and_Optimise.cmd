@@ -1,6 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set "SET_PATH=C:"
+set "OS_DRIVE=C:"
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -9,9 +12,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "C:" >nul 2>&1
+cd /d "%SET_PATH%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to C: drive.
+    echo Failed to change to %SET_PATH%
 )
 
 echo Analysing all drives...
@@ -21,7 +24,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Performing boot optimization on system drive...
-call defrag "C:" /B /H >nul 2>&1
+call defrag "%OS_DRIVE%" /B /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to perform boot optimization on system drive.
 )
