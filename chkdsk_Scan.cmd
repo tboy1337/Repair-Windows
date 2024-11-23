@@ -25,7 +25,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File Sys
             echo y | chkdsk "C:" /R /X >nul 2>&1
             echo Restarting system to complete repairs.
             timeout /t 30 /nobreak
-            shutdown /r /t 1 >nul 2>&1
+            shutdown /r /f /t 1 >nul 2>&1
             exit /b 1
         )
     ) else (
@@ -38,7 +38,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File Sys
             echo Restarting system to complete repairs.
             echo Run chkdsk "C:" /sdcleanup after repair finishes.
             timeout /t 30 /nobreak
-            shutdown /r /t 1 >nul 2>&1
+            shutdown /r /f /t 1 >nul 2>&1
             exit /b 1
         )
     )
