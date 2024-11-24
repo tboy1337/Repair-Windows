@@ -1,15 +1,25 @@
 @echo off
 setlocal enabledelayedexpansion
 
-cd /d "C:\Windows\System32\Boot" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to change to C: drive.
+for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control Panel\Windows" /v SystemRoot 2^>nul') do set "windir=%%b"
+if "%windir%"=="" (
+    echo Could not determine Windows installation location.
+    timeout /t 5 /nobreak
+    exit /b 1
 )
 
-for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo C:^|find "File System Name"') do (
+set "WINDOWS_DRIVE=%windir:~0,2%"
+echo Found Windows installation on drive: %WINDOWS_DRIVE%
+
+cd /d "%WINDOWS_DRIVE%\Windows\System32\Boot" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to change to %WINDOWS_DRIVE% drive.
+)
+
+for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
-        echo The C: drive is FAT-based, repairing the MBR...
+        echo The %WINDOWS_DRIVE% drive is FAT-based, repairing the MBR...
         call bootrec /fixmbr >nul 2>&1
     )
 )
@@ -26,7 +36,7 @@ echo Scanning all disks for Windows installations...
 call bootrec /scanos >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to scan all disks for Windows installations, trying again...
-    call ren "C:\bootmgr" "bootmgrbackup" >nul 2>&1
+    call ren "%WINDOWS_DRIVE%\bootmgr" "bootmgrbackup" >nul 2>&1
     call bootrec /rebuildbcd >nul 2>&1
     call bootrec /scanos >nul 2>&1
     call bootrec /fixboot >nul 2>&1
@@ -36,9 +46,9 @@ echo Rebuilding the BCD store...
 call bootrec /rebuildbcd >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to rebuild the BCD store, trying again...
-    call bcdedit /export "C:\BCDBackup" >nul 2>&1
+    call bcdedit /export "%WINDOWS_DRIVE%\BCDBackup" >nul 2>&1
     call attrib bcd -s -h -r >nul 2>&1
-    call ren "c:\boot\bcd" "bcd.old" >nul 2>&1
+    call ren "%WINDOWS_DRIVE%\boot\bcd" "bcd.old" >nul 2>&1
     call bootrec /rebuildbcd >nul 2>&1
     call bootrec /scanos >nul 2>&1
     call bootrec /fixboot >nul 2>&1
