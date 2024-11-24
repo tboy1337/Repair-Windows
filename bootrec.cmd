@@ -13,7 +13,7 @@ echo Found Windows installation on drive: %WINDOWS_DRIVE%
 
 cd /d "%WINDOWS_DRIVE%\Windows\System32\Boot" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %WINDOWS_DRIVE% drive.
+    echo Failed to change to %WINDOWS_DRIVE%\Windows\System32\Boot
 )
 
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
