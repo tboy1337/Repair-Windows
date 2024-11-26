@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%SET_PATH%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %OS_DRIVE% drive.
+    echo Failed to change to %SET_PATH%
 )
 
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %OS_DRIVE%^|find "File System Name"') do (
