@@ -59,7 +59,7 @@ diskpart /s "%tmpfile%"
 :: Step 4: Create a New ESP
 (
     echo select disk %foundDisk%
-    echo create partition efi size=300
+    echo create partition efi size=100
     echo format fs=fat32 quick
     echo assign letter=%newESPDrive%
 ) > "%tmpfile%"
