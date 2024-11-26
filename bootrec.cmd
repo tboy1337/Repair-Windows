@@ -54,6 +54,7 @@ echo Writing a new boot sector on the system partition...
 call bootrec /fixboot >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to write a new boot sector on the system partition.
+    call bootsect /nt60 SYS
 )
 
 timeout /t 5 /nobreak
