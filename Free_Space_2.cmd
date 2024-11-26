@@ -166,7 +166,7 @@ if %errorlevel% neq 0 (
 echo Freeing up space on C: drive...
 call cleanmgr /d "%OS_DRIVE%" /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on C: drive.
+    echo Failed to free up space on %OS_DRIVE% drive.
 )
 
 timeout /t 5 /nobreak
