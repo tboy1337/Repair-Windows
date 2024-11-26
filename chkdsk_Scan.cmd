@@ -20,7 +20,7 @@ if %errorlevel% neq 0 (
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %OS_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
-        echo The %OS_DRIVE% drive is FAT-based.
+        echo %OS_DRIVE% drive is FAT-based.
         echo Checking %OS_DRIVE% file system...
         chkdsk "%OS_DRIVE%" >nul 2>&1
         if !errorlevel! neq 0 (
@@ -32,7 +32,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %OS_DRIVE%^|find "
             exit /b 1
         )
     ) else (
-        echo The %OS_DRIVE% drive is not FAT-based.
+        echo %OS_DRIVE% drive is not FAT-based.
         echo Checking %OS_DRIVE% file system...
         chkdsk "%OS_DRIVE%" >nul 2>&1
         if !errorlevel! neq 0 (
