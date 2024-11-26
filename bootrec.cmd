@@ -56,6 +56,7 @@ if %errorlevel% neq 0 (
     echo Failed to write a new boot sector on the system partition.
     call bootsect /nt60 SYS
     :: NOW DO bootrec_framework method to assign drive letters if above is error (probably).
+    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
 timeout /t 5 /nobreak
