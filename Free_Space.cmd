@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%SET_PATH%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %OS_DRIVE% drive.
+    echo Failed to change to %SET_PATH%
 )
 
 echo Freeing up space on %OS_DRIVE% drive...
