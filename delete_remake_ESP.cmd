@@ -72,4 +72,4 @@ bcdboot %windowsDrive%\Windows /s %newESPDrive% /f UEFI
 :cleanup
 if exist "%tmpfile%" del "%tmpfile%"
 echo Operation completed. Reboot your system.
-pause
+exit /b 0
