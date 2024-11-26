@@ -64,21 +64,21 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
     if not errorlevel 1 (
         echo %WINDOWS_DRIVE% drive is FAT-based.
         echo Checking %WINDOWS_DRIVE% file system...
-        call chkdsk "%WINDOWS_DRIVE%" >nul 2>&1
+        chkdsk "%WINDOWS_DRIVE%" >nul 2>&1
         if !errorlevel! neq 0 (
             echo Repairing %WINDOWS_DRIVE% file system...
-            call chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
+            chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
             timeout /t 5 /nobreak
             exit /b 1
         )
     ) else (
         echo %WINDOWS_DRIVE% drive is not FAT-based.
         echo Checking %WINDOWS_DRIVE% file system...
-        call chkdsk "%WINDOWS_DRIVE%" >nul 2>&1
+        chkdsk "%WINDOWS_DRIVE%" >nul 2>&1
         if !errorlevel! neq 0 (
             echo Repairing %WINDOWS_DRIVE% file system...
-            call chkdsk "%WINDOWS_DRIVE%" /X /B /offlinescanandfix >nul 2>&1
-            call chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
+            chkdsk "%WINDOWS_DRIVE%" /X /B /offlinescanandfix >nul 2>&1
+            chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
             timeout /t 5 /nobreak
             exit /b 1
         )
@@ -94,39 +94,39 @@ echo Running SFC & DISM health check and repair...
 echo This may take a while...
 
 echo Checking integrity of all protected system files...
-call sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
+sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to check integrity of all protected system files.
     SFC_SUCCESS=1
 )
 
 echo Checking for corruption in the local Windows image...
-call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth >nul 2>&1
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to check for corruption in the local Windows image.
 )
 
-call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth >nul 2>&1
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to check for corruption in the local Windows image.
 )
 
 echo Repairing corruption in the local Windows image...
-call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth >nul 2>&1
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to repair corruption in the local Windows image.
 )
 
 if %SFC_SUCCESS% neq 0 (
     echo Checking integrity of all protected system files...
-    call sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
+    sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
     if %errorlevel% neq 0 (
         echo Failed to check integrity of all protected system files.
     )
 )
 
 echo Deleting resources associated with corrupted mounted images...
-call DISM /image:%WINDOWS_DRIVE%\ /Cleanup-Mountpoints >nul 2>&1
+DISM /image:%WINDOWS_DRIVE%\ /Cleanup-Mountpoints >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to delete resources associated with corrupted mounted images.
 )
@@ -166,7 +166,7 @@ goto menu
 :memory
 echo.
 echo Scheduling Memory Diagnostic for next restart...
-call mdsched >nul 2>&1
+mdsched >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to schedule a memory diagnostic for next restart.
 )
