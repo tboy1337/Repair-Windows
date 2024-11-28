@@ -28,18 +28,20 @@ if %errorlevel% neq 0 (
 echo Checking for corruption in the local Windows image...
 call DISM /Online /Cleanup-Image /CheckHealth >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to check for corruption in the local Windows image.
+    echo Corruption found in the local Windows image, attempting repair...
+    call DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to repair corruption in the local Windows image.
+    )
 )
 
 call DISM /Online /Cleanup-Image /ScanHealth >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to check for corruption in the local Windows image.
-)
-
-echo Repairing corruption in the local Windows image...
-call DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to repair corruption in the local Windows image.
+    echo Corruption found in the local Windows image, attempting repair...
+    call DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to repair corruption in the local Windows image.
+    )
 )
 
 if %SFC_SUCCESS% neq 0 (
