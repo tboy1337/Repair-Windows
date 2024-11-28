@@ -25,7 +25,7 @@ if %errorlevel% neq 0 (
     SFC_SUCCESS=1
 )
 
-echo Checking for corruption in the local Windows image...
+echo Checking for corruption flags in the local Windows image...
 call DISM /Online /Cleanup-Image /CheckHealth >nul 2>&1
 if %errorlevel% neq 0 (
     echo Corruption found in the local Windows image, attempting repair...
@@ -35,6 +35,7 @@ if %errorlevel% neq 0 (
     )
 )
 
+echo Checking for corruption in the local Windows image...
 call DISM /Online /Cleanup-Image /ScanHealth >nul 2>&1
 if %errorlevel% neq 0 (
     echo Corruption found in the local Windows image, attempting repair...
