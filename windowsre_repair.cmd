@@ -162,7 +162,7 @@ if %errorlevel% neq 0 (
     echo Failed to rebuild BCD.
 )
 
-cd /d "X:\Windows\system32"
+cd /d "X:\Windows\System32"
 if "%choice%"=="7" goto memory
 goto menu
 
