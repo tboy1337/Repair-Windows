@@ -94,39 +94,42 @@ echo Running SFC & DISM health check and repair...
 echo This may take a while...
 
 echo Checking integrity of all protected system files...
-sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
+call sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to check integrity of all protected system files.
     SFC_SUCCESS=1
 )
 
+echo Checking for corruption flags in the local Windows image...
+call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Corruption flags found in the local Windows image, attempting repair...
+    call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to repair corruption in the local Windows image.
+    )
+)
+
 echo Checking for corruption in the local Windows image...
-dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth >nul 2>&1
+call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to check for corruption in the local Windows image.
-)
-
-dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to check for corruption in the local Windows image.
-)
-
-echo Repairing corruption in the local Windows image...
-dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to repair corruption in the local Windows image.
+    echo Corruption found in the local Windows image, attempting repair...
+    call dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to repair corruption in the local Windows image.
+    )
 )
 
 if %SFC_SUCCESS% neq 0 (
     echo Checking integrity of all protected system files...
-    sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
+    call sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
     if %errorlevel% neq 0 (
         echo Failed to check integrity of all protected system files.
     )
 )
 
 echo Deleting resources associated with corrupted mounted images...
-DISM /image:%WINDOWS_DRIVE%\ /Cleanup-Mountpoints >nul 2>&1
+call DISM /image:%WINDOWS_DRIVE%\ /Cleanup-Mountpoints >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to delete resources associated with corrupted mounted images.
 )
