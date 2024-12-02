@@ -37,7 +37,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %OS_DRIVE%^|find "
         chkdsk "%OS_DRIVE%" >nul 2>&1
         if !errorlevel! neq 0 (
             echo Repairing %OS_DRIVE% file system...
-            echo y | chkdsk "%OS_DRIVE%" /X /R /scan /perf >nul 2>&1
+            echo y | chkdsk "%OS_DRIVE%" /R /X /scan /perf >nul 2>&1
             echo Restarting system to complete repairs.
             echo Run chkdsk "%OS_DRIVE%" /sdcleanup after repair finishes.
             timeout /t 30 /nobreak
