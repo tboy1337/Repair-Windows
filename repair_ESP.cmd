@@ -51,7 +51,7 @@ diskpart /s "%tmpfile%" > nul
     echo remove letter=%driveLetter:~0,1%
 ) > "%tmpfile%"
 
-cd /d %driveLetter%
+cd /d %driveLetter% :: cd /d :\\EFI\\Microsoft\\Boot\\ after assigning drive letter to system? or reserve? partition (ONLY FOR SYSTEM I THINK)
 :: ENTER COMMANDS HERE
 cd /d X:\Windows\System32
 
