@@ -39,7 +39,7 @@ echo 4. Run Memory Diagnostic
 echo 5. Run ALL repairs
 echo 6. Exit
 echo.
-set /p choice="Enter your choice (1-8): "
+set /p choice="Enter your choice (1-6): "
 
 if "%choice%"=="1" goto chkdsk
 if "%choice%"=="2" goto sfcdism
