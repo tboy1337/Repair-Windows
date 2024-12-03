@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 :: Create a temporary diskpart script file in X:\, which is the RAM drive in WinRE
-set "tmpfile=X:\diskpart_script_2_%RANDOM%.txt"
+set "tmpfile2=X:\diskpart_script_2_%RANDOM%.txt"
 set "foundDisk="
 set "partitionNum="
 set "newEFIDrive=T:"
@@ -22,18 +22,18 @@ echo Found Windows installation on drive: %windowsDrive%
 :: Step 2: Locate the System Partition (EFI)
 (
     echo list disk
-) > "%tmpfile%"
+) > "%tmpfile2%"
 
 :: Get list of all disks
-for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile%"') do (
+for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile2%"') do (
     :: For each disk, list its partitions
     (
         echo select disk %%a
         echo list partition
-    ) > "%tmpfile%"
+    ) > "%tmpfile2%"
     
     :: Check each partition on this disk for "System"
-    for /f "tokens=1,2,3,4,5 delims= " %%b in ('diskpart /s "%tmpfile%" ^| findstr /i "System"') do (
+    for /f "tokens=1,2,3,4,5 delims= " %%b in ('diskpart /s "%tmpfile2%" ^| findstr /i "System"') do (
         if "%%f"=="System" (
             set "foundDisk=%%a"
             set "partitionNum=%%c"
@@ -54,8 +54,8 @@ echo Found system partition on Disk %foundDisk%, Partition %partitionNum%.
     echo select disk %foundDisk%
     echo select partition %partitionNum%
     echo delete partition override
-) > "%tmpfile%"
-diskpart /s "%tmpfile%"
+) > "%tmpfile2%"
+diskpart /s "%tmpfile2%"
 
 :: Step 4: Create a New EFI
 (
@@ -63,14 +63,14 @@ diskpart /s "%tmpfile%"
     echo create partition efi size=100
     echo format fs=fat32 quick
     echo assign letter=%newEFIDrive%
-) > "%tmpfile%"
-diskpart /s "%tmpfile%"
+) > "%tmpfile2%"
+diskpart /s "%tmpfile2%"
 
 :: Step 5: Restore Bootloader
 bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
 
 :: Step 6: Cleanup and Exit
 :cleanup
-if exist "%tmpfile%" del "%tmpfile%"
+if exist "%tmpfile2%" del "%tmpfile2%"
 echo Operation completed. Reboot your system.
 exit /b 0
