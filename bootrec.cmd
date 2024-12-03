@@ -30,12 +30,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
 echo Scanning all disks for Windows installations...
 bootrec /scanos >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to scan all disks for Windows installations, trying again...
-    ren "%WINDOWS_DRIVE%\bootmgr" "bootmgrbackup" >nul 2>&1
-    bootrec /scanos >nul 2>&1
-    if %errorlevel% neq 0 (
-    echo Failed to scan all disks for Windows installations again.
-    )
+    echo Failed to scan all disks for Windows installations.
 )
 
 echo Rebuilding the BCD store...
