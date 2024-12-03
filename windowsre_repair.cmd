@@ -41,7 +41,7 @@ echo 6. Exit
 echo.
 set /p choice="Enter your choice (1-6): "
 
-if "%choice%"=="1" goto chkdsk
+if "%choice%"=="1" goto chkdskscan
 if "%choice%"=="2" goto sfcdism
 if "%choice%"=="3" goto startup
 if "%choice%"=="4" goto memory
@@ -56,7 +56,7 @@ goto menu
 echo Running all repair operations...
 goto chkdsk
 
-:chkdsk
+:chkdskscan
 echo.
 echo Running CHKDSK on Windows drive %WINDOWS_DRIVE%...
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
