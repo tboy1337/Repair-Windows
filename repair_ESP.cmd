@@ -53,6 +53,9 @@ diskpart /s "%tmpfile%" > nul
 
 cd /d %driveLetter%\EFI\Microsoft\Boot
 bootrec /fixboot
+if %errorlevel% neq 0 (
+    echo Failed to fix boot
+)
 cd /d X:\Windows\System32
 
 echo Removing drive letter...
