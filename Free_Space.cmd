@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "OS_DRIVE=C:"
-set "SET_PATH=%OS_DRIVE%\Windows\System32"
+set "CHOSEN_DRIVE=C:"
+set "SET_PATH=%CHOSEN_DRIVE%\Windows\System32"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -17,15 +17,15 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SET_PATH%
 )
 
-echo Freeing up space on %OS_DRIVE% drive...
-call cleanmgr /d "%OS_DRIVE%" /verylowdisk >nul 2>&1
+echo Freeing up space on %CHOSEN_DRIVE% drive...
+call cleanmgr /d "%CHOSEN_DRIVE%" /verylowdisk >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %OS_DRIVE% drive.
+    echo Failed to free up space on %CHOSEN_DRIVE% drive.
 )
 
-call cleanmgr /d "%OS_DRIVE%" /autoclean >nul 2>&1
+call cleanmgr /d "%CHOSEN_DRIVE%" /autoclean >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to delete old Windows update files on %OS_DRIVE% drive.
+    echo Failed to delete old Windows update files on %CHOSEN_DRIVE% drive.
 )
 
 timeout /t 5 /nobreak
