@@ -54,7 +54,7 @@ goto menu
 
 :all
 echo Running all repair operations...
-goto chkdsk
+goto chkdskscan
 
 :chkdskscan
 echo.
