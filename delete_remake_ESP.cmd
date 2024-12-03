@@ -4,7 +4,7 @@
 set "tmpfile=X:\diskpart_script_2_%RANDOM%.txt"
 set "foundDisk="
 set "partitionNum="
-set "newESPDrive=Z:"
+set "newESPDrive=T:"
 
 :: Step 1: Locate the Windows Installation Drive
 for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control Panel\Windows" /v SystemRoot 2^>nul') do set "windir=%%b"
