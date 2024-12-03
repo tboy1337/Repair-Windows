@@ -61,7 +61,3 @@ if %errorlevel% neq 0 (
     :: NOW DO delete_remake_EFI.cmd method if the above is error.
     :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (EFI) and bootrec doesn't directly manage UEFI bootloader files.
 )
-
-timeout /t 5 /nobreak
-
-exit /b 0
