@@ -74,4 +74,3 @@ bootsect /nt60 SYS
 :cleanup
 if exist "%tmpfile2%" del "%tmpfile2%"
 echo Operation completed. Reboot your system.
-exit /b 0
