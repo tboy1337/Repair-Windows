@@ -1,6 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set "OS_DRIVE=C:"
+set "SET_PATH=%OS_DRIVE%\Windows\System32"
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -9,9 +12,9 @@ if %errorlevel% neq 0 (
     exit /b 2
 )
 
-cd /d "C:" >nul 2>&1
+cd /d "%SET_PATH%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to C: drive.
+    echo Failed to change to %SET_PATH%
 )
 
 echo Resetting winsock...
