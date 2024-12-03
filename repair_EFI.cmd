@@ -51,12 +51,12 @@ diskpart /s "%tmpfile%" > nul
     echo remove letter=%driveLetter:~0,1%
 ) > "%tmpfile%"
 
-cd /d %driveLetter%\EFI\Microsoft\Boot
+cd /d "%driveLetter%\EFI\Microsoft\Boot"
 bootrec /fixboot
 if %errorlevel% neq 0 (
     echo Failed to fix boot
 )
-cd /d X:\Windows\System32
+cd /d "X:\Windows\System32"
 
 echo Removing drive letter...
 diskpart /s "%tmpfile%" > nul
