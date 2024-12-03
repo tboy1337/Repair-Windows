@@ -48,7 +48,7 @@ if "%choice%"=="5" goto all
 if "%choice%"=="6" goto end
 
 echo Invalid choice. Please try again.
-timeout /t 3 /nobreak >nul 2>&1
+timeout /t 3 /nobreak
 goto menu
 
 :all
