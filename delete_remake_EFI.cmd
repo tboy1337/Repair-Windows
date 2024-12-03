@@ -4,7 +4,7 @@
 set "tmpfile=X:\diskpart_script_2_%RANDOM%.txt"
 set "foundDisk="
 set "partitionNum="
-set "newESPDrive=T:"
+set "newEFIDrive=T:"
 
 :: Step 1: Locate the Windows Installation Drive
 for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control Panel\Windows" /v SystemRoot 2^>nul') do set "windir=%%b"
@@ -18,7 +18,7 @@ if "%windir%"=="" (
 set "windowsDrive=%windir:~0,2%"
 echo Found Windows installation on drive: %windowsDrive%
 
-:: Step 2: Locate the System Partition (ESP)
+:: Step 2: Locate the System Partition (EFI)
 (
     echo list disk
 ) > "%tmpfile%"
@@ -48,7 +48,7 @@ if not defined partitionNum (
 
 echo Found system partition on Disk %foundDisk%, Partition %partitionNum%.
 
-:: Step 3: Delete the Corrupted ESP
+:: Step 3: Delete the Corrupted EFI
 (
     echo select disk %foundDisk%
     echo select partition %partitionNum%
@@ -56,17 +56,17 @@ echo Found system partition on Disk %foundDisk%, Partition %partitionNum%.
 ) > "%tmpfile%"
 diskpart /s "%tmpfile%"
 
-:: Step 4: Create a New ESP
+:: Step 4: Create a New EFI
 (
     echo select disk %foundDisk%
     echo create partition efi size=100
     echo format fs=fat32 quick
-    echo assign letter=%newESPDrive%
+    echo assign letter=%newEFIDrive%
 ) > "%tmpfile%"
 diskpart /s "%tmpfile%"
 
 :: Step 5: Restore Bootloader
-bcdboot %windowsDrive%\Windows /s %newESPDrive% /f UEFI
+bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
 
 :: Step 6: Cleanup and Exit
 :cleanup
