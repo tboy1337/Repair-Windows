@@ -64,4 +64,3 @@ diskpart /s "%tmpfile%" > nul
 :cleanup
 :: Clean up temporary file
 if exist "%tmpfile%" del "%tmpfile%"
-exit
