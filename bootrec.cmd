@@ -57,6 +57,7 @@ if %errorlevel% neq 0 (
     call bootsect /nt60 SYS
     call bootrec /fixboot
     :: NOW DO bootrec_framework method to assign drive letters if above is error (probably).
+    :: If that fails do delete_remake_ESP.cmd method
     :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
