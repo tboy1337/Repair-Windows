@@ -32,7 +32,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %CHOSEN_DRIVE%^|fi
             exit /b 1
         )
     ) else (
-        echo %CHOSEN_DRIVE% drive is not FAT-based.
+        echo %CHOSEN_DRIVE% drive is NTFS-based.
         echo Checking %CHOSEN_DRIVE% file system...
         chkdsk "%CHOSEN_DRIVE%" >nul 2>&1
         if !errorlevel! neq 0 (
