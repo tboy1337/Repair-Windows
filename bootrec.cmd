@@ -27,8 +27,6 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
     )
 )
 
-:: cd /d :\\EFI\\Microsoft\\Boot\\ after assigning drive letter to system? or reserve? partition (ONLY FOR SYSTEM I THINK)
-
 echo Scanning all disks for Windows installations...
 call bootrec /scanos >nul 2>&1
 if %errorlevel% neq 0 (
