@@ -20,7 +20,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
         echo The %WINDOWS_DRIVE% drive is FAT-based, repairing the MBR...
-        call bootrec /fixmbr >nul 2>&1
+        bootrec /fixmbr >nul 2>&1
         if %errorlevel% neq 0 (
             echo Failed to fix the MBR.
         )
@@ -28,35 +28,35 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
 )
 
 echo Scanning all disks for Windows installations...
-call bootrec /scanos >nul 2>&1
+bootrec /scanos >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to scan all disks for Windows installations, trying again...
-    call ren "%WINDOWS_DRIVE%\bootmgr" "bootmgrbackup" >nul 2>&1
-    call bootrec /scanos >nul 2>&1
+    ren "%WINDOWS_DRIVE%\bootmgr" "bootmgrbackup" >nul 2>&1
+    bootrec /scanos >nul 2>&1
     if %errorlevel% neq 0 (
     echo Failed to scan all disks for Windows installations again.
     )
 )
 
 echo Rebuilding the BCD store...
-call bootrec /rebuildbcd >nul 2>&1
+bootrec /rebuildbcd >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to rebuild the BCD store, trying again...
-    call bcdedit /export "%WINDOWS_DRIVE%\BCDBackup" >nul 2>&1
-    call attrib bcd -s -h -r >nul 2>&1
-    call ren "%WINDOWS_DRIVE%\boot\bcd" "bcd.old" >nul 2>&1
-    call bootrec /rebuildbcd >nul 2>&1
+    bcdedit /export "%WINDOWS_DRIVE%\BCDBackup" >nul 2>&1
+    attrib bcd -s -h -r >nul 2>&1
+    ren "%WINDOWS_DRIVE%\boot\bcd" "bcd.old" >nul 2>&1
+    bootrec /rebuildbcd >nul 2>&1
     :: NOW DO repair_ESP.cmd method to assign drive letters and repair if above is error.
     :: NOW DO delete_remake_ESP.cmd method if the above is error.
     :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
 echo Writing a new boot sector on the system partition...
-call bootrec /fixboot >nul 2>&1
+bootrec /fixboot >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to write a new boot sector on the system partition.
-    call bootsect /nt60 SYS
-    call bootrec /fixboot
+    bootsect /nt60 SYS
+    bootrec /fixboot
     :: NOW DO repair_ESP.cmd method to assign drive letters and repair if above is error.
     :: NOW DO delete_remake_ESP.cmd method if the above is error.
     :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
