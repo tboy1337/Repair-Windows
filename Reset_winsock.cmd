@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "OS_DRIVE=C:"
-set "SET_PATH=%OS_DRIVE%\Windows\System32"
+set "CHOSEN_DRIVE=C:"
+set "SET_PATH=%CHOSEN_DRIVE%\Windows\System32"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
