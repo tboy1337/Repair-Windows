@@ -59,3 +59,5 @@ if %errorlevel% neq 0 (
     :: NOW DO repair_EFI.cmd method to assign drive letters and repair if above is error.
     :: NOW DO delete_remake_EFI.cmd method if the above is error.
 )
+
+cd /d "X:\Windows\System32"
