@@ -53,7 +53,7 @@ diskpart /s "%tmpfile%" > nul
 
 cd /d %driveLetter%
 :: ENTER COMMANDS HERE
-cd /d X:
+cd /d X:\Windows\System32
 
 echo Removing drive letter...
 diskpart /s "%tmpfile%" > nul
