@@ -48,7 +48,6 @@ if %errorlevel% neq 0 (
     bootrec /rebuildbcd >nul 2>&1
     :: NOW DO repair_EFI.cmd method to assign drive letters and repair if above is error.
     :: NOW DO delete_remake_EFI.cmd method if the above is error.
-    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (EFI) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
 echo Writing a new boot sector on the system partition...
@@ -59,5 +58,4 @@ if %errorlevel% neq 0 (
     bootrec /fixboot
     :: NOW DO repair_EFI.cmd method to assign drive letters and repair if above is error.
     :: NOW DO delete_remake_EFI.cmd method if the above is error.
-    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (EFI) and bootrec doesn't directly manage UEFI bootloader files.
 )
