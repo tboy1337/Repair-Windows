@@ -31,11 +31,11 @@ set "WINDOWS_DRIVE=%windir:~0,2%"
 cls
 echo Windows installation detected on: %WINDOWS_DRIVE%
 echo Choose repair operations to perform:
-echo 1) Run CHKDSK
-echo 2) Run SFC & DISM health check and repair
+echo 1) Run CHKDSK Disk Repair
+echo 2) Run SFC & DISM Health Check & Repair
 echo 3) Run Startup Repair
 echo 4) Run Memory Diagnostic
-echo 5) Run ALL repairs
+echo 5) Run ALL Repairs
 echo 6) Exit
 echo.
 set /p choice="Enter your choice (1-6): "
