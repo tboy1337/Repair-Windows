@@ -68,6 +68,7 @@ diskpart /s "%tmpfile2%"
 
 :: Step 5: Restore Bootloader
 bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
+bootsect /nt60 SYS
 
 :: Step 6: Cleanup and Exit
 :cleanup
