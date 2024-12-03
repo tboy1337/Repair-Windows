@@ -138,6 +138,7 @@ if "%choice%"=="7" goto startup
 goto menu
 
 :startup
+:: This should be bootrec.cmd!!!!!
 echo.
 echo Running Startup Repair...
 cd /d "%WINDOWS_DRIVE%\Windows\System32\Boot"
