@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "OS_DRIVE=C:"
-set "SET_PATH=%OS_DRIVE%\Windows\System32"
+set "CHOSEN_DRIVE=C:"
+set "SET_PATH=%CHOSEN_DRIVE%\Windows\System32"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -24,9 +24,9 @@ if %errorlevel% neq 0 (
 )
 
 echo Performing boot optimization on system drive...
-call defrag "%OS_DRIVE%" /B /H >nul 2>&1
+call defrag "%CHOSEN_DRIVE%" /B /H >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to perform boot optimization on %OS_DRIVE% drive.
+    echo Failed to perform boot optimization on %CHOSEN_DRIVE% drive.
 )
 
 echo Optimizing the storage tiers on all drives...
