@@ -46,9 +46,9 @@ if %errorlevel% neq 0 (
     attrib bcd -s -h -r >nul 2>&1
     ren "%WINDOWS_DRIVE%\boot\bcd" "bcd.old" >nul 2>&1
     bootrec /rebuildbcd >nul 2>&1
-    :: NOW DO repair_ESP.cmd method to assign drive letters and repair if above is error.
-    :: NOW DO delete_remake_ESP.cmd method if the above is error.
-    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
+    :: NOW DO repair_EFI.cmd method to assign drive letters and repair if above is error.
+    :: NOW DO delete_remake_EFI.cmd method if the above is error.
+    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (EFI) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
 echo Writing a new boot sector on the system partition...
@@ -57,9 +57,9 @@ if %errorlevel% neq 0 (
     echo Failed to write a new boot sector on the system partition.
     bootsect /nt60 SYS
     bootrec /fixboot
-    :: NOW DO repair_ESP.cmd method to assign drive letters and repair if above is error.
-    :: NOW DO delete_remake_ESP.cmd method if the above is error.
-    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
+    :: NOW DO repair_EFI.cmd method to assign drive letters and repair if above is error.
+    :: NOW DO delete_remake_EFI.cmd method if the above is error.
+    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (EFI) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
 timeout /t 5 /nobreak
