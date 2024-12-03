@@ -58,6 +58,7 @@ goto chkdskscan
 :chkdskscan
 echo.
 echo Running CHKDSK on Windows drive %WINDOWS_DRIVE%...
+echo This may take a while...
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
