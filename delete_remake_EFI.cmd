@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 :: Create a temporary diskpart script file in X:\, which is the RAM drive in WinRE
 set "tmpfile=X:\diskpart_script_2_%RANDOM%.txt"
