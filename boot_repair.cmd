@@ -26,7 +26,6 @@ if "%windir%"=="" (
 
 :: Extract drive letter from Windows directory
 set "WINDOWS_DRIVE=%windir:~0,2%"
-echo Windows installation detected on: %WINDOWS_DRIVE%
 
 :menu
 cls
