@@ -46,6 +46,9 @@ if %errorlevel% neq 0 (
     call attrib bcd -s -h -r >nul 2>&1
     call ren "%WINDOWS_DRIVE%\boot\bcd" "bcd.old" >nul 2>&1
     call bootrec /rebuildbcd >nul 2>&1
+    :: NOW DO repair_ESP.cmd method to assign drive letters and repair if above is error.
+    :: NOW DO delete_remake_ESP.cmd method if the above is error.
+    :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
 )
 
 echo Writing a new boot sector on the system partition...
