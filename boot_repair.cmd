@@ -147,7 +147,7 @@ if %errorlevel% neq 0 (
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
-        echo The %WINDOWS_DRIVE% drive is FAT-based, repairing the MBR...
+        echo %WINDOWS_DRIVE% drive is FAT-based, repairing the MBR...
         bootrec /fixmbr >nul 2>&1
         if %errorlevel% neq 0 (
             echo Failed to fix the MBR.
