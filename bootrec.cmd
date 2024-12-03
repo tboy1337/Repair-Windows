@@ -56,7 +56,7 @@ if %errorlevel% neq 0 (
     echo Failed to write a new boot sector on the system partition.
     call bootsect /nt60 SYS
     call bootrec /fixboot
-    :: NOW DO bootrec_framework method to assign drive letters and repair if above is error.
+    :: NOW DO repair_ESP.cmd method to assign drive letters and repair if above is error.
     :: NOW DO delete_remake_ESP.cmd method if the above is error.
     :: On UEFI systems, the bootrec /fixboot command is less relevant because the boot process relies on the EFI System Partition (ESP) and bootrec doesn't directly manage UEFI bootloader files.
 )
