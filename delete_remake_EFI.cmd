@@ -57,7 +57,7 @@ diskpart /s "%tmpfile2%"
     echo select disk %foundDisk%
     echo list partition
 ) > "%tmpfile2%"
-for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr /i "EFI"') do (
+for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr /i "System"') do (
     set "newPartitionNum=%%b"
 )
 
