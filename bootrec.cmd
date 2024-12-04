@@ -43,3 +43,6 @@ if %errorlevel% neq 0 (
 )
 
 cd /d "X:\Windows\System32"
+if %errorlevel% neq 0 (
+    echo Failed to change to X:\Windows\System32
+)
