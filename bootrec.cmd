@@ -1,16 +1,3 @@
-@echo off
-setlocal enabledelayedexpansion
-
-for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control Panel\Windows" /v SystemRoot 2^>nul') do set "windir=%%b"
-if "%windir%"=="" (
-    echo Could not determine Windows installation location.
-    timeout /t 5 /nobreak
-    exit /b 1
-)
-
-set "WINDOWS_DRIVE=%windir:~0,2%"
-echo Found Windows installation on drive: %WINDOWS_DRIVE%
-
 cd /d "%WINDOWS_DRIVE%\Windows\System32\Boot" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to %WINDOWS_DRIVE%\Windows\System32\Boot
