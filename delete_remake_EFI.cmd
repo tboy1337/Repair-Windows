@@ -1,23 +1,8 @@
-@echo off
-setlocal enabledelayedexpansion
-
 :: Create a temporary diskpart script file in X:\, which is the RAM drive in WinRE
 set "tmpfile2=X:\diskpart_script_2_%RANDOM%.txt"
 set "foundDisk="
 set "partitionNum="
 set "newEFIDrive=T:"
-
-:: Step 1: Locate the Windows Installation Drive
-for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control Panel\Windows" /v SystemRoot 2^>nul') do set "windir=%%b"
-if "%windir%"=="" (
-    echo Could not determine Windows installation location.
-    timeout /t 5 /nobreak
-    exit /b 1
-)
-
-:: Extract drive letter from Windows directory
-set "windowsDrive=%windir:~0,2%"
-echo Found Windows installation on drive: %windowsDrive%
 
 :: Step 2: Locate the System Partition (EFI)
 (
