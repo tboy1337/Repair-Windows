@@ -58,7 +58,9 @@ diskpart /s "%tmpfile2%"
     echo list partition
 ) > "%tmpfile2%"
 for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr /i "System"') do (
-    set "newPartitionNum=%%b"
+    if "%%f"=="System" (
+        set "newPartitionNum=%%b"
+    )
 )
 
 :: Step 5: Restore Bootloader
