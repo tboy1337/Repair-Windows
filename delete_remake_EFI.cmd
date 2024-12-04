@@ -3,6 +3,7 @@ set "tmpfile2=X:\diskpart_script_2_%RANDOM%.txt"
 set "foundDisk="
 set "partitionNum="
 set "newEFIDrive=T:"
+set "newPartitionNum="
 
 :: Step 2: Locate the System Partition (EFI)
 (
@@ -51,8 +52,26 @@ diskpart /s "%tmpfile2%"
 ) > "%tmpfile2%"
 diskpart /s "%tmpfile2%"
 
+:: Find the new EFI partition number
+(
+    echo select disk %foundDisk%
+    echo list partition
+) > "%tmpfile2%"
+for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr /i "EFI"') do (
+    set "newPartitionNum=%%b"
+)
+
 :: Step 5: Restore Bootloader
 bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
+
+:: Remove the drive letter from the new EFI partition
+(
+    echo select disk %foundDisk%
+    echo select partition %newPartitionNum%
+    echo remove letter=%newEFIDrive%
+) > "%tmpfile2%"
+diskpart /s "%tmpfile2%"
+
 bootsect /nt60 SYS
 
 :: Step 6: Cleanup
