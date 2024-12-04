@@ -55,6 +55,6 @@ diskpart /s "%tmpfile2%"
 bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
 bootsect /nt60 SYS
 
-:: Step 6: Cleanup and Exit
+:: Step 6: Cleanup
 :cleanup
 if exist "%tmpfile2%" del "%tmpfile2%"
