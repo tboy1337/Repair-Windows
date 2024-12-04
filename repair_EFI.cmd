@@ -41,19 +41,19 @@ echo Found System partition on disk %foundDisk%, partition %partitionNum%
 echo Assigning drive letter %driveLetter% to system partition...
 diskpart /s "%tmpfile%" > nul
 
-:: Create diskpart script to remove letter
-(
-    echo select disk %foundDisk%
-    echo select partition %partitionNum%
-    echo remove letter=%driveLetter:~0,1%
-) > "%tmpfile%"
-
 cd /d "%driveLetter%\EFI\Microsoft\Boot"
 bootrec /fixboot
 if %errorlevel% neq 0 (
     echo Failed to fix boot
 )
 cd /d "X:\Windows\System32"
+
+:: Create diskpart script to remove letter
+(
+    echo select disk %foundDisk%
+    echo select partition %partitionNum%
+    echo remove letter=%driveLetter:~0,1%
+) > "%tmpfile%"
 
 echo Removing drive letter...
 diskpart /s "%tmpfile%" > nul
