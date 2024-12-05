@@ -29,11 +29,11 @@ for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile2%"') do (
 
 :: If no system partition found, exit
 if not defined partitionNum (
-    echo Error: System partition not found.
+    echo Error: EFI partition not found.
     goto :cleanup
 )
 
-echo Found system partition on Disk %foundDisk%, Partition %partitionNum%.
+echo Found EFI partition on Disk %foundDisk%, Partition %partitionNum%.
 
 :: Step 3: Delete the Corrupted EFI
 (
