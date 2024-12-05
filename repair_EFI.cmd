@@ -48,7 +48,7 @@ if %errorlevel% neq 0 (
     chkdsk "%driveLetter%" /R /X >nul 2>&1
 )
 
-cd /d "%driveLetter%\EFI\Microsoft\Boot"
+cd /d "%driveLetter%\EFI\Microsoft\Boot" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to %driveLetter%\EFI\Microsoft\Boot
 )
@@ -59,7 +59,7 @@ if %errorlevel% neq 0 (
     echo Failed to fix BOOT.
 )
 
-cd /d "X:\Windows\System32"
+cd /d "X:\Windows\System32" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to X:\Windows\System32
 )
