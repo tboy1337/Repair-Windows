@@ -64,7 +64,7 @@ for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr 
 )
 
 :: Step 5: Restore Bootloader
-bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
+bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI >nul 2>&1
 
 :: Remove the drive letter from the new EFI partition
 (
@@ -74,7 +74,7 @@ bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI
 ) > "%tmpfile2%"
 diskpart /s "%tmpfile2%"
 
-bootsect /nt60 SYS
+bootsect /nt60 SYS >nul 2>&1
 
 :: Step 6: Cleanup
 :cleanup
