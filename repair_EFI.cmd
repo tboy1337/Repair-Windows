@@ -43,17 +43,17 @@ diskpart /s "%tmpfile%" > nul
 
 cd /d "%driveLetter%\EFI\Microsoft\Boot"
 
-echo Fixing BOOT...
-bootrec /fixboot
-if %errorlevel% neq 0 (
-    echo Failed to fix BOOT.
-)
-
 echo Checking %driveLetter% file system...
 chkdsk "%driveLetter%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Repairing %driveLetter% file system...
     chkdsk "%driveLetter%" /R /X >nul 2>&1
+)
+
+echo Fixing BOOT...
+bootrec /fixboot
+if %errorlevel% neq 0 (
+    echo Failed to fix BOOT.
 )
 
 cd /d "X:\Windows\System32"
