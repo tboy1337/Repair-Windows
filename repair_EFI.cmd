@@ -46,7 +46,7 @@ cd /d "%driveLetter%\EFI\Microsoft\Boot"
 echo Fixing BOOT...
 bootrec /fixboot
 if %errorlevel% neq 0 (
-    echo Failed to fix boot
+    echo Failed to fix BOOT.
 )
 
 echo Checking %driveLetter% file system...
