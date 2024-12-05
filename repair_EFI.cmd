@@ -41,14 +41,14 @@ echo Found System partition on disk %foundDisk%, partition %partitionNum%
 echo Assigning drive letter %driveLetter% to system partition...
 diskpart /s "%tmpfile%" > nul
 
-cd /d "%driveLetter%\EFI\Microsoft\Boot"
-
 echo Checking %driveLetter% file system...
 chkdsk "%driveLetter%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Repairing %driveLetter% file system...
     chkdsk "%driveLetter%" /R /X >nul 2>&1
 )
+
+cd /d "%driveLetter%\EFI\Microsoft\Boot"
 
 echo Fixing BOOT...
 bootrec /fixboot
