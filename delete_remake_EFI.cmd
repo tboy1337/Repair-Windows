@@ -27,7 +27,7 @@ for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile2%"') do (
     )
 )
 
-:: If no system partition found, exit
+:: If no EFI partition found, exit
 if not defined partitionNum (
     echo Error: EFI partition not found.
     goto :cleanup
