@@ -37,7 +37,7 @@ if not defined partitionNum (
     echo assign letter=%driveLetter:~0,1%
 ) > "%tmpfile%"
 
-echo Found System partition on disk %foundDisk%, partition %partitionNum%
+echo Found EFI partition on disk %foundDisk%, partition %partitionNum%
 echo Assigning drive letter %driveLetter% to system partition...
 diskpart /s "%tmpfile%" > nul
 
