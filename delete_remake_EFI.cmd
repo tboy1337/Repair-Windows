@@ -5,7 +5,7 @@ set "partitionNum="
 set "newEFIDrive=T:"
 set "newPartitionNum="
 
-:: Step 2: Locate the System Partition (EFI)
+:: Step 2: Locate the EFI Partition
 (
     echo list disk
 ) > "%tmpfile2%"
@@ -18,7 +18,7 @@ for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile2%"') do (
         echo list partition
     ) > "%tmpfile2%"
     
-    :: Check each partition on this disk for "System"
+    :: Check each partition on this disk for "System" (EFI)
     for /f "tokens=1,2,3,4,5 delims= " %%b in ('diskpart /s "%tmpfile2%" ^| findstr /i "System"') do (
         if "%%f"=="System" (
             set "foundDisk=%%a"
