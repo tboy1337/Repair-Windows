@@ -49,6 +49,9 @@ if %errorlevel% neq 0 (
 )
 
 cd /d "%driveLetter%\EFI\Microsoft\Boot"
+if %errorlevel% neq 0 (
+    echo Failed to change to %driveLetter%\EFI\Microsoft\Boot
+)
 
 echo Fixing BOOT...
 bootrec /fixboot >nul 2>&1
@@ -57,6 +60,9 @@ if %errorlevel% neq 0 (
 )
 
 cd /d "X:\Windows\System32"
+if %errorlevel% neq 0 (
+    echo Failed to change to X:\Windows\System32
+)
 
 :: Create diskpart script to remove letter
 (
