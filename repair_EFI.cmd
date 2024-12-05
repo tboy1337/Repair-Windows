@@ -51,7 +51,7 @@ if %errorlevel% neq 0 (
 cd /d "%driveLetter%\EFI\Microsoft\Boot"
 
 echo Fixing BOOT...
-bootrec /fixboot
+bootrec /fixboot >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to fix BOOT.
 )
