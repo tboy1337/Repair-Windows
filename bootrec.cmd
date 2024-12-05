@@ -42,7 +42,7 @@ if %errorlevel% neq 0 (
     :: NOW DO delete_remake_EFI.cmd method if the above is error.
 )
 
-cd /d "X:\Windows\System32"
+cd /d "X:\Windows\System32" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to X:\Windows\System32
 )
