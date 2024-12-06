@@ -41,11 +41,10 @@ echo Found EFI partition on disk %foundDisk%, partition %partitionNum%
 echo Assigning drive letter %driveLetter% to EFI partition...
 diskpart /s "%tmpfile%" > nul
 
-echo Checking %driveLetter% file system...
-chkdsk "%driveLetter%" >nul 2>&1
+echo Repairing %driveLetter% file system...
+chkdsk "%driveLetter%" /R /X >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Repairing %driveLetter% file system...
-    chkdsk "%driveLetter%" /R /X >nul 2>&1
+    echo Failed to repair %driveLetter% file system.
 )
 
 cd /d "%driveLetter%\EFI\Microsoft\Boot" >nul 2>&1
