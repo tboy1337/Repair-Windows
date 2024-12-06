@@ -1,6 +1,6 @@
-cd /d "%WINDOWS_DRIVE%\Windows\System32\Boot" >nul 2>&1
+cd /d "%WINDOWS_DRIVE%\Windows\System32" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %WINDOWS_DRIVE%\Windows\System32\Boot
+    echo Failed to change to %WINDOWS_DRIVE%\Windows\System32
 )
 
 echo Scanning all disks for Windows installations...
