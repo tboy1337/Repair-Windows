@@ -63,21 +63,13 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
         echo %WINDOWS_DRIVE% drive is FAT-based.
-        echo Checking %WINDOWS_DRIVE% file system...
-        chkdsk "%WINDOWS_DRIVE%" >nul 2>&1
-        if !errorlevel! neq 0 (
-            echo Repairing %WINDOWS_DRIVE% file system...
-            chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
-        )
+        echo Repairing %WINDOWS_DRIVE% file system...
+        chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
     ) else (
         echo %WINDOWS_DRIVE% drive is NTFS-based.
-        echo Checking %WINDOWS_DRIVE% file system...
-        chkdsk "%WINDOWS_DRIVE%" >nul 2>&1
-        if !errorlevel! neq 0 (
-            echo Repairing %WINDOWS_DRIVE% file system...
-            chkdsk "%WINDOWS_DRIVE%" /R /X /offlinescanandfix >nul 2>&1
-            chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
-        )
+        echo Repairing %WINDOWS_DRIVE% file system...
+        chkdsk "%WINDOWS_DRIVE%" /R /X /offlinescanandfix >nul 2>&1
+        chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
     )
 )
 
