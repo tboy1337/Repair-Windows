@@ -39,7 +39,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %CHOSEN_DRIVE%^|fi
     )
 )
 
-echo Found no filesystem on %CHOSEN_DRIVE%
+echo Found no compatible filesystem on %CHOSEN_DRIVE%
 
 timeout /t 5 /nobreak
 
