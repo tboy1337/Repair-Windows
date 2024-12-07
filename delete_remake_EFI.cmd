@@ -76,6 +76,9 @@ diskpart /s "%tmpfile2%"
 
 echo Updating the boot sector to be compatible with modern Windows versions...
 bootsect /nt60 SYS >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to update the boot sector.
+)
 
 :: Step 6: Cleanup
 :cleanup
