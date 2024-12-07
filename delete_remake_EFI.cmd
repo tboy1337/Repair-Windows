@@ -36,6 +36,7 @@ if not defined partitionNum (
 echo Found EFI partition on Disk %foundDisk%, Partition %partitionNum%.
 
 :: Step 3: Delete the Corrupted EFI
+echo Deleting the Corrupted EFI partition...
 (
     echo select disk %foundDisk%
     echo select partition %partitionNum%
@@ -44,6 +45,7 @@ echo Found EFI partition on Disk %foundDisk%, Partition %partitionNum%.
 diskpart /s "%tmpfile2%"
 
 :: Step 4: Create a New EFI
+echo Creating a new EFI partition...
 (
     echo select disk %foundDisk%
     echo create partition efi size=100
@@ -64,9 +66,11 @@ for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr 
 )
 
 :: Step 5: Restore Bootloader
+echo Restoring the bootloader...
 bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI >nul 2>&1
 
 :: Remove the drive letter from the new EFI partition
+echo Removing the drive letter from the new EFI partition...
 (
     echo select disk %foundDisk%
     echo select partition %newPartitionNum%
@@ -82,4 +86,5 @@ if %errorlevel% neq 0 (
 
 :: Step 6: Cleanup
 :cleanup
+echo Cleaning up...
 if exist "%tmpfile2%" del "%tmpfile2%"
