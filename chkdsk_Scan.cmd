@@ -30,7 +30,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %CHOSEN_DRIVE%^|fi
     ) else (
         echo %CHOSEN_DRIVE% drive is NTFS-based.
         echo Repairing %CHOSEN_DRIVE% file system...
-        echo y | chkdsk "%CHOSEN_DRIVE%" /R /X /scan /perf >nul 2>&1
+        echo y | chkdsk "%CHOSEN_DRIVE%" /R /X >nul 2>&1
         echo Restarting system to complete repairs, please save your work.
         echo Run chkdsk "%CHOSEN_DRIVE%" /sdcleanup after repair finishes.
         timeout /t 30 /nobreak
