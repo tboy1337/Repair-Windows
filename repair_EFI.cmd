@@ -64,13 +64,13 @@ if %errorlevel% neq 0 (
 )
 
 :: Create diskpart script to remove letter
+echo Removing drive letter...
 (
     echo select disk %foundDisk%
     echo select partition %partitionNum%
     echo remove letter=%driveLetter:~0,1%
 ) > "%tmpfile%"
 
-echo Removing drive letter...
 diskpart /s "%tmpfile%" > nul
 
 :cleanup
