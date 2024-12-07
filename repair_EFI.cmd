@@ -73,6 +73,7 @@ echo Removing drive letter...
 
 diskpart /s "%tmpfile%" > nul
 
-:cleanup
 :: Clean up temporary file
+:cleanup
+echo Cleaning up...
 if exist "%tmpfile%" del "%tmpfile%"
