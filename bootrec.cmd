@@ -35,7 +35,7 @@ if %errorlevel% neq 0 (
 echo Writing a new boot sector on the system partition...
 bootrec /fixboot >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to write a new boot sector on the system partition.
+    echo Failed to write a new boot sector on the system partition, trying again...
     bootsect /nt60 SYS >nul 2>&1
     bootrec /fixboot >nul 2>&1
     :: NOW DO repair_EFI.cmd method to assign drive letters and repair if above is error. (PROBABLY THIS ONE ONLY)
