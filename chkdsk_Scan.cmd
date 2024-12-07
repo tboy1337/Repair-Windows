@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SET_PATH%
 )
 
-echo Repairing %CHOSEN_DRIVE% file system...
+echo Checking & repairing %CHOSEN_DRIVE% file system...
 echo y | chkdsk "%CHOSEN_DRIVE%" /R /X >nul 2>&1
 echo Restarting system to complete repairs, please save your work.
 
