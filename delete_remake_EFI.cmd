@@ -74,6 +74,7 @@ bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI >nul 2>&1
 ) > "%tmpfile2%"
 diskpart /s "%tmpfile2%"
 
+echo Updating the boot sector to be compatible with modern Windows versions...
 bootsect /nt60 SYS >nul 2>&1
 
 :: Step 6: Cleanup
