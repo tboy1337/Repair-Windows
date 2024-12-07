@@ -59,16 +59,15 @@ goto chkdskscan
 echo.
 echo Running CHKDSK on %WINDOWS_DRIVE%...
 echo This may take a while...
+chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
+
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
     if not errorlevel 1 (
         echo %WINDOWS_DRIVE% drive is FAT-based.
-        echo Repairing %WINDOWS_DRIVE% file system...
-        chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
     ) else (
         echo %WINDOWS_DRIVE% drive is NTFS-based.
-        echo Repairing %WINDOWS_DRIVE% file system...
-        chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
+        echo Removing unneeded security descriptor data on %WINDOWS_DRIVE%...
         chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
     )
 )
