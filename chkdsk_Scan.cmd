@@ -38,9 +38,3 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %CHOSEN_DRIVE%^|fi
         exit /b 1
     )
 )
-
-echo Found no issues with %CHOSEN_DRIVE% file system.
-
-timeout /t 5 /nobreak
-
-exit /b 0
