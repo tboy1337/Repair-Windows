@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
     echo Failed to analyze all drives.
 )
 
-echo Performing boot optimization on system drive...
+echo Performing boot optimization on %CHOSEN_DRIVE%...
 call defrag "%CHOSEN_DRIVE%" /B /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to perform boot optimization on %CHOSEN_DRIVE% drive.
