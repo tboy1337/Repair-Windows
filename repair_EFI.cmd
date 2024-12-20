@@ -47,20 +47,10 @@ if %errorlevel% neq 0 (
     echo Failed to repair %driveLetter% file system.
 )
 
-cd /d "%driveLetter%\EFI\Microsoft\Boot" >nul 2>&1
+echo Repairing the MBR on %driveLetter%...
+bootsect /nt60 "%driveLetter%" /mbr /force >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %driveLetter%\EFI\Microsoft\Boot
-)
-
-echo Fixing BOOT...
-bootrec /fixboot >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to fix BOOT.
-)
-
-cd /d "X:\Windows\System32" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to change to X:\Windows\System32
+    echo Failed to repair the MBR on %driveLetter%
 )
 
 :: Create diskpart script to remove letter
