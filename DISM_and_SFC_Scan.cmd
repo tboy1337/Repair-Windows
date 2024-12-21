@@ -31,7 +31,6 @@ if %errorlevel% neq 0 (
     if %errorlevel% neq 0 (
         echo Failed to repair corruption in the local Windows image.
     )
-    goto jump
 )
 
 echo Checking for corruption in the local Windows image...
@@ -44,7 +43,6 @@ if %errorlevel% neq 0 (
     )
 )
 
-:jump
 if %SFC_SUCCESS% neq 0 (
     echo Checking integrity of all protected system files...
     call sfc /scannow >nul 2>&1
