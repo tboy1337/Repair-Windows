@@ -61,6 +61,18 @@ if %errorlevel% neq 0 (
     echo Failed to delete resources associated with corrupted mounted images.
 )
 
+echo Analyzing component store...
+call DISM /Online /Cleanup-Image /AnalyzeComponentStore
+if %errorlevel% neq 0 (
+    echo Failed to analyze component store.
+)
+
+echo Cleaning component store...
+call DISM /Online /Cleanup-Image /StartComponentCleanup
+if %errorlevel% neq 0 (
+    echo Failed to clean component store.
+)
+
 timeout /t 5 /nobreak
 
 exit /b 0
