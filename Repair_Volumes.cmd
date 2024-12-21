@@ -1,8 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "CHOSEN_DRIVE=%SystemDrive%"
-
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -11,9 +9,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "%CHOSEN_DRIVE%" >nul 2>&1
+cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %CHOSEN_DRIVE%
+    echo Failed to change to %SystemDrive%
 )
 
 echo Repairing System Volumes...
