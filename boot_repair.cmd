@@ -119,9 +119,21 @@ if %SFC_SUCCESS% neq 0 (
 )
 
 echo Deleting resources associated with corrupted mounted images...
-DISM /image:%WINDOWS_DRIVE%\ /Cleanup-Mountpoints >nul 2>&1
+dism /image:%WINDOWS_DRIVE%\ /Cleanup-Mountpoints >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to delete resources associated with corrupted mounted images.
+)
+
+echo Analyzing component store...
+dism /image:%WINDOWS_DRIVE%\ /Cleanup-Image /AnalyzeComponentStore >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to analyze component store.
+)
+
+echo Cleaning component store...
+dism /image:%WINDOWS_DRIVE%\ /Cleanup-Image /StartComponentCleanup >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to clean component store.
 )
 
 if "%choice%"=="7" goto startup
