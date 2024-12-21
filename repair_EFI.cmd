@@ -1,6 +1,6 @@
 :: Create a temporary diskpart script file in X:\, which is the RAM drive in WinRE
 set "tmpfile=X:\diskpart_script_%RANDOM%.txt"
-set "driveLetter=S:"
+set "RepairDriveLetter=S:"
 
 :: Create diskpart script to list all disks and their partitions
 (
@@ -34,23 +34,23 @@ if not defined partitionNum (
 (
     echo select disk %foundDisk%
     echo select partition %partitionNum%
-    echo assign letter=%driveLetter:~0,1%
+    echo assign letter=%RepairDriveLetter:~0,1%
 ) > "%tmpfile%"
 
 echo Found EFI partition on disk %foundDisk%, partition %partitionNum%
-echo Assigning drive letter %driveLetter% to EFI partition...
+echo Assigning drive letter %RepairDriveLetter% to EFI partition...
 diskpart /s "%tmpfile%" > nul
 
-echo Repairing %driveLetter% file system...
-chkdsk "%driveLetter%" /R /X >nul 2>&1
+echo Repairing %RepairDriveLetter% file system...
+chkdsk "%RepairDriveLetter%" /R /X >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to repair %driveLetter% file system.
+    echo Failed to repair %RepairDriveLetter% file system.
 )
 
-echo Repairing the MBR on %driveLetter%...
-bootsect /nt60 "%driveLetter%" /mbr /force >nul 2>&1
+echo Repairing the MBR on %RepairDriveLetter%...
+bootsect /nt60 "%RepairDriveLetter%" /mbr /force >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to repair the MBR on %driveLetter%
+    echo Failed to repair the MBR on %RepairDriveLetter%
 )
 
 :: Create diskpart script to remove letter
@@ -58,7 +58,7 @@ echo Removing drive letter...
 (
     echo select disk %foundDisk%
     echo select partition %partitionNum%
-    echo remove letter=%driveLetter:~0,1%
+    echo remove letter=%RepairDriveLetter:~0,1%
 ) > "%tmpfile%"
 
 diskpart /s "%tmpfile%" > nul
