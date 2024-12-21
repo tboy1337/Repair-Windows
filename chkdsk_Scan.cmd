@@ -41,7 +41,8 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %CHOSEN_DRIVE%^|fi
             shutdown /r /t 1 >nul 2>&1
         ) else (
             chkdsk "%CHOSEN_DRIVE%" /R /X >nul 2>&1
-            echo Run chkdsk "%CHOSEN_DRIVE%" /sdcleanup after repair finishes.
+            echo Cleaning up unnecessary data structures and unallocated metadata files...
+            chkdsk "%CHOSEN_DRIVE%" /sdcleanup >nul 2>&1
         )
         exit /b 0
     )
