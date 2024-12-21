@@ -1,9 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "CHOSEN_DRIVE=%SystemDrive%"
-set "SET_PATH=%CHOSEN_DRIVE%\Windows\System32"
-
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -12,7 +9,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "%SET_PATH%" >nul 2>&1
+cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to %SET_PATH%
 )
@@ -23,10 +20,10 @@ if %errorlevel% neq 0 (
     echo Failed to analyze all drives.
 )
 
-echo Performing boot optimization on %CHOSEN_DRIVE%...
-call defrag "%CHOSEN_DRIVE%" /B /H >nul 2>&1
+echo Performing boot optimization on %SystemDrive%...
+call defrag "%SystemDrive%" /B /H >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to perform boot optimization on %CHOSEN_DRIVE% drive.
+    echo Failed to perform boot optimization on %SystemDrive% drive.
 )
 
 echo Optimizing the storage tiers on all drives...
