@@ -69,6 +69,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
         echo %WINDOWS_DRIVE% drive is NTFS-based.
         echo Repairing %WINDOWS_DRIVE% file system...
         chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
+        echo Cleaning up unnecessary data structures and unallocated metadata files...
         chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
     )
 )
