@@ -2,7 +2,6 @@
 setlocal enabledelayedexpansion
 
 set "CHOSEN_DRIVE=%SystemDrive%"
-set "SET_PATH=%CHOSEN_DRIVE%\Windows\System32"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -12,9 +11,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-cd /d "%SET_PATH%" >nul 2>&1
+cd /d "%CHOSEN_DRIVE%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SET_PATH%
+    echo Failed to change to %CHOSEN_DRIVE%
 )
 
 echo Repairing System Volumes...
