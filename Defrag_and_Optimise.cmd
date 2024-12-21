@@ -11,7 +11,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SET_PATH%
+    echo Failed to change to %SystemDrive%
 )
 
 echo Analysing all drives...
