@@ -62,13 +62,13 @@ if %errorlevel% neq 0 (
 )
 
 echo Analyzing component store...
-call DISM /Online /Cleanup-Image /AnalyzeComponentStore
+call DISM /Online /Cleanup-Image /AnalyzeComponentStore >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to analyze component store.
 )
 
 echo Cleaning component store...
-call DISM /Online /Cleanup-Image /StartComponentCleanup
+call DISM /Online /Cleanup-Image /StartComponentCleanup >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to clean component store.
 )
