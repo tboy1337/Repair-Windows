@@ -17,28 +17,28 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 
 ## Scripts Overview
 
-### 1. `DISM_and_SFC_Scan.cmd`
+### 1. `dism_sfc_scan.cmd`
    - Runs the Deployment Imaging Service and Management Tool (DISM) and System File Checker (SFC) to scan and repair corrupted system files.
 
-### 2. `Defrag_and_Optimise.cmd`
+### 2. `defrag_optimise.cmd`
    - Defragments and optimizes all system drives, helping improve system performance on traditional HDDs and SSDs.
 
-### 3. `Free_Space.cmd` & `Free_Space_2.cmd`
+### 3. `free_space.cmd` & `free_space_2.cmd`
    - Clears unnecessary temporary files and frees up disk space to improve performance.
 
-### 4. `Repair_Volumes.cmd`
+### 4. `repair_volumes.cmd`
    - Repairs volume errors using the CHKDSK utility on all detected drives.
 
-### 5. `Reset_Windows_Update.cmd`
+### 5. `reset_windows_update.cmd`
    - Resets the Windows Update components to fix issues related to stuck or failed updates.
 
-### 6. `Reset_winsock.cmd`
+### 6. `reset_winsock.cmd`
    - Resets the Winsock catalog to resolve network connectivity issues.
 
 ### 7. `boot_repair.cmd`
    - Utilizes various tools to fix boot sector issues, which can help resolve problems with booting Windows (need to be in WindowsRE to use this).
 
-### 8. `chkdsk_Scan.cmd`
+### 8. `chkdsk_scan.cmd`
    - Runs the CHKDSK utility for FAT and NTFS drives to check and repair file system errors.
 
 ## Usage
