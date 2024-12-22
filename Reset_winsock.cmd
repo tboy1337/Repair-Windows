@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Resetting winsock...
-call netsh winsock reset >nul 2>&1
+netsh winsock reset >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to reset winsock.
     timeout /t 5 /nobreak
