@@ -69,6 +69,12 @@ for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr 
 echo Restoring the bootloader...
 bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI >nul 2>&1
 
+echo Updating the boot sector to be compatible with modern Windows versions...
+bootsect /nt60 %newEFIDrive% >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to update the boot sector.
+)
+
 :: Remove the drive letter from the new EFI partition
 echo Removing the drive letter from the new EFI partition...
 (
@@ -77,12 +83,6 @@ echo Removing the drive letter from the new EFI partition...
     echo remove letter=%newEFIDrive%
 ) > "%tmpfile2%"
 diskpart /s "%tmpfile2%"
-
-echo Updating the boot sector to be compatible with modern Windows versions...
-bootsect /nt60 %newEFIDrive% >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to update the boot sector.
-)
 
 :: Step 6: Cleanup
 :cleanup
