@@ -79,7 +79,7 @@ echo Removing the drive letter from the new EFI partition...
 diskpart /s "%tmpfile2%"
 
 echo Updating the boot sector to be compatible with modern Windows versions...
-bootsect /nt60 SYS >nul 2>&1
+bootsect /nt60 %newEFIDrive% >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to update the boot sector.
 )
