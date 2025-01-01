@@ -35,7 +35,7 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 ### 6. `reset_winsock.cmd`
    - Resets the Winsock catalog to resolve network connectivity issues.
 
-### 7. `boot_repair.cmd`
+### 7. `boot_repair.cmd` (UNDER DEVELOPMENT)
    - Utilizes various tools to fix boot sector issues, which can help resolve problems with booting Windows (need to be in WindowsRE to use this).
 
 ### 8. `chkdsk_scan.cmd`
