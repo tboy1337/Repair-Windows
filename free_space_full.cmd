@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "CHOSEN_DRIVE=%SystemDrive%"
+set "TARGET_DRIVE=%SystemDrive%"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -162,10 +162,10 @@ if %errorlevel% neq 0 (
     echo Failed to set registry key.
 )
 
-echo Freeing up space on %CHOSEN_DRIVE%...
-call cleanmgr /d "%CHOSEN_DRIVE%" /sagerun:9999 >nul 2>&1
+echo Freeing up space on %TARGET_DRIVE%...
+call cleanmgr /d "%TARGET_DRIVE%" /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %CHOSEN_DRIVE%
+    echo Failed to free up space on %TARGET_DRIVE%
 )
 
 timeout /t 5 /nobreak
