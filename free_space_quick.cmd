@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "CHOSEN_DRIVE=%SystemDrive%"
+set "TARGET_DRIVE=%SystemDrive%"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -16,16 +16,16 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%
 )
 
-echo Freeing up space on %CHOSEN_DRIVE%...
-call cleanmgr /d "%CHOSEN_DRIVE%" /verylowdisk >nul 2>&1
+echo Freeing up space on %TARGET_DRIVE%...
+call cleanmgr /d "%TARGET_DRIVE%" /verylowdisk >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %CHOSEN_DRIVE%
+    echo Failed to free up space on %TARGET_DRIVE%
 )
 
-echo Deleting old Windows update files on %CHOSEN_DRIVE%...
-call cleanmgr /d "%CHOSEN_DRIVE%" /autoclean >nul 2>&1
+echo Deleting old Windows update files on %TARGET_DRIVE%...
+call cleanmgr /d "%TARGET_DRIVE%" /autoclean >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to delete old Windows update files on %CHOSEN_DRIVE%
+    echo Failed to delete old Windows update files on %TARGET_DRIVE%
 )
 
 timeout /t 5 /nobreak
