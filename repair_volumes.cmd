@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Repairing System Volumes...
-call powershell -Command "$ProgressPreference = 'SilentlyContinue'; Repair-Volume -FileSystemLabel "*" -OfflineScanAndFix >nul 2>&1
+call powershell -Command "$ProgressPreference = 'SilentlyContinue'; Repair-Volume -FileSystemLabel "*" -OfflineScanAndFix" >nul 2>&1
 
 timeout /t 5 /nobreak
 
