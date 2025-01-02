@@ -162,10 +162,10 @@ if %errorlevel% neq 0 (
     echo Failed to set registry key.
 )
 
-echo Freeing up space on C: drive...
+echo Freeing up space on %CHOSEN_DRIVE%...
 call cleanmgr /d "%CHOSEN_DRIVE%" /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %CHOSEN_DRIVE% drive.
+    echo Failed to free up space on %CHOSEN_DRIVE%
 )
 
 timeout /t 5 /nobreak
