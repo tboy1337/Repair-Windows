@@ -29,7 +29,6 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
         ) else (
             chkdsk "%TARGET_DRIVE%" /R /X >nul 2>&1
         )
-        exit /b 0
     ) else (
         echo %TARGET_DRIVE% drive is NTFS-based.
         echo Repairing %TARGET_DRIVE% file system...
@@ -44,6 +43,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
             echo Cleaning up unnecessary data structures and unallocated metadata files...
             chkdsk "%TARGET_DRIVE%" /sdcleanup >nul 2>&1
         )
-        exit /b 0
     )
 )
+
+exit /b 0
