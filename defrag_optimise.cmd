@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
 echo Performing boot optimization on %SystemDrive%...
 defrag "%SystemDrive%" /B /H >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to perform boot optimization on %SystemDrive% drive.
+    echo Failed to perform boot optimization on %SystemDrive%
 )
 
 echo Optimizing the storage tiers on all drives...
