@@ -32,6 +32,8 @@ net start cryptSvc
 net start bits
 net start msiserver
 
+timeout /t 3 /nobreak >nul 2>&1
+
 bitsadmin /reset /allusers
 
 timeout /t 5 /nobreak
