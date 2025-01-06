@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%
 )
 
-echo Setting registry keys on %SystemDrive% drive...
+echo Setting registry keys on %SystemDrive%...
 call REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Active Setup Temp Folders" /v StateFlags9999 /t REG_DWORD /d 00000002 /f >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to set "Active Setup Temp Folders" registry key.
