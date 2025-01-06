@@ -1,8 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "TARGET_DRIVE=%SystemDrive%"
-
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
@@ -162,10 +160,10 @@ if %errorlevel% neq 0 (
     echo Failed to set registry key.
 )
 
-echo Freeing up space on %TARGET_DRIVE%...
-call cleanmgr /d "%TARGET_DRIVE%" /sagerun:9999 >nul 2>&1
+echo Freeing up space on %SystemDrive%...
+call cleanmgr /d "%SystemDrive%" /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %TARGET_DRIVE%
+    echo Failed to free up space on %SystemDrive%
 )
 
 timeout /t 5 /nobreak
