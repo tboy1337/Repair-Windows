@@ -13,7 +13,7 @@ for /f "delims==" %%p in (%TEMP_FILE%) do (
 )
 
 echo Reinstalling default packages...
-python -m ensurepip --upgrade
+py -m ensurepip --upgrade
 pip install --upgrade setuptools wheel
 
 del %TEMP_FILE%
