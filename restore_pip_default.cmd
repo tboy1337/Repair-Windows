@@ -1,11 +1,13 @@
 @echo off
 echo Restoring pip packages to default...
 
+set TEMP_FILE=%TEMP%\installed_packages_%RANDOM%.txt
+
 echo Generating list of installed packages...
-pip freeze > installed_packages.txt
+pip freeze > %TEMP_FILE%
 
 echo Uninstalling all packages...
-for /f "delims==" %%p in (installed_packages.txt) do (
+for /f "delims==" %%p in (%TEMP_FILE%) do (
     pip uninstall -y %%p
 )
 
@@ -13,7 +15,7 @@ echo Reinstalling default packages...
 python -m ensurepip --upgrade
 pip install --upgrade setuptools wheel
 
-del installed_packages.txt
+del %TEMP_FILE%
 
 echo Purging pip cache...
 pip cache purge
