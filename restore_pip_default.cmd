@@ -15,6 +15,9 @@ pip install --upgrade setuptools wheel
 
 del installed_packages.txt
 
+echo Purging pip cache...
+pip cache purge
+
 echo Done! Your pip packages have been restored to default.
 
 timeout /t 5 /nobreak
