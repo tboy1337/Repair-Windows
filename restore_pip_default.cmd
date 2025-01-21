@@ -1,8 +1,8 @@
 @echo off
 
-echo Restoring pip packages to default...
-
 set TEMP_FILE=%TEMP%\installed_packages_%RANDOM%.txt
+
+echo Restoring pip packages to default...
 
 echo Generating list of installed packages...
 pip freeze > %TEMP_FILE%
