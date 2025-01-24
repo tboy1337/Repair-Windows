@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 set TEMP_FILE=%TEMP%\installed_packages_%RANDOM%.txt
 
