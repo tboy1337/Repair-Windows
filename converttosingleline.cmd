@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 :: Check if a file is provided
 if "%~1"=="" (
-    echo Usage: %~nx0 [batchfile.bat]
+    echo Usage: %~nx0 [batchfile.bat/cmd]
     exit /b 1
 )
 
