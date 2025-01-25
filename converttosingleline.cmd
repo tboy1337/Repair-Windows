@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 :: Check if a file is provided
 if "%~1"=="" (
-    echo Usage: %~nx0 [batchfile.bat/cmd]
+    echo Usage: %~nx0 [batchfile.bat]
     exit /b 1
 )
 
@@ -17,8 +17,8 @@ for /f "tokens=*" %%a in (%1) do (
     :: Remove leading spaces
     for /f "tokens=*" %%b in ("!line!") do set "line=%%b"
     
-    :: Skip empty lines and comments
-    if not "!line!"=="" if not "!line:~0,1!"=="REM" (
+    :: Skip empty lines and comments (both REM and ::)
+    if not "!line!"=="" if not "!line:~0,3!"=="REM" if not "!line:~0,2!"=="::" (
         :: Escape special characters
         set "line=!line:&=^&!"
         set "line=!line:|=^|!"
