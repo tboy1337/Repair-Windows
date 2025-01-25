@@ -1,8 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: converttosingleline.cmd batchfile.bat/cmd
-
 :: Check if a file is provided
 if "%~1"=="" (
     echo Usage: %~nx0 [batchfile.bat/cmd]
@@ -38,9 +36,12 @@ for /f "tokens=*" %%a in (%1) do (
     )
 )
 
-:: Output the result
-echo @echo off
-echo %output%
+:: Output the result to a .txt file
+set "output_file=%~dpn1_singleline.txt"
+echo @echo off > "%output_file%"
+echo %output% >> "%output_file%"
+
+echo Single-line command saved to: "%output_file%"
 
 timeout /t 5 /nobreak
 exit
