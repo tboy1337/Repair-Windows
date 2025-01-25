@@ -1,6 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: converttosingleline.cmd batchfile.bat/cmd
+
 :: Check if a file is provided
 if "%~1"=="" (
     echo Usage: %~nx0 [batchfile.bat/cmd]
