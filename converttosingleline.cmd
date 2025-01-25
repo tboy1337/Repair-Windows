@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 :: Check if a file is provided
 if "%~1"=="" (
-    echo Usage: %~nx0 [batchfile.bat]
+    echo Usage: %~nx0 [batchfile.bat/cmd]
     exit /b 1
 )
 
@@ -39,3 +39,6 @@ for /f "tokens=*" %%a in (%1) do (
 :: Output the result
 echo @echo off
 echo %output%
+
+timeout /t 5 /nobreak
+exit
