@@ -98,3 +98,6 @@ $systemInfo | Out-File -FilePath $outputFile -Encoding UTF8
 
 # Display completion message
 Write-Host "System information has been exported to: $outputFile"
+
+Start-Sleep -Seconds 5
+exit
