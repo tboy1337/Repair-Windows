@@ -76,7 +76,7 @@ function Show-PrintQueue {
             Write-Host
             Write-Host "Options:" -ForegroundColor Green
             Write-Host "1-$($jobs.Count)) Cancel specific job"
-            Write-Host "A) Cancel ALL jobs"
+            Write-Host "A) Cancel ALL jobs" -ForegroundColor Red
             Write-Host "R) Refresh queue"
             Write-Host "B) Back to printer selection"
             Write-Host "Q) Quit"
