@@ -1,6 +1,3 @@
-# Print Queue Viewer Script
-# Shows all available printers and allows selection to view print queue
-
 function Show-PrinterMenu {
     Clear-Host
     Write-Host "=== Printer Queue Viewer ===" -ForegroundColor Cyan
