@@ -1,12 +1,11 @@
 @echo off
 setlocal
 
-:: Get current timestamp for the filename
+echo Creating system information export...
 for /f "tokens=2 delims==." %%a in ('wmic os get localdatetime /value') do set datetime=%%a
 set timestamp=%datetime:~0,8%-%datetime:~8,6%
 set outputFile=SystemInfo_%timestamp%.txt
 
-:: Create a new file and write system information to it
 echo === System Information Report === > "%outputFile%"
 echo Generated on: %date% %time% >> "%outputFile%"
 echo. >> "%outputFile%"
@@ -38,10 +37,9 @@ call powershell -Command "$disks = Get-CimInstance -ClassName Win32_DiskDrive; '
 :: Network Adapters Information
 call powershell -Command "$networkAdapters = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -eq $true }; '=== Network Adapters ===' | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8; foreach ($adapter in $networkAdapters) { 'Network Adapter:' | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8; '  Name: ' + $adapter.Name | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8; '  Manufacturer: ' + $adapter.Manufacturer | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8; '  Adapter Type: ' + $adapter.AdapterType | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8; '  MAC Address: ' + $adapter.MACAddress | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8; '  Speed (Mbps): ' + ($adapter.Speed/1000000) | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8 }; '' | Out-File -FilePath '%outputFile%' -Append -Encoding UTF8"
 
-:: Display completion message
 echo System information has been exported to: %outputFile%
 
-:: Wait for 5 seconds
-timeout /t 5 >nul
+timeout /t 5 /nobreak
 
+endlocal
 exit
