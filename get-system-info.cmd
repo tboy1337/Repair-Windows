@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-echo Creating system information export...
+echo Creating system information report...
 for /f "tokens=2 delims==." %%a in ('wmic os get localdatetime /value') do set datetime=%%a
 set timestamp=%datetime:~0,8%-%datetime:~8,6%
 set outputFile=SystemInfo_%timestamp%.txt
