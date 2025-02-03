@@ -1,8 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "TARGET_DRIVE=%SystemDrive%"
-
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
