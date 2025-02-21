@@ -42,11 +42,6 @@ if %errorlevel%==0 (
 ) else (
     echo HDD detected. Running HDD relevant commands...
     
-    cd /d "%SystemDrive%" >nul 2>&1
-    if %errorlevel% neq 0 (
-       echo Failed to change to %SystemDrive%
-    )
-    
     echo Analyzing all drives...
     defrag /C /A /H >nul 2>&1
     if %errorlevel% neq 0 (
