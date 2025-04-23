@@ -1,8 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo Running Git garbage collection on all repositories...
-echo.
+echo Running git garbage collection on all repositories...
 
 for /d %%D in (*) do (
     echo Checking directory: %%D
@@ -19,7 +18,7 @@ for /d %%D in (*) do (
     )
 )
 
-echo All repositories processed!
+echo All repositories processed.
 
 timeout /t 5 /nobreak
 exit
