@@ -1,0 +1,17 @@
+@echo off
+setlocal enabledelayedexpansion
+
+echo Setting global Git user name...
+git config --global user.name "Your Name"
+if %errorlevel% neq 0 (
+    echo Failed to set global Git user name.
+)
+
+echo Setting global Git user email...
+git config --global user.email "your.email@example.com"
+if %errorlevel% neq 0 (
+    echo Failed to Set global Git user email.
+)
+
+timeout /t 5 /nobreak
+exit 

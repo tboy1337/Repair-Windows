@@ -28,17 +28,19 @@ foreach ($file in $files) {
     try {
         Write-Host "Converting $($file.FullName)"
         
-        # Read file content
-        $content = Get-Content -Path $file.FullName -Raw
+        # Read file content with detected encoding
+        $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
+        $content = [System.Text.Encoding]::UTF8.GetString($bytes)
         
         # Skip binary or empty files
         if ($null -eq $content) { continue }
         
-        # Convert to CRLF (Windows line endings)
-        $content = $content -replace "`r`n", "`n" -replace "`r", "`n" -replace "`n", "`r`n"
+        # Convert to LF (Unix line endings)
+        $content = $content -replace "`r`n", "`n" -replace "`r", "`n"
         
-        # Write content back to file
-        [System.IO.File]::WriteAllText($file.FullName, $content)
+        # Write content back to file preserving encoding
+        $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+        [System.IO.File]::WriteAllText($file.FullName, $content, $utf8NoBom)
         
         $converted++
     } catch {

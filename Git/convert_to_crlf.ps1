@@ -28,16 +28,17 @@ foreach ($file in $files) {
     try {
         Write-Host "Converting $($file.FullName)"
         
-        # Read file content
-        $content = Get-Content -Path $file.FullName -Raw
+        # Read file content with detected encoding
+        $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
+        $content = [System.Text.Encoding]::UTF8.GetString($bytes)
         
         # Skip binary or empty files
         if ($null -eq $content) { continue }
         
-        # Convert to LF (Unix line endings)
-        $content = $content -replace "`r`n", "`n" -replace "`r", "`n"
+        # Convert to CRLF (Windows line endings)
+        $content = $content -replace "`r`n", "`n" -replace "`r", "`n" -replace "`n", "`r`n"
         
-        # Write content back to file
+        # Write content back to file preserving encoding
         $utf8NoBom = New-Object System.Text.UTF8Encoding $false
         [System.IO.File]::WriteAllText($file.FullName, $content, $utf8NoBom)
         
@@ -52,11 +53,4 @@ Write-Host "`nConversion complete. $converted files processed."
 if ($errors.Count -gt 0) {
     Write-Host "`nThe following errors occurred:"
     $errors | ForEach-Object { Write-Host "- $_" }
-}
-
-# Set Git config to use LF
-Write-Host "`nSetting Git configuration for LF line endings..."
-git config --local core.autocrlf false
-git config --local core.eol lf
-
-Write-Host "Git configuration updated to use LF line endings." 
+} 
