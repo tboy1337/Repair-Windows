@@ -3,6 +3,18 @@
 # Author: Claude
 # Date: May 13, 2025
 
+# Self-elevate the script if not running as administrator
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Host "This script requires administrator privileges. Requesting elevation..." -ForegroundColor Yellow
+    $scriptPath = $MyInvocation.MyCommand.Path
+    $scriptDirectory = Split-Path -Parent $scriptPath
+    $scriptFile = Split-Path -Leaf $scriptPath
+    
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+    Start-Process powershell.exe -ArgumentList $arguments -Verb RunAs
+    exit
+}
+
 function Show-Menu {
     Clear-Host
     Write-Host "============================================="
@@ -86,14 +98,6 @@ function Set-NewExecutionPolicy {
 # Check if running as administrator
 $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-
-if (-not $isAdmin) {
-    Write-Host "WARNING: This script is not running with administrator privileges." -ForegroundColor Red
-    Write-Host "Changing system execution policies requires administrator rights." -ForegroundColor Red
-    Write-Host "Please restart this script by right-clicking and selecting 'Run as administrator'." -ForegroundColor Yellow
-    Read-Host "Press Enter to exit"
-    exit
-}
 
 # Main program
 $exit = $false
