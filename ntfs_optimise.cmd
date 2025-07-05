@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
 echo Reserving more space for the Master File Table (MFT)...
 fsutil behavior set mftzone 2 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to reserve more space for the Master File Table (MFT).
+    echo Failed to reserve more space for the Master File Table (MFT)
 )
 
 timeout /t 5 /nobreak
