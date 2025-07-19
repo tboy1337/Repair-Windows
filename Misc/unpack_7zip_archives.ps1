@@ -265,7 +265,15 @@ foreach ($archive in $archiveFiles) {
     
     $destinationFolder = Join-Path $SourcePath $folderName
     
-    # Check if folder already exists
+    # Check if archive has single top-level folder with same/similar name
+    Write-ColorOutput "Analyzing archive structure..." "Yellow"
+    $shouldFlatten = Test-SingleTopLevelFolder -ArchivePath $archive.FullName -ArchiveBaseName $folderName -SevenZipExe $workingSevenZip
+    
+    if ($shouldFlatten) {
+        Write-ColorOutput "Detected single top-level folder with similar name - will flatten to avoid nesting" "Cyan"
+    }
+    
+    # Check if folder already exists and create if needed
     if (Test-Path $destinationFolder) {
         Write-ColorOutput "Folder '$folderName' already exists. Extracting into existing folder..." "Yellow"
     } else {
@@ -278,14 +286,6 @@ foreach ($archive in $archiveFiles) {
             $failCount++
             continue
         }
-    }
-    
-    # Check if archive has single top-level folder with same/similar name
-    Write-ColorOutput "Analyzing archive structure..." "Yellow"
-    $shouldFlatten = Test-SingleTopLevelFolder -ArchivePath $archive.FullName -ArchiveBaseName $folderName -SevenZipExe $workingSevenZip
-    
-    if ($shouldFlatten) {
-        Write-ColorOutput "Detected single top-level folder with similar name - will flatten to avoid nesting" "Cyan"
     }
     
     # Extract archive
