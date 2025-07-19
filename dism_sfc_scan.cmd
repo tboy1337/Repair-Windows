@@ -29,7 +29,7 @@ if %errorlevel% neq 0 (
     echo Corruption flags found in the local Windows image, attempting repair...
     DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
     if %errorlevel% neq 0 (
-        echo Failed to repair corruption in the local Windows image.
+        echo Failed to repair corruption from flags in the local Windows image.
     )
 )
 
