@@ -1,16 +1,15 @@
 @echo off
-setlocal enabledelayedexpansion
 
 echo Setting Git configuration for LF line endings...
-git config --local core.autocrlf false
+git config --global core.autocrlf false
 if %errorlevel% neq 0 (
-    echo Failed to disable CRLF line endings.
+    echo Failed to set autocrlf to false.
 )
     else (
-        echo CRLF line endings disabled successfully.
+        echo Autocrlf disabled successfully.
     )
 
-git config --local core.eol lf
+git config --global core.eol lf
 if %errorlevel% neq 0 (
     echo Failed to set Git configuration for LF line endings.
 )
