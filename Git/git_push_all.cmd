@@ -2,8 +2,6 @@
 setlocal enabledelayedexpansion
 
 echo Running git commit and push on all repositories...
-echo Using commit message: "YOUR_MESSAGE_HERE"
-echo.
 
 for /d %%D in (*) do (
     echo Checking directory: %%D
