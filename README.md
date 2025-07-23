@@ -51,7 +51,7 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 - Administrator privileges for full functionality
 
 ## License
-This project is licensed under the terms of the [MIT License](LICENSE.txt).
+This project is licensed under the terms of the [MIT License](LICENCE.txt).
 
 ---
 
