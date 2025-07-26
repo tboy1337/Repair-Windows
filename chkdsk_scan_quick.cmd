@@ -19,7 +19,7 @@ if %errorlevel% equ 0 (
     exit /b 0
 )
 
-echo Errors found on %TARGET_DRIVE%. Preparing to repair...
+echo Errors found on %TARGET_DRIVE%, preparing to repair...
 
 if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
     echo y | chkdsk "%TARGET_DRIVE%" /F >nul 2>&1
