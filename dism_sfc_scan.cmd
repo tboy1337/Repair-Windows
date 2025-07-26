@@ -19,7 +19,7 @@ if %errorlevel% neq 0 (
 echo Checking integrity of all protected system files...
 sfc /scannow >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to check integrity of all protected system files. Error code: %errorlevel%
+    echo Failed to check integrity of all protected system files.  Error code: %errorlevel%
     SFC_SUCCESS=1
 )
 
