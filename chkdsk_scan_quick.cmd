@@ -22,7 +22,7 @@ if %errorlevel% equ 0 (
 echo Errors found on %TARGET_DRIVE%. Preparing to repair...
 
 if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
-    echo y | chkdsk "%TARGET_DRIVE%" /f >nul 2>&1
+    echo y | chkdsk "%TARGET_DRIVE%" /F >nul 2>&1
     echo Repair scheduled. Restarting system to complete repairs, please save your work.
     timeout /t 30 /nobreak
     shutdown /r /t 1 >nul 2>&1
