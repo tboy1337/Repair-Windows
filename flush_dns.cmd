@@ -1,7 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Check if running as administrator
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
