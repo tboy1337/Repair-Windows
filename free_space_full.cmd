@@ -14,6 +14,7 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
+echo Freeing up space on all drives...
 echo Setting registry keys on %SystemDrive%...
 call REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Active Setup Temp Folders" /v StateFlags9999 /t REG_DWORD /d 00000002 /f >nul 2>&1
 if %errorlevel% neq 0 (
@@ -165,6 +166,18 @@ call cleanmgr /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to free up space on all drives.  Error code: %errorlevel%
 )
+
+echo Deleting temporary files...
+
+del /q /f /s %temp%\* >nul 2>&1
+for /d %%i in ("%temp%\*") do rd /s /q "%%i" >nul 2>&1
+
+del /q /f /s %windir%\Temp\* >nul 2>&1
+for /d %%i in ("%windir%\Temp\*") do rd /s /q "%%i" >nul 2>&1
+
+del /q /f /s %windir%\Prefetch\* >nul 2>&1
+
+echo Temporary files deleted successfully.
 
 timeout /t 5 /nobreak
 exit /b 0
