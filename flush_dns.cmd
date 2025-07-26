@@ -1,14 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo This script requires administrator privileges.
-    echo Please run as administrator.
-    pause
-    exit /b 1
-)
-
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
