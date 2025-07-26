@@ -21,7 +21,7 @@ if %errorlevel% neq 0 (
 set "WINDOWS_DRIVE="
 set "windir="
 echo Detecting Windows installation...
-for %%d in (C D E F G H I J K L M N O P Q R S T U V W Y Z) do (
+for %%d in (A B C D E F G H I J K L M N O P Q R S T U V W Y Z) do (
     if "%%d" neq "X" if exist "%%d:\Windows\System32\config\SYSTEM" (
         set "WINDOWS_DRIVE=%%d:"
         set "windir=%%d:\Windows"
