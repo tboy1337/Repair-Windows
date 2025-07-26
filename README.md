@@ -53,8 +53,8 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 These scripts help manage multiple Git repositories:
 
 - `git_gc_all.cmd`: Performs garbage collection on all Git repositories in the current directory.
-- `git_pull_all.cmd`: Pulls latest changes for all Git repositories.
-- `git_push_all.cmd`: Pushes changes for all Git repositories.
+- `git_pull_all.cmd`: Pulls latest changes for all Git repositories in the current directory.
+- `git_push_all.cmd`: Pushes changes for all Git repositories in the current directory.
 - `git_set_details.cmd`: Sets Git user name and email details.
 - `set_git_crlf.cmd`: Configures Git to use CRLF line endings.
 - `set_git_lf.cmd`: Configures Git to use LF line endings.
