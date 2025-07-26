@@ -40,14 +40,29 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 ### 7. `boot_repair.cmd`
    - Comprehensive boot repair tool that fixes boot sector issues, runs system file checks, performs startup repairs, memory diagnostics, and advanced boot repairs in Windows Recovery Environment (must be run in Windows RE).
 
-### 8. `chkdsk_scan.cmd`
-   - Runs the CHKDSK utility for FAT and NTFS drives to check and repair file system errors.
+### 8. `chkdsk_scan_quick.cmd`
+   - Runs a quick CHKDSK scan for FAT and NTFS drives to check and repair file system errors.
 
-### 9. `enable_ultimate_performance.cmd`
+### 9. `chkdsk_scan_mid.cmd`
+   - Runs a medium-level CHKDSK scan for more thorough checking.
+
+### 10. `chkdsk_scan_max.cmd`
+   - Runs a maximum thorough CHKDSK scan including bad sector recovery.
+
+### 11. `enable_ultimate_performance.cmd`
    - Enables the Ultimate Performance power plan to maximize system performance.
 
-### 10. `ntfs_optimise.cmd`
+### 12. `ntfs_optimise.cmd`
    - Optimizes NTFS file system by increasing memory usage for metadata and reserving more space for the Master File Table (MFT).
+
+### 13. `flush_dns.cmd`
+   - Flushes the DNS resolver cache to resolve networking issues.
+
+### 14. `repair_wmi.cmd`
+   - Repairs Windows Management Instrumentation (WMI) repository.
+
+### 15. `reset_tcpip.cmd`
+   - Resets the TCP/IP stack to fix network connectivity problems.
 
 ### Git Utilities (in `Git/` folder)
 These scripts help manage multiple Git repositories:
