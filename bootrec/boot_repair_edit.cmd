@@ -3,6 +3,7 @@ setlocal enabledelayedexpansion
 
 echo Windows Recovery Environment Repair Script
 echo =====================================
+echo Version 2.0 - Enhanced Edition
 echo.
 
 set SFC_SUCCESS=0
@@ -16,395 +17,461 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: Find Windows directory
-for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control Panel\Windows" /v SystemRoot 2^>nul') do set "windir=%%b"
-if "%windir%"=="" (
-    echo Could not determine Windows installation location.
+:: Find Windows installation using improved detection
+set "WINDOWS_DRIVE="
+set "windir="
+echo Detecting Windows installation...
+for %%d in (C D E F G H I J K L M N O P Q R S T U V W Y Z) do (
+    if "%%d" neq "X" if exist "%%d:\Windows\System32\config\SYSTEM" (
+        set "WINDOWS_DRIVE=%%d:"
+        set "windir=%%d:\Windows"
+        echo Found Windows installation on %%d:
+        goto found_windows
+    )
+)
+
+:found_windows
+if not defined WINDOWS_DRIVE (
+    echo Could not find Windows installation.
+    echo Please ensure Windows is installed and accessible.
     timeout /t 5 /nobreak
     exit /b 1
 )
 
-:: Extract drive letter from Windows directory
-set "WINDOWS_DRIVE=%windir:~0,2%"
+:: Detect system architecture and boot mode
+call :detect_system_info
 
 :menu
 cls
-echo Windows installation detected on: %WINDOWS_DRIVE%
+echo =====================================
+echo Windows installation: %WINDOWS_DRIVE%
+echo Boot mode: %BOOT_MODE%
+echo System type: %SYSTEM_ARCH%
+echo =====================================
 echo Choose repair operations to perform:
 echo 1) Run CHKDSK Disk Repair
-echo 2) Run SFC & DISM Health Check & Repair
+echo 2) Run SFC ^& DISM Health Check ^& Repair
 echo 3) Run Startup Repair
 echo 4) Run Memory Diagnostic
-echo 5) Run ALL Repairs
-echo 6) Exit
+echo 5) Run ALL Repairs (Recommended)
+echo 6) Advanced Boot Repair
+echo 7) Exit
 echo.
-set /p choice="Enter your choice (1-6): "
+set /p choice="Enter your choice (1-7): "
 
 if "%choice%"=="1" goto chkdskscan
 if "%choice%"=="2" goto sfcdism
 if "%choice%"=="3" goto startup
 if "%choice%"=="4" goto memory
 if "%choice%"=="5" goto all
-if "%choice%"=="6" goto end
+if "%choice%"=="6" goto advanced_boot
+if "%choice%"=="7" goto end
 
 echo Invalid choice. Please try again.
-timeout /t 3 /nobreak
+timeout /t 2 /nobreak
 goto menu
 
 :all
-echo Running all repair operations...
+echo Running comprehensive repair sequence...
+echo This may take 30-60 minutes depending on system size.
+echo.
 goto chkdskscan
 
 :chkdskscan
 echo.
+echo ===== DISK REPAIR =====
 echo Running CHKDSK on %WINDOWS_DRIVE%...
 echo This may take a while...
+
+:: Get file system type
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
-    echo %%A | findstr /i /r "^FAT" >nul
-    if not errorlevel 1 (
-        echo %WINDOWS_DRIVE% drive is FAT-based.
-        echo Repairing %WINDOWS_DRIVE% file system...
-        chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
-    ) else (
-        echo %WINDOWS_DRIVE% drive is NTFS-based.
-        echo Repairing %WINDOWS_DRIVE% file system...
-        chkdsk "%WINDOWS_DRIVE%" /R /X >nul 2>&1
-        echo Cleaning up unnecessary data structures and unallocated metadata files...
-        chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
-    )
+    set "FS_TYPE=%%A"
 )
 
+echo File system: %FS_TYPE%
+echo %%FS_TYPE%% | findstr /i /r "^FAT" >nul
+if not errorlevel 1 (
+    echo Repairing FAT file system...
+    chkdsk "%WINDOWS_DRIVE%" /f /r /x
+    if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
+) else (
+    echo Repairing NTFS file system...
+    chkdsk "%WINDOWS_DRIVE%" /f /r /x
+    if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
+    
+    echo Cleaning up metadata and unallocated space...
+    chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
+)
+
+echo Disk repair completed.
 if "%choice%"=="5" goto sfcdism
 goto menu
 
 :sfcdism
 echo.
-echo Running SFC & DISM health check & repair on %WINDOWS_DRIVE%...
-echo This may take a while...
+echo ===== SYSTEM FILE REPAIR =====
+echo Running SFC ^& DISM health check ^& repair...
+echo This may take 20-40 minutes...
 
-echo Checking integrity of all protected system files...
-sfc /scannow /offbootdir=%WINDOWS_DRIVE% /offwindir=%windir% >nul 2>&1
+echo Checking integrity of protected system files...
+sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir%
 if %errorlevel% neq 0 (
-    echo Failed to check integrity of all protected system files.
-    SFC_SUCCESS=1
+    echo SFC found issues. Will retry after DISM repair.
+    set SFC_SUCCESS=1
+) else (
+    echo SFC scan completed successfully.
 )
 
-echo Checking for corruption flags in the local Windows image...
-dism /image:%WINDOWS_DRIVE% /cleanup-image /checkhealth >nul 2>&1
+echo.
+echo Checking Windows image health...
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth
 if %errorlevel% neq 0 (
-    echo Corruption flags found in the local Windows image, attempting repair...
-    dism /image:%WINDOWS_DRIVE% /cleanup-image /restorehealth >nul 2>&1
+    echo Image health check found issues. Running scan...
+    dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth
     if %errorlevel% neq 0 (
-        echo Failed to repair corruption in the local Windows image.
+        echo Corruption detected. Attempting repair...
+        dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth
+        if %errorlevel% neq 0 (
+            echo DISM repair failed. Some issues may persist.
+        ) else (
+            echo DISM repair completed successfully.
+        )
     )
+) else (
+    echo Windows image is healthy.
 )
 
-echo Checking for corruption in the local Windows image...
-dism /image:%WINDOWS_DRIVE% /cleanup-image /scanhealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Corruption found in the local Windows image, attempting repair...
-    dism /image:%WINDOWS_DRIVE% /cleanup-image /restorehealth >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Failed to repair corruption in the local Windows image.
-    )
-)
-
+:: Retry SFC if it failed initially
 if %SFC_SUCCESS% neq 0 (
-    echo Checking integrity of all protected system files...
-    sfc /scannow /offbootdir=%WINDOWS_DRIVE% /offwindir=%windir% >nul 2>&1
+    echo.
+    echo Retrying SFC scan after DISM repair...
+    sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir%
     if %errorlevel% neq 0 (
-        echo Failed to check integrity of all protected system files.
+        echo SFC still reports issues. Manual intervention may be required.
+    ) else (
+        echo SFC scan now successful.
     )
 )
 
-echo Deleting resources associated with corrupted mounted images...
-dism /image:%WINDOWS_DRIVE% /Cleanup-Mountpoints >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to delete resources associated with corrupted mounted images.
-)
+echo.
+echo Cleaning up component store...
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /analyzecomponentstore
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /startcomponentcleanup /resetbase
+dism /image:%WINDOWS_DRIVE%\ /cleanup-mountpoints
 
-echo Analyzing component store...
-dism /image:%WINDOWS_DRIVE% /Cleanup-Image /AnalyzeComponentStore >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to analyze component store.
-)
-
-echo Cleaning component store...
-dism /image:%WINDOWS_DRIVE% /Cleanup-Image /StartComponentCleanup >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to clean component store.
-)
-
+echo System file repair completed.
 if "%choice%"=="5" goto startup
 goto menu
 
 :startup
 echo.
-echo Running Startup Repair...
+echo ===== STARTUP REPAIR =====
+echo Running comprehensive startup repair...
 
 call :run_bootrec
 
+echo Startup repair completed.
 if "%choice%"=="5" goto memory
 goto menu
 
 :memory
 echo.
-echo Scheduling Memory Diagnostic for next restart...
-mdsched >nul 2>&1
+echo ===== MEMORY DIAGNOSTIC =====
+echo Scheduling comprehensive memory test for next restart...
+mdsched /extended
 if %errorlevel% neq 0 (
-    echo Failed to schedule a memory diagnostic for next restart.
+    echo Failed to schedule memory diagnostic.
+    echo You can run it manually after restart: mdsched
+) else (
+    echo Memory diagnostic scheduled. System will test RAM on next boot.
 )
 
 if "%choice%"=="5" goto end
 goto menu
 
-:end
+:advanced_boot
 echo.
-echo Repair operations completed.
-echo Please restart your computer for changes to take effect.
+echo ===== ADVANCED BOOT REPAIR =====
+echo This will perform aggressive boot repair operations.
+echo WARNING: This may modify boot partitions!
+echo.
+set /p confirm="Continue? (Y/N): "
+if /i not "%confirm%"=="Y" goto menu
 
-timeout /t 5 /nobreak
+call :advanced_boot_repair
+goto menu
+
+:: ========================= SYSTEM DETECTION =========================
+:detect_system_info
+set "BOOT_MODE=Unknown"
+set "SYSTEM_ARCH=Unknown"
+
+:: Detect boot mode (UEFI vs Legacy)
+if exist "%WINDOWS_DRIVE%\EFI" (
+    set "BOOT_MODE=UEFI"
+) else (
+    set "BOOT_MODE=Legacy BIOS"
+)
+
+:: Detect system architecture
+if exist "%windir%\SysWOW64" (
+    set "SYSTEM_ARCH=64-bit"
+) else (
+    set "SYSTEM_ARCH=32-bit"
+)
+
 exit /b 0
 
-:: ========================= BOOTREC FUNCTIONS =========================
-
+:: ========================= BOOT REPAIR FUNCTIONS =========================
 :run_bootrec
-cd /d "%WINDOWS_DRIVE%\Windows\System32" >nul 2>&1
+echo Scanning for Windows installations...
+bootrec /scanos
 if %errorlevel% neq 0 (
-    echo Failed to change to %WINDOWS_DRIVE%\Windows\System32
+    echo Failed to scan for Windows installations.
 )
 
-for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
-    echo %%A | findstr /i /r "^FAT" >nul
-    if not errorlevel 1 (
-        echo The %WINDOWS_DRIVE% drive is FAT-based, repairing the MBR...
-        bootrec /fixmbr >nul 2>&1
-        if %errorlevel% neq 0 (
-            echo Failed to fix the MBR.
-        )
-    )
+echo.
+echo Attempting to rebuild BCD store...
+bootrec /rebuildbcd
+if %errorlevel% neq 0 (
+    echo BCD rebuild failed. Trying advanced repair...
+    call :repair_bcd_advanced
 )
 
-echo Scanning all disks for Windows installations...
-bootrec /scanos >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to scan all disks for Windows installations.
-)
-
-echo Rebuilding the BCD store...
-bootrec /rebuildbcd >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to rebuild the BCD store, trying again...
-    bcdedit /export "%WINDOWS_DRIVE%\BCDBackup" >nul 2>&1
-    attrib bcd -s -h -r >nul 2>&1
-    ren "%WINDOWS_DRIVE%\boot\bcd" "bcd.old" >nul 2>&1
-    bootrec /rebuildbcd >nul 2>&1
-    
+echo.
+echo Fixing boot sector...
+if "%BOOT_MODE%"=="UEFI" (
+    echo UEFI system detected - repairing EFI boot...
+    call :repair_efi_boot
+) else (
+    echo Legacy BIOS system - repairing MBR...
+    bootrec /fixmbr
+    bootrec /fixboot
     if %errorlevel% neq 0 (
-        echo Still failed to rebuild BCD. Attempting to repair EFI partition...
-        call :repair_efi
-        
-        if %errorlevel% neq 0 (
-            echo EFI repair failed. Attempting to delete and recreate EFI partition...
-            call :delete_remake_efi
-        )
+        echo Boot sector repair failed. Trying alternative method...
+        bootsect /nt60 %WINDOWS_DRIVE% /mbr /force
     )
-)
-
-echo Writing a new boot sector on the system partition...
-bootrec /fixboot >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to write a new boot sector on the system partition, trying again...
-    bootsect /nt60 SYS >nul 2>&1
-    bootrec /fixboot >nul 2>&1
-    
-    if %errorlevel% neq 0 (
-        echo Still failed to fix boot. Attempting to repair EFI partition...
-        call :repair_efi
-        
-        if %errorlevel% neq 0 (
-            echo EFI repair failed. Attempting to delete and recreate EFI partition...
-            call :delete_remake_efi
-        )
-    )
-)
-
-cd /d "X:\Windows\System32" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to change to X:\Windows\System32
 )
 
 exit /b 0
 
-:: ============= REPAIR EFI FUNCTION =============
-:repair_efi
-echo Attempting to repair the EFI partition...
+:repair_bcd_advanced
+echo Backing up current BCD...
+if exist "%WINDOWS_DRIVE%\Boot\BCD" (
+    copy "%WINDOWS_DRIVE%\Boot\BCD" "%WINDOWS_DRIVE%\Boot\BCD.backup" >nul 2>&1
+)
 
-:: Create a temporary diskpart script file in X:\, which is the RAM drive in WinRE
-set "tmpfile=X:\diskpart_script_%RANDOM%.txt"
-set "RepairDriveLetter=S:"
+echo Creating new BCD store...
+bcdedit /createstore "%WINDOWS_DRIVE%\Boot\BCD.new"
+bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /create {bootmgr}
+bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} device boot
+bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} path \bootmgr
 
-:: Create diskpart script to list all disks and their partitions
-(
-    echo list disk
-) > "%tmpfile%"
+:: Try rebuilding again
+bootrec /rebuildbcd
+exit /b %errorlevel%
 
-:: Get list of all disks
-for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile%"') do (
-    :: For each disk, list its partitions
-    (
-        echo select disk %%a
-        echo list partition
-    ) > "%tmpfile%"
+:repair_efi_boot
+echo Locating EFI system partition...
+call :find_efi_partition
+if %errorlevel% neq 0 (
+    echo EFI partition not found or corrupted. Attempting recreation...
+    call :recreate_efi_partition
+    exit /b %errorlevel%
+)
+
+echo Repairing EFI boot files...
+call :repair_efi_files
+exit /b %errorlevel%
+
+:find_efi_partition
+set "tmpfile=%TEMP%\diskpart_%RANDOM%.txt"
+set "EFI_DISK="
+set "EFI_PARTITION="
+set "EFI_DRIVE=S:"
+
+:: List all disks and find EFI partition
+echo list disk > "%tmpfile%"
+for /f "skip=6 tokens=2" %%d in ('diskpart /s "%tmpfile%"') do (
+    echo select disk %%d > "%tmpfile%"
+    echo list partition >> "%tmpfile%"
     
-    :: Check each partition on this disk
-    for /f "tokens=1,2,3,4,5 delims= " %%b in ('diskpart /s "%tmpfile%" ^| findstr /i "System"') do (
-        if "%%f"=="System" (
-            set "foundDisk=%%a"
-            set "partitionNum=%%c"
+    for /f "tokens=1,2,3,4* delims= " %%a in ('diskpart /s "%tmpfile%" ^| findstr /i "System"') do (
+        if "%%e"=="System" (
+            set "EFI_DISK=%%d"
+            set "EFI_PARTITION=%%b"
+            goto efi_found
         )
     )
 )
 
-:: If no EFI partition found, exit
-if not defined partitionNum (
-    echo Error: EFI partition not found.
+:efi_found
+if not defined EFI_PARTITION (
     if exist "%tmpfile%" del "%tmpfile%"
     exit /b 1
 )
 
-:: Create new diskpart script to assign letter
-(
-    echo select disk %foundDisk%
-    echo select partition %partitionNum%
-    echo assign letter=%RepairDriveLetter:~0,1%
-) > "%tmpfile%"
+echo Found EFI partition: Disk %EFI_DISK%, Partition %EFI_PARTITION%
 
-echo Found EFI partition on disk %foundDisk%, partition %partitionNum%
-echo Assigning drive letter %RepairDriveLetter% to EFI partition...
-diskpart /s "%tmpfile%" > nul
+:: Assign drive letter temporarily
+echo select disk %EFI_DISK% > "%tmpfile%"
+echo select partition %EFI_PARTITION% >> "%tmpfile%"
+echo assign letter=%EFI_DRIVE:~0,1% >> "%tmpfile%"
+diskpart /s "%tmpfile%" >nul
 
-echo Repairing %RepairDriveLetter% file system...
-chkdsk "%RepairDriveLetter%" /R /X >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to repair %RepairDriveLetter% file system.
-)
-
-echo Repairing the MBR on %RepairDriveLetter%...
-bootsect /nt60 "%RepairDriveLetter%" /mbr /force >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to repair the MBR on %RepairDriveLetter%
-)
-
-:: Create diskpart script to remove letter
-echo Removing drive letter...
-(
-    echo select disk %foundDisk%
-    echo select partition %partitionNum%
-    echo remove letter=%RepairDriveLetter:~0,1%
-) > "%tmpfile%"
-
-diskpart /s "%tmpfile%" > nul
-
-:: Clean up temporary file
-echo Cleaning up temporary files...
 if exist "%tmpfile%" del "%tmpfile%"
+exit /b 0
 
-exit /b %errorlevel%
-
-:: ============= DELETE & REMAKE EFI FUNCTION =============
-:delete_remake_efi
-echo Attempting to delete and recreate the EFI partition...
-
-:: Create a temporary diskpart script file in X:\, which is the RAM drive in WinRE
-set "tmpfile2=X:\diskpart_script_2_%RANDOM%.txt"
-set "foundDisk="
-set "partitionNum="
-set "newEFIDrive=T:"
-set "newPartitionNum="
-
-:: Locate the EFI Partition
-(
-    echo list disk
-) > "%tmpfile2%"
-
-:: Get list of all disks
-for /f "skip=6 tokens=2" %%a in ('diskpart /s "%tmpfile2%"') do (
-    :: For each disk, list its partitions
-    (
-        echo select disk %%a
-        echo list partition
-    ) > "%tmpfile2%"
-    
-    :: Check each partition on this disk for "System" (EFI)
-    for /f "tokens=1,2,3,4,5 delims= " %%b in ('diskpart /s "%tmpfile2%" ^| findstr /i "System"') do (
-        if "%%f"=="System" (
-            set "foundDisk=%%a"
-            set "partitionNum=%%c"
-        )
-    )
+:repair_efi_files
+echo Checking EFI partition file system...
+chkdsk "%EFI_DRIVE%" /f /r
+if %errorlevel% neq 0 (
+    echo EFI partition has file system errors.
 )
 
-:: If no EFI partition found, exit
-if not defined partitionNum (
-    echo Error: EFI partition not found.
-    if exist "%tmpfile2%" del "%tmpfile2%"
+echo Rebuilding EFI boot files...
+bcdboot "%windir%" /s "%EFI_DRIVE%" /f UEFI
+if %errorlevel% neq 0 (
+    echo Failed to rebuild EFI boot files.
+    call :cleanup_efi_drive
     exit /b 1
 )
 
-echo Found EFI partition on Disk %foundDisk%, Partition %partitionNum%.
+echo Creating additional boot entries if needed...
+bcdedit /store "%EFI_DRIVE%\EFI\Microsoft\Boot\BCD" /set {default} recoveryenabled yes
+bcdedit /store "%EFI_DRIVE%\EFI\Microsoft\Boot\BCD" /set {default} bootstatuspolicy IgnoreAllFailures
 
-:: Delete the Corrupted EFI
-echo Deleting the corrupted EFI partition...
-(
-    echo select disk %foundDisk%
-    echo select partition %partitionNum%
-    echo delete partition override
-) > "%tmpfile2%"
-diskpart /s "%tmpfile2%"
+call :cleanup_efi_drive
+exit /b 0
 
-:: Create a New EFI
-echo Creating a new EFI partition...
-(
-    echo select disk %foundDisk%
-    echo create partition efi size=100
-    echo format fs=fat32 quick
-    echo assign letter=%newEFIDrive%
-) > "%tmpfile2%"
-diskpart /s "%tmpfile2%"
+:cleanup_efi_drive
+if defined EFI_DRIVE if defined EFI_DISK if defined EFI_PARTITION (
+    set "tmpfile=%TEMP%\diskpart_%RANDOM%.txt"
+    echo select disk %EFI_DISK% > "%tmpfile%"
+    echo select partition %EFI_PARTITION% >> "%tmpfile%"
+    echo remove letter=%EFI_DRIVE:~0,1% >> "%tmpfile%"
+    diskpart /s "%tmpfile%" >nul
+    if exist "%tmpfile%" del "%tmpfile%"
+)
+exit /b 0
 
-:: Find the new EFI partition number
-(
-    echo select disk %foundDisk%
-    echo list partition
-) > "%tmpfile2%"
-for /f "tokens=1,2,3,4,5 delims= " %%a in ('diskpart /s "%tmpfile2%" ^| findstr /i "System"') do (
-    if "%%f"=="System" (
-        set "newPartitionNum=%%b"
+:recreate_efi_partition
+echo WARNING: This will delete and recreate the EFI partition!
+echo All boot data will be lost and rebuilt.
+set /p confirm="Continue? (Y/N): "
+if /i not "%confirm%"=="Y" exit /b 1
+
+if not defined EFI_DISK (
+    echo Cannot determine target disk. Aborting.
+    exit /b 1
+)
+
+set "tmpfile=%TEMP%\diskpart_%RANDOM%.txt"
+set "NEW_EFI_DRIVE=T:"
+
+echo Deleting corrupted EFI partition...
+echo select disk %EFI_DISK% > "%tmpfile%"
+if defined EFI_PARTITION (
+    echo select partition %EFI_PARTITION% >> "%tmpfile%"
+    echo delete partition override >> "%tmpfile%"
+)
+
+echo Creating new EFI partition (260MB)...
+echo create partition efi size=260 >> "%tmpfile%"
+echo format fs=fat32 quick label="System" >> "%tmpfile%"
+echo assign letter=%NEW_EFI_DRIVE:~0,1% >> "%tmpfile%"
+echo active >> "%tmpfile%"
+
+diskpart /s "%tmpfile%"
+if %errorlevel% neq 0 (
+    echo Failed to create new EFI partition.
+    if exist "%tmpfile%" del "%tmpfile%"
+    exit /b 1
+)
+
+echo Rebuilding bootloader on new EFI partition...
+bcdboot "%windir%" /s "%NEW_EFI_DRIVE%" /f UEFI
+if %errorlevel% neq 0 (
+    echo Failed to install bootloader on new EFI partition.
+)
+
+echo Removing temporary drive letter...
+echo select disk %EFI_DISK% > "%tmpfile%"
+echo list partition >> "%tmpfile%"
+for /f "tokens=1,2,3,4* delims= " %%a in ('diskpart /s "%tmpfile%" ^| findstr /i "System"') do (
+    if "%%e"=="System" (
+        echo select partition %%b >> "%tmpfile%"
+        echo remove letter=%NEW_EFI_DRIVE:~0,1% >> "%tmpfile%"
+        diskpart /s "%tmpfile%" >nul
+        goto efi_cleanup_done
     )
 )
 
-:: Restore Bootloader
-echo Restoring the bootloader...
-bcdboot %windowsDrive%\Windows /s %newEFIDrive% /f UEFI >nul 2>&1
+:efi_cleanup_done
+if exist "%tmpfile%" del "%tmpfile%"
+exit /b 0
 
-:: Remove the drive letter from the new EFI partition
-echo Removing the drive letter from the new EFI partition...
-(
-    echo select disk %foundDisk%
-    echo select partition %newPartitionNum%
-    echo remove letter=%newEFIDrive%
-) > "%tmpfile2%"
-diskpart /s "%tmpfile2%"
+:advanced_boot_repair
+echo Performing advanced boot repair operations...
 
-echo Updating the boot sector to be compatible with modern Windows versions...
-bootsect /nt60 %foundDisk% >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to update the boot sector.
+echo 1. Backing up current boot configuration...
+if exist "%WINDOWS_DRIVE%\Boot\BCD" (
+    copy "%WINDOWS_DRIVE%\Boot\BCD" "%WINDOWS_DRIVE%\Boot\BCD.backup.%DATE:/=-%_%TIME::=-%" >nul 2>&1
 )
 
-:: Cleanup
-echo Cleaning up temporary files...
-if exist "%tmpfile2%" del "%tmpfile2%"
+echo 2. Rebuilding master boot record...
+bootrec /fixmbr
+if %errorlevel% neq 0 echo MBR rebuild failed.
 
-exit /b %errorlevel%
+echo 3. Rebuilding boot sector...
+bootrec /fixboot
+if %errorlevel% neq 0 (
+    echo Standard boot sector repair failed, trying alternative...
+    bootsect /nt60 %WINDOWS_DRIVE% /mbr /force
+)
+
+echo 4. Scanning for all Windows installations...
+bootrec /scanos
+
+echo 5. Rebuilding BCD with all found installations...
+bootrec /rebuildbcd
+
+echo 6. Setting boot configuration policies...
+bcdedit /set {default} recoveryenabled yes
+bcdedit /set {default} bootstatuspolicy IgnoreAllFailures
+bcdedit /set {bootmgr} timeout 10
+
+if "%BOOT_MODE%"=="UEFI" (
+    echo 7. Repairing UEFI boot entries...
+    call :repair_efi_boot
+)
+
+echo Advanced boot repair completed.
+exit /b 0
+
+:end
+echo.
+echo =====================================
+echo Repair operations completed.
+echo =====================================
+echo.
+echo Summary of actions taken:
+if "%choice%"=="5" (
+    echo - Disk integrity check and repair
+    echo - System file integrity verification
+    echo - Windows image health repair  
+    echo - Boot configuration rebuild
+    echo - Memory diagnostic scheduled
+)
+echo.
+echo IMPORTANT: Please restart your computer now.
+echo The system will complete any pending operations during boot.
+echo.
+if %SFC_SUCCESS% neq 0 (
+    echo WARNING: Some system file issues were detected.
+    echo Monitor system stability after restart.
+    echo.
+)
+
+timeout /t 10 /nobreak
+exit /b 0
