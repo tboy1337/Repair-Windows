@@ -27,7 +27,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Optimizing the storage tiers on all drives...
-defrag /C /G /I 60 /H >nul 2>&1
+defrag /C /G /I 300 /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to optimize the storage tiers on all drives.
 )
