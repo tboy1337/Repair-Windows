@@ -17,6 +17,8 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 
 ## Scripts Overview
 
+### Repair and Optimization Scripts
+
 ### 1. `dism_sfc_scan.cmd`
    - Runs the Deployment Imaging Service and Management Tool (DISM) and System File Checker (SFC) to scan and repair corrupted system files.
 
@@ -35,11 +37,37 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 ### 6. `reset_winsock.cmd`
    - Resets the Winsock catalog to resolve network connectivity issues.
 
-### 7. `boot_repair.cmd` (UNDER DEVELOPMENT)
-   - Utilizes various tools to fix boot sector issues, which can help resolve problems with booting Windows (need to be in WindowsRE to use this).
+### 7. `boot_repair.cmd`
+   - Comprehensive boot repair tool that fixes boot sector issues, runs system file checks, performs startup repairs, memory diagnostics, and advanced boot repairs in Windows Recovery Environment (must be run in Windows RE).
 
 ### 8. `chkdsk_scan.cmd`
    - Runs the CHKDSK utility for FAT and NTFS drives to check and repair file system errors.
+
+### 9. `enable_ultimate_performance.cmd`
+   - Enables the Ultimate Performance power plan to maximize system performance.
+
+### 10. `ntfs_optimise.cmd`
+   - Optimizes NTFS file system by increasing memory usage for metadata and reserving more space for the Master File Table (MFT).
+
+### Git Utilities (in `Git/` folder)
+These scripts help manage multiple Git repositories:
+
+- `git_gc_all.cmd`: Performs garbage collection on all Git repositories in the current directory.
+- `git_pull_all.cmd`: Pulls latest changes for all Git repositories.
+- `git_push_all.cmd`: Pushes changes for all Git repositories.
+- `git_set_details.cmd`: Sets Git user name and email details.
+- `set_git_crlf.cmd`: Configures Git to use CRLF line endings.
+- `set_git_lf.cmd`: Configures Git to use LF line endings.
+
+### Miscellaneous Utilities (in `Misc/` folder)
+Additional helpful scripts:
+
+- `get_system_info.cmd`: Generates a detailed system information report including hardware and OS details.
+- `print_queue_viewer.ps1`: Views and manages the print queue.
+- `proxy_converter.py`: Converts proxy formats (Python script).
+- `restore_pip_default.cmd`: Restores default pip configuration.
+- `tts.cmd`: Text-to-speech utility.
+- `unpack_archives.ps1`: Unpacks various archive formats.
 
 ## Usage
 
