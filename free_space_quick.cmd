@@ -11,21 +11,20 @@ if %errorlevel% neq 0 (
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive%
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
 echo Freeing up space on %SystemDrive%...
 call cleanmgr /d "%SystemDrive%" /verylowdisk >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on %SystemDrive%
+    echo Failed to free up space on %SystemDrive%.  Error code: %errorlevel%
 )
 
 echo Deleting old Windows update files on %SystemDrive%...
 call cleanmgr /d "%SystemDrive%" /autoclean >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to delete old Windows update files on %SystemDrive%
+    echo Failed to delete old Windows update files on %SystemDrive%.  Error code: %errorlevel%
 )
 
 timeout /t 5 /nobreak
-
 exit /b 0

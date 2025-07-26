@@ -11,7 +11,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive%
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
 echo Setting registry keys on %SystemDrive%...
@@ -163,9 +163,8 @@ if %errorlevel% neq 0 (
 echo Freeing up space on all drives...
 call cleanmgr /sagerun:9999 >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to free up space on all drives.
+    echo Failed to free up space on all drives.  Error code: %errorlevel%
 )
 
 timeout /t 5 /nobreak
-
 exit /b 0

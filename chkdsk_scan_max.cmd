@@ -13,7 +13,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive%
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|find "File System Name"') do (

@@ -11,13 +11,13 @@ if %errorlevel% neq 0 (
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive%
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
 echo Resetting winsock...
 netsh winsock reset >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to reset winsock.
+    echo Failed to reset winsock.  Error code: %errorlevel%
     timeout /t 5 /nobreak
     exit /b 1
 )
@@ -25,5 +25,4 @@ if %errorlevel% neq 0 (
 echo Winsock reset successfully.
 
 timeout /t 5 /nobreak
-
 exit /b 0

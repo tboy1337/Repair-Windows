@@ -11,7 +11,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive%
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
 echo Resetting Windows Update Components...
@@ -37,5 +37,4 @@ timeout /t 3 /nobreak >nul 2>&1
 bitsadmin /reset /allusers
 
 timeout /t 5 /nobreak
-
 exit /b 0
