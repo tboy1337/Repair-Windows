@@ -9,6 +9,11 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+cd /d "%SystemDrive%" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
+)
+
 echo Resetting TCP/IP stack...
 netsh int ip reset
 if %errorlevel% equ 0 (
