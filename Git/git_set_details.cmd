@@ -18,4 +18,4 @@ if %errorlevel% neq 0 (
 )
 
 timeout /t 5 /nobreak
-exit 
+exit
