@@ -27,7 +27,7 @@ if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
     timeout /t 30 /nobreak
     shutdown /r /t 1 >nul 2>&1
 ) else (
-    chkdsk "%TARGET_DRIVE%" /f /X
+    chkdsk "%TARGET_DRIVE%" /F /X
 )
 
 exit /b 0
