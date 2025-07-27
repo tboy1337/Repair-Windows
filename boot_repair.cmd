@@ -262,10 +262,10 @@ if exist "%WINDOWS_DRIVE%\Boot\BCD" (
 )
 
 echo Creating new BCD store...
-bcdedit /createstore "%WINDOWS_DRIVE%\Boot\BCD.new"
-bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /create {bootmgr}
-bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} device boot
-bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} path \bootmgr
+bcdedit /createstore "%WINDOWS_DRIVE%\Boot\BCD.new" >nul 2>&1
+bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /create {bootmgr} >nul 2>&1
+bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} device boot >nul 2>&1
+bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} path \bootmgr >nul 2>&1
 
 :: Try rebuilding again
 bootrec /rebuildbcd >nul 2>&1
@@ -324,7 +324,7 @@ exit /b 0
 
 :repair_efi_files
 echo Checking EFI partition file system...
-chkdsk "%EFI_DRIVE%" /r >nul 2>&1
+chkdsk "%EFI_DRIVE%" /r /x >nul 2>&1
 if %errorlevel% neq 0 (
     echo EFI partition has file system errors.
 )
