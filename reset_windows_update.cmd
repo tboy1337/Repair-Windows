@@ -15,26 +15,26 @@ if %errorlevel% neq 0 (
 )
 
 echo Resetting Windows Update Components...
-net stop wuauserv
-net stop cryptSvc
-net stop bits
-net stop msiserver
-net stop appidsvc
-net stop RpcSs
+net stop wuauserv >nul 2>&1
+net stop cryptSvc >nul 2>&1
+net stop bits >nul 2>&1
+net stop msiserver >nul 2>&1
+net stop appidsvc >nul 2>&1
+net stop RpcSs >nul 2>&1
 del "%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\*.*" >nul 2>&1
 rmdir "%systemroot%\SoftwareDistribution" /S /Q >nul 2>&1
 rmdir "%systemroot%\system32\catroot2" /S /Q >nul 2>&1
-del /F /S /Q %systemroot%\WindowsUpdate.log
-net start appidsvc
-net start RpcSs
-net start wuauserv
-net start cryptSvc
-net start bits
-net start msiserver
+del /F /S /Q %systemroot%\WindowsUpdate.log >nul 2>&1
+net start appidsvc >nul 2>&1
+net start RpcSs >nul 2>&1
+net start wuauserv >nul 2>&1
+net start cryptSvc >nul 2>&1
+net start bits >nul 2>&1
+net start msiserver >nul 2>&1
 
 timeout /t 3 /nobreak >nul 2>&1
 
-bitsadmin /reset /allusers
+bitsadmin /reset /allusers >nul 2>&1
 
 timeout /t 5 /nobreak
 exit /b 0
