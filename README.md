@@ -94,7 +94,7 @@ Additional helpful scripts:
 - Administrator privileges for full functionality
 
 ## License
-This project is licensed under the terms of the [MIT License](LICENCE.txt).
+This project is licensed under the terms of the [MIT License](LICENSE.txt).
 
 ---
 
