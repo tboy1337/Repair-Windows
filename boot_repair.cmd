@@ -338,8 +338,8 @@ if %errorlevel% neq 0 (
 )
 
 echo Creating additional boot entries if needed...
-bcdedit /store "%EFI_DRIVE%\EFI\Microsoft\Boot\BCD" /set {default} recoveryenabled yes
-bcdedit /store "%EFI_DRIVE%\EFI\Microsoft\Boot\BCD" /set {default} bootstatuspolicy IgnoreAllFailures
+bcdedit /store "%EFI_DRIVE%\EFI\Microsoft\Boot\BCD" /set {default} recoveryenabled yes >nul 2>&1
+bcdedit /store "%EFI_DRIVE%\EFI\Microsoft\Boot\BCD" /set {default} bootstatuspolicy IgnoreAllFailures >nul 2>&1
 
 call :cleanup_efi_drive
 exit /b 0
@@ -390,7 +390,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Rebuilding bootloader on new EFI partition...
-bcdboot "%windir%" /s "%NEW_EFI_DRIVE%" /f UEFI
+bcdboot "%windir%" /s "%NEW_EFI_DRIVE%" /f UEFI >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to install bootloader on new EFI partition.
 )
