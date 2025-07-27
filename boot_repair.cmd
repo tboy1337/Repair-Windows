@@ -114,7 +114,7 @@ echo Running SFC ^& DISM health check ^& repair...
 echo This may take 20-40 minutes...
 
 echo Checking integrity of protected system files...
-sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir%
+sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
 if %errorlevel% neq 0 (
     echo SFC found issues. Will retry after DISM repair.
     set SFC_SUCCESS=1
@@ -124,13 +124,13 @@ if %errorlevel% neq 0 (
 
 echo.
 echo Checking Windows image health...
-dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /checkhealth >nul 2>&1
 if %errorlevel% neq 0 (
     echo Image health check found issues. Running scan...
-    dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth
+    dism /image:%WINDOWS_DRIVE%\ /cleanup-image /scanhealth >nul 2>&1
     if %errorlevel% neq 0 (
         echo Corruption detected. Attempting repair...
-        dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth
+        dism /image:%WINDOWS_DRIVE%\ /cleanup-image /restorehealth >nul 2>&1
         if %errorlevel% neq 0 (
             echo DISM repair failed. Some issues may persist.
         ) else (
@@ -145,7 +145,7 @@ if %errorlevel% neq 0 (
 if %SFC_SUCCESS% neq 0 (
     echo.
     echo Retrying SFC scan after DISM repair...
-    sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir%
+    sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
     if %errorlevel% neq 0 (
         echo SFC still reports issues. Manual intervention may be required.
     ) else (
@@ -155,9 +155,9 @@ if %SFC_SUCCESS% neq 0 (
 
 echo.
 echo Cleaning up component store...
-dism /image:%WINDOWS_DRIVE%\ /cleanup-image /analyzecomponentstore
-dism /image:%WINDOWS_DRIVE%\ /cleanup-image /startcomponentcleanup /resetbase
-dism /image:%WINDOWS_DRIVE%\ /cleanup-mountpoints
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /analyzecomponentstore >nul 2>&1
+dism /image:%WINDOWS_DRIVE%\ /cleanup-image /startcomponentcleanup /resetbase >nul 2>&1
+dism /image:%WINDOWS_DRIVE%\ /cleanup-mountpoints >nul 2>&1
 
 echo System file repair completed.
 if "%choice%"=="5" goto startup
