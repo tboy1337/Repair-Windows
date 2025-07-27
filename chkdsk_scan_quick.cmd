@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Scanning %TARGET_DRIVE% for errors...
-chkdsk %TARGET_DRIVE%
+chkdsk %TARGET_DRIVE% >nul 2>&1
 if %errorlevel% equ 0 (
     echo No errors found on %TARGET_DRIVE%.
     timeout /t 5 /nobreak
