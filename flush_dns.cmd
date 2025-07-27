@@ -7,7 +7,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Flushing DNS cache...
-ipconfig /flushdns
+ipconfig /flushdns >nul 2>&1
 if %errorlevel% equ 0 (
     echo DNS cache flushed successfully.
 ) else (

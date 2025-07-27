@@ -15,16 +15,16 @@ if %errorlevel% neq 0 (
 )
 
 echo Stopping WMI service...
-net stop winmgmt /y
+net stop winmgmt /y >nul 2>&1
 
 echo Repairing WMI repository...
-winmgmt /salvagerepository
+winmgmt /salvagerepository >nul 2>&1
 
 if %errorlevel% equ 0 (
     echo WMI repository repaired successfully.
 ) else (
     echo Salvage failed, attempting reset...
-    winmgmt /resetrepository
+    winmgmt /resetrepository >nul 2>&1
     if %errorlevel% equ 0 (
         echo WMI repository reset successfully.
     ) else (
@@ -33,7 +33,7 @@ if %errorlevel% equ 0 (
 )
 
 echo Starting WMI service...
-net start winmgmt
+net start winmgmt >nul 2>&1
 
 timeout /t 5 /nobreak
 exit /b 0
