@@ -6,7 +6,7 @@ if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
     echo Please right-click and select "Run as administrator".
     timeout /t 5 /nobreak
-    exit /b 2
+    exit /b 1
 )
 
 cd /d "%SystemDrive%" >nul 2>&1
