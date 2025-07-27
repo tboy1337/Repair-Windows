@@ -92,11 +92,11 @@ echo File system: %FS_TYPE%
 echo %%FS_TYPE%% | findstr /i /r "^FAT" >nul
 if not errorlevel 1 (
     echo Repairing FAT file system...
-    chkdsk "%WINDOWS_DRIVE%" /f /r /x
+    chkdsk "%WINDOWS_DRIVE%" /r /x >nul 2>&1
     if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
 ) else (
     echo Repairing NTFS file system...
-    chkdsk "%WINDOWS_DRIVE%" /f /r /x
+    chkdsk "%WINDOWS_DRIVE%" /r /x >nul 2>&1
     if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
     
     echo Cleaning up metadata and unallocated space...
@@ -178,7 +178,7 @@ goto menu
 echo.
 echo ===== MEMORY DIAGNOSTIC =====
 echo Scheduling comprehensive memory test for next restart...
-mdsched /extended
+mdsched /extended >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to schedule memory diagnostic.
     echo You can run it manually after restart: mdsched
@@ -225,14 +225,14 @@ exit /b 0
 :: ========================= BOOT REPAIR FUNCTIONS =========================
 :run_bootrec
 echo Scanning for Windows installations...
-bootrec /scanos
+bootrec /scanos >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to scan for Windows installations.
 )
 
 echo.
 echo Attempting to rebuild BCD store...
-bootrec /rebuildbcd
+bootrec /rebuildbcd >nul 2>&1
 if %errorlevel% neq 0 (
     echo BCD rebuild failed. Trying advanced repair...
     call :repair_bcd_advanced
@@ -245,11 +245,11 @@ if "%BOOT_MODE%"=="UEFI" (
     call :repair_efi_boot
 ) else (
     echo Legacy BIOS system - repairing MBR...
-    bootrec /fixmbr
-    bootrec /fixboot
+    bootrec /fixmbr >nul 2>&1
+    bootrec /fixboot >nul 2>&1
     if %errorlevel% neq 0 (
         echo Boot sector repair failed. Trying alternative method...
-        bootsect /nt60 %WINDOWS_DRIVE% /mbr /force
+        bootsect /nt60 %WINDOWS_DRIVE% /mbr /force >nul 2>&1
     )
 )
 
@@ -268,7 +268,7 @@ bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} device boot
 bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} path \bootmgr
 
 :: Try rebuilding again
-bootrec /rebuildbcd
+bootrec /rebuildbcd >nul 2>&1
 exit /b %errorlevel%
 
 :repair_efi_boot
@@ -324,13 +324,13 @@ exit /b 0
 
 :repair_efi_files
 echo Checking EFI partition file system...
-chkdsk "%EFI_DRIVE%" /f /r
+chkdsk "%EFI_DRIVE%" /r >nul 2>&1
 if %errorlevel% neq 0 (
     echo EFI partition has file system errors.
 )
 
 echo Rebuilding EFI boot files...
-bcdboot "%windir%" /s "%EFI_DRIVE%" /f UEFI
+bcdboot "%windir%" /s "%EFI_DRIVE%" /f UEFI >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to rebuild EFI boot files.
     call :cleanup_efi_drive
@@ -420,26 +420,26 @@ if exist "%WINDOWS_DRIVE%\Boot\BCD" (
 )
 
 echo 2. Rebuilding master boot record...
-bootrec /fixmbr
+bootrec /fixmbr >nul 2>&1
 if %errorlevel% neq 0 echo MBR rebuild failed.
 
 echo 3. Rebuilding boot sector...
-bootrec /fixboot
+bootrec /fixboot >nul 2>&1
 if %errorlevel% neq 0 (
     echo Standard boot sector repair failed, trying alternative...
-    bootsect /nt60 %WINDOWS_DRIVE% /mbr /force
+    bootsect /nt60 %WINDOWS_DRIVE% /mbr /force >nul 2>&1
 )
 
 echo 4. Scanning for all Windows installations...
-bootrec /scanos
+bootrec /scanos >nul 2>&1
 
 echo 5. Rebuilding BCD with all found installations...
-bootrec /rebuildbcd
+bootrec /rebuildbcd >nul 2>&1
 
 echo 6. Setting boot configuration policies...
-bcdedit /set {default} recoveryenabled yes
-bcdedit /set {default} bootstatuspolicy IgnoreAllFailures
-bcdedit /set {bootmgr} timeout 10
+bcdedit /set {default} recoveryenabled yes >nul 2>&1
+bcdedit /set {default} bootstatuspolicy IgnoreAllFailures >nul 2>&1
+bcdedit /set {bootmgr} timeout 10 >nul 2>&1
 
 if "%BOOT_MODE%"=="UEFI" (
     echo 7. Repairing UEFI boot entries...
