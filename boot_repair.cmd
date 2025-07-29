@@ -50,7 +50,7 @@ echo System type: %SYSTEM_ARCH%
 echo =====================================
 echo Choose repair operations to perform:
 echo 1) Run CHKDSK Disk Repair
-echo 2) Run SFC ^& DISM Health Check ^& Repair
+echo 2) Run SFC and DISM Health Check and Repair
 echo 3) Run Startup Repair
 echo 4) Run Memory Diagnostic
 echo 5) Run ALL Repairs (Recommended)
