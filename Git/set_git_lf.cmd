@@ -3,7 +3,7 @@
 echo Setting Git configuration for LF line endings...
 git config --global core.autocrlf false
 if %errorlevel% neq 0 (
-    echo Failed to set autocrlf to false.
+    echo Failed to set autocrlf to false.  Error code: %errorlevel%
 )
     else (
         echo Autocrlf disabled successfully.
@@ -11,7 +11,7 @@ if %errorlevel% neq 0 (
 
 git config --global core.eol lf
 if %errorlevel% neq 0 (
-    echo Failed to set Git configuration for LF line endings.
+    echo Failed to set Git configuration for LF line endings.  Error code: %errorlevel%
 )
     else (
         echo Git configuration for LF line endings set successfully.

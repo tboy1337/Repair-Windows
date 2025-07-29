@@ -6,6 +6,7 @@ echo Running git commit and push on all repositories...
 set /p COMMIT_MSG="Enter commit message: "
 if "%COMMIT_MSG%"=="" (
     echo Commit message cannot be empty.
+    timeout /t 5 /nobreak
     exit /b 1
 )
 
