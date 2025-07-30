@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Scanning %TARGET_DRIVE% for errors...
-set "TEMP_FILE=%TEMP%\chkdsk_output_%RANDOM%.txt"
+set "TEMP_FILE=%TEMP%\chkdsk_output_%RANDOM%_%RANDOM%.txt"
 chkdsk %TARGET_DRIVE% > "%TEMP_FILE%" 2>&1
 
 findstr /c:"found no problems" "%TEMP_FILE%" >nul
