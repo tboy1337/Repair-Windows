@@ -22,10 +22,10 @@ Here's a breakdown of the goodies:
 ### Core Repair Tools
 - **boot_repair.cmd**: Fix boot issues and restore your system's startup sequence.
 - **dism_sfc_scan.cmd**: Run DISM and SFC scans to repair corrupted system files.
+- **chkdsk_scan_quick.cmd / mid.cmd / max.cmd**: Quick, medium, or thorough disk checks and repairs.
 - **repair_wmi.cmd**: Rebuild and repair Windows Management Instrumentation (WMI) repository.
 
 ### Disk Optimization
-- **chkdsk_scan_quick.cmd / mid.cmd / max.cmd**: Quick, medium, or thorough disk checks and repairs.
 - **defrag_optimise.cmd**: Defragment and optimize your drives for peak performance.
 - **free_space_quick.cmd / mid.cmd / max.cmd**: Free up disk space by cleaning temp files, logs, and more.
 
