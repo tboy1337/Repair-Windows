@@ -176,7 +176,7 @@ for /d %%i in ("%windir%\Temp\*") do rd /s /q "%%i" >nul 2>&1
 
 del /q /f /s %windir%\Prefetch\* >nul 2>&1
 
-echo Deletinga all user temporary files...
+echo Deleting all user temporary files...
 for /d %%u in (%SystemDrive%\Users\*) do (
     if exist "%%u\AppData\Local\Temp" (
         rd /s /q "%%u\AppData\Local\Temp" >nul 2>&1
