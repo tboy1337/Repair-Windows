@@ -178,7 +178,7 @@ goto menu
 echo.
 echo ===== MEMORY DIAGNOSTIC =====
 echo Scheduling comprehensive memory test for next restart...
-mdsched /extended >nul 2>&1
+call :schedule_memdiag
 if %errorlevel% neq 0 (
     echo Failed to schedule memory diagnostic.
     echo You can run it manually after restart: mdsched
@@ -447,6 +447,27 @@ if "%BOOT_MODE%"=="UEFI" (
 )
 
 echo Advanced boot repair completed.
+exit /b 0
+
+:schedule_memdiag
+set "BCD_PATH="
+set "NEED_CLEANUP=0"
+if "%BOOT_MODE%"=="UEFI" (
+    call :find_efi_partition
+    if %errorlevel% neq 0 exit /b 1
+    set "BCD_PATH=%EFI_DRIVE%\EFI\Microsoft\Boot\BCD"
+    set "NEED_CLEANUP=1"
+) else (
+    set "BCD_PATH=%WINDOWS_DRIVE%\Boot\BCD"
+)
+if not exist "%BCD_PATH%" (
+    if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+    exit /b 1
+)
+bcdedit /store "%BCD_PATH%" /bootsequence {memdiag} >nul 2>&1
+set "CMD_ERROR=%errorlevel%"
+if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+if %CMD_ERROR% neq 0 exit /b 1
 exit /b 0
 
 :end
