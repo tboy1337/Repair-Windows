@@ -2,6 +2,7 @@
 setlocal enabledelayedexpansion
 
 set "SFC_SUCCESS=0"
+set "HAS_CORRUPTION=0"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -24,21 +25,37 @@ if %errorlevel% neq 0 (
 )
 
 echo Checking for corruption flags in the local Windows image...
-DISM /Online /Cleanup-Image /CheckHealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to check for corruption flags in the local Windows image.  Error code: %errorlevel%
+set "TEMP_FILE=%TEMP%\dism_checkhealth_%RANDOM%_%RANDOM%.txt"
+DISM /Online /Cleanup-Image /CheckHealth > "%TEMP_FILE%" 2>&1
+set "DISM_ERROR=%errorlevel%"
+if !DISM_ERROR! neq 0 (
+    echo Failed to check for corruption flags in the local Windows image.  Error code: !DISM_ERROR!
+) else (
+    findstr /c:"No component store corruption detected" "%TEMP_FILE%" >nul
+    set "FIND_ERROR=%errorlevel%"
+    if !FIND_ERROR! neq 0 set HAS_CORRUPTION=1
 )
+del "%TEMP_FILE%" >nul 2>&1
 
 echo Checking for corruption in the local Windows image...
-DISM /Online /Cleanup-Image /ScanHealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to check for corruption in the local Windows image.  Error code: %errorlevel%
+set "TEMP_FILE=%TEMP%\dism_scanhealth_%RANDOM%_%RANDOM%.txt"
+DISM /Online /Cleanup-Image /ScanHealth > "%TEMP_FILE%" 2>&1
+set "DISM_ERROR=%errorlevel%"
+if !DISM_ERROR! neq 0 (
+    echo Failed to check for corruption in the local Windows image.  Error code: !DISM_ERROR!
+) else (
+    findstr /c:"No component store corruption detected" "%TEMP_FILE%" >nul
+    set "FIND_ERROR=%errorlevel%"
+    if !FIND_ERROR! neq 0 set HAS_CORRUPTION=1
 )
+del "%TEMP_FILE%" >nul 2>&1
 
-echo Restoring health of the local Windows image...
-DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to restore the health of the local Windows image.  Error code: %errorlevel%
+if !HAS_CORRUPTION! equ 1 (
+    echo Corruption detected, restoring health of the local Windows image...
+    DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to restore the health of the local Windows image.  Error code: %errorlevel%
+    )
 )
 
 if %SFC_SUCCESS% neq 0 (
