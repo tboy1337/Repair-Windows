@@ -14,17 +14,21 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
-echo Resetting Windows Update Components...
+echo Stopping Windows Update Components...
 net stop wuauserv >nul 2>&1
 net stop cryptSvc >nul 2>&1
 net stop bits >nul 2>&1
 net stop msiserver >nul 2>&1
 net stop appidsvc >nul 2>&1
 net stop RpcSs >nul 2>&1
+
+echo Resetting Windows Update Components...
 del "%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\*.*" >nul 2>&1
 rmdir "%systemroot%\SoftwareDistribution" /S /Q >nul 2>&1
 rmdir "%systemroot%\system32\catroot2" /S /Q >nul 2>&1
 del /F /S /Q %systemroot%\WindowsUpdate.log >nul 2>&1
+
+echo Restarting Windows Update Components...
 net start appidsvc >nul 2>&1
 net start RpcSs >nul 2>&1
 net start wuauserv >nul 2>&1
@@ -34,6 +38,7 @@ net start msiserver >nul 2>&1
 
 timeout /t 3 /nobreak >nul 2>&1
 
+echo Resetting all users Windows Update downloads...
 bitsadmin /reset /allusers >nul 2>&1
 
 timeout /t 5 /nobreak
