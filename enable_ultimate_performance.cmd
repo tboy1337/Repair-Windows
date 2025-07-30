@@ -22,7 +22,5 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Successfully enabled ultimate power plan.
-
 timeout /t 5 /nobreak
 exit /b 0
