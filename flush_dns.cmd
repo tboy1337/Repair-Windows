@@ -8,10 +8,10 @@ if %errorlevel% neq 0 (
 
 echo Flushing DNS cache...
 ipconfig /flushdns >nul 2>&1
-if %errorlevel% equ 0 (
-    echo DNS cache flushed successfully.
-) else (
+if %errorlevel% neq 0 (
     echo Failed to flush DNS cache.  Error code: %errorlevel%
+    timeout /t 5 /nobreak
+    exit /b 1
 )
 
 timeout /t 5 /nobreak
