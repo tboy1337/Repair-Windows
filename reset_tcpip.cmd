@@ -16,9 +16,7 @@ if %errorlevel% neq 0 (
 
 echo Resetting TCP/IP stack...
 netsh int ip reset >nul 2>&1
-if %errorlevel% equ 0 (
-    echo TCP/IP stack reset successfully. Please restart your computer.
-) else (
+if %errorlevel% neq 0 (
     echo Failed to reset TCP/IP stack.  Error code: %errorlevel%
 )
 
