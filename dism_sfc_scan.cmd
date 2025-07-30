@@ -20,7 +20,7 @@ echo Checking integrity of all protected system files...
 sfc /scannow >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to check integrity of all protected system files.  Error code: %errorlevel%
-    SFC_SUCCESS=1
+    set SFC_SUCCESS=1
 )
 
 echo Checking for corruption flags in the local Windows image...
