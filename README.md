@@ -1,98 +1,88 @@
-# Windows Repair and Optimization Scripts
+# Repair-Windows 🚀
 
-This repository provides a collection of batch scripts to repair and optimize Windows systems. These scripts automate various maintenance and repair tasks, making it easier to keep your Windows PC running smoothly. 
+![Windows Repair](https://img.shields.io/badge/Platform-Windows-blue?style=flat-square&logo=windows)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen?style=flat-square)
 
-## Table of Contents
-- [Features](#features)
-- [Scripts Overview](#scripts-overview)
-- [Usage](#usage)
-- [Requirements](#requirements)
-- [License](#license)
+Welcome to **Repair-Windows** – your ultimate toolkit for fixing, optimizing, and maintaining your Windows 10/11 system like a pro! 🛠️ Whether you're dealing with boot issues, disk errors, or just want to squeeze out more performance, these scripts have got you covered.
 
-## Features
-- Automate common repair and maintenance tasks for Windows systems.
-- Improve system performance by freeing up disk space and defragmenting drives.
-- Repair essential Windows services and files, including resetting Windows Update and Winsock.
-- Tools for system health checks, including CHKDSK and DISM scans.
+No more digging through forums or running manual commands – just fire up these battle-tested CMD and PowerShell scripts and let them do the heavy lifting!
 
-## Scripts Overview
+## Why This Repo? 💡
+Windows can be a beast sometimes – corrupted files, slow performance, network glitches... you name it. This repo consolidates powerful, automated repair tools into one place. All scripts are designed to be:
+- **Safe & Non-Destructive**: They prompt for admin rights and back up where needed.
+- **Cross-Compatible**: Works on Windows 10 Pro and above (tested on 10.0.19045).
+- **Easy to Use**: Just double-click or run from Command Prompt/PowerShell.
 
-### Repair and Optimization Scripts
+Inspired by real-world troubleshooting, these scripts use built-in Windows tools like DISM, SFC, CHKDSK, and more, wrapped in user-friendly batches.
 
-### 1. `dism_sfc_scan.cmd`
-   - Runs the Deployment Imaging Service and Management Tool (DISM) and System File Checker (SFC) to scan and repair corrupted system files.
+## Features ✨
+Here's a breakdown of the goodies:
 
-### 2. `defrag_optimise.cmd`
-   - Defragments and optimizes all system drives, helping improve system performance on traditional HDDs and SSDs.
+### Core Repair Tools
+- **boot_repair.cmd**: Fix boot issues and restore your system's startup sequence.
+- **dism_sfc_scan.cmd**: Run DISM and SFC scans to repair corrupted system files.
+- **repair_wmi.cmd**: Rebuild and repair Windows Management Instrumentation (WMI) repository.
 
-### 3. `free_space_quick.cmd`, `free_space_mid.cmd` & `free_space_max.cmd`
-   - Clears unnecessary temporary files and frees up disk space to improve performance.
+### Disk Optimization
+- **chkdsk_scan_quick.cmd / mid.cmd / max.cmd**: Quick, medium, or thorough disk checks and repairs.
+- **defrag_optimise.cmd**: Defragment and optimize your drives for peak performance.
+- **ntfs_optimise.cmd**: Tune NTFS file system settings.
+- **free_space_quick.cmd / mid.cmd / max.cmd**: Free up disk space by cleaning temp files, logs, and more.
 
-### 4. `reset_windows_update.cmd`
-   - Resets the Windows Update components to fix issues related to stuck or failed updates.
+### Network & Connectivity Fixes
+- **flush_dns.cmd**: Clear DNS cache to resolve browsing issues.
+- **reset_tcpip.cmd**: Reset TCP/IP stack.
+- **reset_winsock.cmd**: Reset Winsock catalog.
+- **reset_windows_update.cmd**: Fix stuck Windows Update services.
 
-### 5. `reset_winsock.cmd`
-   - Resets the Winsock catalog to resolve network connectivity issues.
+### Performance Boosters
+- **enable_ultimate_performance.cmd**: Unlock the Ultimate Performance power plan for high-end hardware.
 
-### 6. `boot_repair.cmd`
-   - Comprehensive boot repair tool that fixes boot sector issues, runs system file checks, performs startup repairs, memory diagnostics, and advanced boot repairs in Windows Recovery Environment (must be run in Windows RE).
+### Git Utilities (in `./Git/`)
+- **git_gc_all.cmd**: Clean up and optimize all Git repos.
+- **git_pull_all.cmd / git_push_all.cmd**: Batch pull/push for multiple repos.
+- **git_set_details.cmd**: Set global Git user details.
+- **set_git_crlf.cmd / set_git_lf.cmd**: Configure line endings for cross-platform repos.
 
-### 7. `chkdsk_scan_quick.cmd`
-   - Runs a quick CHKDSK scan for FAT and NTFS drives to check and repair file system errors.
+### Miscellaneous (in `./Misc/`)
+- **get_system_info.cmd**: Generate a detailed system report.
+- **print_queue_viewer.ps1**: View and manage print queues.
+- **repair_volumes.cmd**: Repair all volumes on your system.
+- **restore_pip_default.cmd**: Reset Python's pip to default settings.
+- **tts.cmd**: Text-to-Speech utility for fun or accessibility.
+- **unpack_archives.ps1**: Batch unpack archives (ZIP, RAR, etc.).
 
-### 8. `chkdsk_scan_mid.cmd`
-   - Runs a medium-level CHKDSK scan for more thorough checking.
+## Getting Started 🚀
+1. **Clone the Repo**:
+   ```
+   git clone https://github.com/tboy1337/Repair-Windows.git
+   cd Repair-Windows
+   ```
 
-### 9. `chkdsk_scan_max.cmd`
-   - Runs a maximum thorough CHKDSK scan including bad sector recovery.
+2. **Requirements**:
+   - Windows 10/11 (with admin privileges).
+   - PowerShell 5.1+ (included in Windows).
+   - Optional: Git, Python, Docker for specific scripts.
 
-### 10. `enable_ultimate_performance.cmd`
-   - Enables the Ultimate Performance power plan to maximize system performance.
+3. **Run a Script**:
+   - Right-click a `.cmd` file and select "Run as administrator".
+   - For `.ps1` files, open PowerShell as admin and run: `.\script.ps1`.
+   - **Pro Tip**: Always back up important data before running repairs!
 
-### 11. `ntfs_optimise.cmd`
-   - Optimizes NTFS file system by increasing memory usage for metadata and reserving more space for the Master File Table (MFT).
+## Usage Examples 📝
+- Fix system files: `dism_sfc_scan.cmd`
+- Optimize disk: `defrag_optimise.cmd`
+- Batch Git pull: `Git\git_pull_all.cmd`
 
-### 12. `flush_dns.cmd`
-   - Flushes the DNS resolver cache to resolve networking issues.
+For detailed usage, check each script's comments.
 
-### 13. `repair_wmi.cmd`
-   - Repairs Windows Management Instrumentation (WMI) repository.
+## Contributing 🤝
+Love fixing Windows? Fork this repo, add your own scripts, and submit a PR!
 
-### 14. `reset_tcpip.cmd`
-   - Resets the TCP/IP stack to fix network connectivity problems.
-
-### Git Utilities (in `Git/` folder)
-These scripts help manage multiple Git repositories:
-
-- `git_gc_all.cmd`: Performs garbage collection on all Git repositories in the current directory.
-- `git_pull_all.cmd`: Pulls latest changes for all Git repositories in the current directory.
-- `git_push_all.cmd`: Pushes changes for all Git repositories in the current directory.
-- `git_set_details.cmd`: Sets Git user name and email details.
-- `set_git_crlf.cmd`: Configures Git to use CRLF line endings.
-- `set_git_lf.cmd`: Configures Git to use LF line endings.
-
-### Miscellaneous Utilities (in `Misc/` folder)
-Additional helpful scripts:
-
-- `get_system_info.cmd`: Generates a detailed system information report including hardware and OS details.
-- `print_queue_viewer.ps1`: Views and manages the print queue.
-- `restore_pip_default.cmd`: Restores default pip configuration.
-- `tts.cmd`: Text-to-speech utility.
-- `unpack_archives.ps1`: Unpacks various archive formats.
-- `repair_volumes.cmd`: Alternate method to repair volume errors using the CHKDSK utility on all detected drives.
-
-## Usage
-
-1. Download or clone this repository to your local machine.
-2. Run the desired `.cmd` by right-clicking and selecting "Run as administrator".
-
-## Requirements
-- Windows OS (Windows 7 or higher recommended)
-- Administrator privileges for full functionality
-
-## License
-This project is licensed under the terms of the [MIT License](LICENSE.txt).
+## License 📄
+This project is licensed under the MIT License - see [LICENSE.txt](./LICENSE.txt) for details.
 
 ---
 
-**Disclaimer:** These scripts are provided as-is. Always back up your data before performing repairs or maintenance tasks.
+*Disclaimer: These scripts are provided as-is. Always run with caution and understand what they do. Not responsible for any system issues.*
