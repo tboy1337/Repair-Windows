@@ -63,7 +63,7 @@ Here's a breakdown of the goodies:
 2. **Requirements**:
    - Windows 10/11 (with admin privileges).
    - PowerShell 5.1+ (included in Windows).
-   - Optional: Git, Python, Docker for specific scripts.
+   - Optional: Git.
 
 3. **Run a Script**:
    - Right-click a `.cmd` file and select "Run as administrator".
