@@ -251,21 +251,13 @@ if not exist "%BCD_PATH%" (
     exit /b 1
 )
 
-:: Check if memdiag entry exists first
+:: Verify memdiag entry exists (it should be predefined in Windows)
 bcdedit /store "%BCD_PATH%" /enum {memdiag} >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Creating memory diagnostic boot entry...
-    bcdedit /store "%BCD_PATH%" /create {memdiag} /application osloader >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Failed to create memory diagnostic entry.
-        if %NEED_CLEANUP%==1 call :cleanup_efi_drive
-        exit /b 1
-    )
-    
-    :: Configure the memdiag entry
-    bcdedit /store "%BCD_PATH%" /set {memdiag} device boot >nul 2>&1
-    bcdedit /store "%BCD_PATH%" /set {memdiag} path \boot\memtest.exe >nul 2>&1
-    bcdedit /store "%BCD_PATH%" /set {memdiag} description "Windows Memory Diagnostic" >nul 2>&1
+    echo Warning: Memory diagnostic entry not found in BCD.
+    echo This may indicate BCD corruption or missing Windows components.
+    if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+    exit /b 1
 )
 
 :: Set boot sequence to run memory diagnostic once
