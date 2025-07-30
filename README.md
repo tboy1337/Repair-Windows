@@ -63,7 +63,7 @@ Here's a breakdown of the goodies:
 2. **Requirements**:
    - Windows 10/11 (with admin privileges).
    - PowerShell 5.1+ (included in Windows).
-   - Optional: Git.
+   - Optional: Git and Python.
 
 3. **Run a Script**:
    - Right-click a `.cmd` file and select "Run as administrator".
