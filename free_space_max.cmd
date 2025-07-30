@@ -176,6 +176,16 @@ for /d %%i in ("%windir%\Temp\*") do rd /s /q "%%i" >nul 2>&1
 
 del /q /f /s %windir%\Prefetch\* >nul 2>&1
 
+echo Deleting temporary files for all users...
+for /d %%u in (%SystemDrive%\Users\*) do (
+    if exist "%%u\AppData\Local\Temp" (
+        rd /s /q "%%u\AppData\Local\Temp" >nul 2>&1
+        if %errorlevel% neq 0 echo Failed to delete temp for %%u. Error code: %errorlevel%
+        md "%%u\AppData\Local\Temp" >nul 2>&1
+        if %errorlevel% neq 0 echo Failed to create temp for %%u. Error code: %errorlevel%
+    )
+)
+
 echo Temporary files deleted successfully.
 
 timeout /t 5 /nobreak
