@@ -22,7 +22,5 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Winsock reset successfully.
-
 timeout /t 5 /nobreak
 exit /b 0
