@@ -18,6 +18,8 @@ echo Resetting TCP/IP stack...
 netsh int ip reset >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to reset TCP/IP stack.  Error code: %errorlevel%
+    timeout /t 5 /nobreak
+    exit /b 1
 )
 
 timeout /t 5 /nobreak
