@@ -24,6 +24,10 @@ if %errorlevel% neq 0 (
     winmgmt /resetrepository >nul 2>&1
     if %errorlevel% neq 0 (
         echo Failed to reset WMI repository.  Error code: %errorlevel%
+        echo Starting WMI service...
+        net start winmgmt >nul 2>&1
+        timeout /t 5 /nobreak
+        exit /b 1
     )
 )
 
