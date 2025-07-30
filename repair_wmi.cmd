@@ -19,16 +19,11 @@ net stop winmgmt /y >nul 2>&1
 
 echo Repairing WMI repository...
 winmgmt /salvagerepository >nul 2>&1
-
-if %errorlevel% equ 0 (
-    echo WMI repository repaired successfully.
-) else (
+if %errorlevel% neq 0 (
     echo Salvage failed, attempting reset...
     winmgmt /resetrepository >nul 2>&1
-    if %errorlevel% equ 0 (
-        echo WMI repository reset successfully.
-    ) else (
-        echo Failed to repair or reset WMI repository.  Error code: %errorlevel%
+    if %errorlevel% neq 0 (
+        echo Failed to reset WMI repository.  Error code: %errorlevel%
     )
 )
 
