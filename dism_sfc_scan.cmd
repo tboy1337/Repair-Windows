@@ -25,19 +25,20 @@ if %errorlevel% neq 0 (
 
 echo Checking for corruption flags in the local Windows image...
 DISM /Online /Cleanup-Image /CheckHealth >nul 2>&1
-set check_error=%errorlevel%
+if %errorlevel% neq 0 (
+    echo Failed to check for corruption flags in the local Windows image.  Error code: %errorlevel%
+)
+
 echo Checking for corruption in the local Windows image...
 DISM /Online /Cleanup-Image /ScanHealth >nul 2>&1
-set scan_error=%errorlevel%
-set do_repair=0
-if %check_error% neq 0 set do_repair=1
-if %scan_error% neq 0 set do_repair=1
-if %do_repair% equ 1 (
-    echo Corruption detected by at least one check, attempting repair...
-    DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Failed to repair corruption in the local Windows image.  Error code: %errorlevel%
-    )
+if %errorlevel% neq 0 (
+    echo Failed to check for corruption in the local Windows image.  Error code: %errorlevel%
+)
+
+echo Restoring health of the local Windows image...
+DISM /Online /Cleanup-Image /RestoreHealth >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to restore the health of the local Windows image.  Error code: %errorlevel%
 )
 
 if %SFC_SUCCESS% neq 0 (
