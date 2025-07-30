@@ -18,16 +18,12 @@ echo Increasing the memory usage for NTFS metadata...
 fsutil behavior set memoryusage 2 >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to increase the memory usage for NTFS metadata.  Error code: %errorlevel%
-) else (
-    echo Successfully increased NTFS memory usage level.
 )
 
 echo Reserving more space for the Master File Table (MFT)...
 fsutil behavior set mftzone 2 >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to reserve more space for the Master File Table (MFT).  Error code: %errorlevel%
-) else (
-    echo Successfully reserved more space for the Master File Table (MFT).
 )
 
 timeout /t 5 /nobreak
