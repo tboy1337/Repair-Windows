@@ -27,7 +27,6 @@ Here's a breakdown of the goodies:
 ### Disk Optimization
 - **chkdsk_scan_quick.cmd / mid.cmd / max.cmd**: Quick, medium, or thorough disk checks and repairs.
 - **defrag_optimise.cmd**: Defragment and optimize your drives for peak performance.
-- **ntfs_optimise.cmd**: Tune NTFS file system settings.
 - **free_space_quick.cmd / mid.cmd / max.cmd**: Free up disk space by cleaning temp files, logs, and more.
 
 ### Network & Connectivity Fixes
@@ -38,6 +37,7 @@ Here's a breakdown of the goodies:
 
 ### Performance Boosters
 - **enable_ultimate_performance.cmd**: Unlock the Ultimate Performance power plan for high-end hardware.
+- **ntfs_optimise.cmd**: Tune NTFS file system settings.
 
 ### Git Utilities (in `./Git/`)
 - **git_gc_all.cmd**: Clean up and optimize all Git repos.
