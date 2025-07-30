@@ -59,7 +59,7 @@ if !HAS_CORRUPTION! equ 1 (
 )
 
 if %SFC_SUCCESS% neq 0 (
-    echo Checking integrity of all protected system files...
+    echo Attempting to check integrity of all protected system files again...
     sfc /scannow >nul 2>&1
     if %errorlevel% neq 0 (
         echo Failed to check integrity of all protected system files.  Error code: %errorlevel%
