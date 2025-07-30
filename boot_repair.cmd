@@ -177,13 +177,17 @@ goto menu
 :memory
 echo.
 echo ===== MEMORY DIAGNOSTIC =====
-echo Scheduling comprehensive memory test for next restart...
+echo Scheduling memory diagnostic for next boot...
+
 call :schedule_memdiag
 if %errorlevel% neq 0 (
     echo Failed to schedule memory diagnostic.
-    echo You can run it manually after restart: mdsched
+    echo This may be due to BCD corruption or access issues.
+    echo You can manually run memory test from Windows RE Advanced Options.
 ) else (
-    echo Memory diagnostic scheduled. System will test RAM on next boot.
+    echo Memory diagnostic scheduled successfully.
+    echo System will test RAM on next boot before loading Windows.
+    echo Test results will be available in Event Viewer after boot.
 )
 
 if "%choice%"=="5" goto end
@@ -218,6 +222,63 @@ if exist "%windir%\SysWOW64" (
     set "SYSTEM_ARCH=64-bit"
 ) else (
     set "SYSTEM_ARCH=32-bit"
+)
+
+exit /b 0
+
+:: ========================= MEMORY DIAGNOSTIC FUNCTION =========================
+:schedule_memdiag
+set "BCD_PATH="
+set "NEED_CLEANUP=0"
+
+:: Determine BCD location based on boot mode
+if "%BOOT_MODE%"=="UEFI" (
+    call :find_efi_partition
+    if %errorlevel% neq 0 (
+        echo Error: Could not locate EFI system partition.
+        exit /b 1
+    )
+    set "BCD_PATH=%EFI_DRIVE%\EFI\Microsoft\Boot\BCD"
+    set "NEED_CLEANUP=1"
+) else (
+    set "BCD_PATH=%WINDOWS_DRIVE%\Boot\BCD"
+)
+
+:: Verify BCD exists
+if not exist "%BCD_PATH%" (
+    echo Error: Boot configuration data not found at %BCD_PATH%
+    if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+    exit /b 1
+)
+
+:: Check if memdiag entry exists first
+bcdedit /store "%BCD_PATH%" /enum {memdiag} >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Creating memory diagnostic boot entry...
+    bcdedit /store "%BCD_PATH%" /create {memdiag} /application osloader >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to create memory diagnostic entry.
+        if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+        exit /b 1
+    )
+    
+    :: Configure the memdiag entry
+    bcdedit /store "%BCD_PATH%" /set {memdiag} device boot >nul 2>&1
+    bcdedit /store "%BCD_PATH%" /set {memdiag} path \boot\memtest.exe >nul 2>&1
+    bcdedit /store "%BCD_PATH%" /set {memdiag} description "Windows Memory Diagnostic" >nul 2>&1
+)
+
+:: Set boot sequence to run memory diagnostic once
+bcdedit /store "%BCD_PATH%" /bootsequence {memdiag} >nul 2>&1
+set "CMD_ERROR=%errorlevel%"
+
+:: Cleanup EFI drive letter if needed
+if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+
+:: Return result
+if %CMD_ERROR% neq 0 (
+    echo Failed to set boot sequence for memory diagnostic.
+    exit /b 1
 )
 
 exit /b 0
@@ -447,27 +508,6 @@ if "%BOOT_MODE%"=="UEFI" (
 )
 
 echo Advanced boot repair completed.
-exit /b 0
-
-:schedule_memdiag
-set "BCD_PATH="
-set "NEED_CLEANUP=0"
-if "%BOOT_MODE%"=="UEFI" (
-    call :find_efi_partition
-    if %errorlevel% neq 0 exit /b 1
-    set "BCD_PATH=%EFI_DRIVE%\EFI\Microsoft\Boot\BCD"
-    set "NEED_CLEANUP=1"
-) else (
-    set "BCD_PATH=%WINDOWS_DRIVE%\Boot\BCD"
-)
-if not exist "%BCD_PATH%" (
-    if %NEED_CLEANUP%==1 call :cleanup_efi_drive
-    exit /b 1
-)
-bcdedit /store "%BCD_PATH%" /bootsequence {memdiag} >nul 2>&1
-set "CMD_ERROR=%errorlevel%"
-if %NEED_CLEANUP%==1 call :cleanup_efi_drive
-if %CMD_ERROR% neq 0 exit /b 1
 exit /b 0
 
 :end
