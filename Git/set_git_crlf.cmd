@@ -1,5 +1,12 @@
 @echo off
 
+where git >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Git is not installed or in PATH.
+    timeout /t 5 /nobreak
+    exit /b 1
+)
+
 echo Setting Git configuration for CRLF line endings...
 git config --global core.autocrlf true
 if %errorlevel% neq 0 (
