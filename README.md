@@ -25,7 +25,7 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 ### 2. `defrag_optimise.cmd`
    - Defragments and optimizes all system drives, helping improve system performance on traditional HDDs and SSDs.
 
-### 3. `free_space_quick.cmd` & `free_space_max.cmd`
+### 3. `free_space_quick.cmd`, `free_space_mid.cmd` & `free_space_max.cmd`
    - Clears unnecessary temporary files and frees up disk space to improve performance.
 
 ### 4. `repair_volumes.cmd`
