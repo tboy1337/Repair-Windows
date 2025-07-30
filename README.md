@@ -28,40 +28,37 @@ This repository provides a collection of batch scripts to repair and optimize Wi
 ### 3. `free_space_quick.cmd`, `free_space_mid.cmd` & `free_space_max.cmd`
    - Clears unnecessary temporary files and frees up disk space to improve performance.
 
-### 4. `repair_volumes.cmd`
-   - Repairs volume errors using the CHKDSK utility on all detected drives.
-
-### 5. `reset_windows_update.cmd`
+### 4. `reset_windows_update.cmd`
    - Resets the Windows Update components to fix issues related to stuck or failed updates.
 
-### 6. `reset_winsock.cmd`
+### 5. `reset_winsock.cmd`
    - Resets the Winsock catalog to resolve network connectivity issues.
 
-### 7. `boot_repair.cmd`
+### 6. `boot_repair.cmd`
    - Comprehensive boot repair tool that fixes boot sector issues, runs system file checks, performs startup repairs, memory diagnostics, and advanced boot repairs in Windows Recovery Environment (must be run in Windows RE).
 
-### 8. `chkdsk_scan_quick.cmd`
+### 7. `chkdsk_scan_quick.cmd`
    - Runs a quick CHKDSK scan for FAT and NTFS drives to check and repair file system errors.
 
-### 9. `chkdsk_scan_mid.cmd`
+### 8. `chkdsk_scan_mid.cmd`
    - Runs a medium-level CHKDSK scan for more thorough checking.
 
-### 10. `chkdsk_scan_max.cmd`
+### 9. `chkdsk_scan_max.cmd`
    - Runs a maximum thorough CHKDSK scan including bad sector recovery.
 
-### 11. `enable_ultimate_performance.cmd`
+### 10. `enable_ultimate_performance.cmd`
    - Enables the Ultimate Performance power plan to maximize system performance.
 
-### 12. `ntfs_optimise.cmd`
+### 11. `ntfs_optimise.cmd`
    - Optimizes NTFS file system by increasing memory usage for metadata and reserving more space for the Master File Table (MFT).
 
-### 13. `flush_dns.cmd`
+### 12. `flush_dns.cmd`
    - Flushes the DNS resolver cache to resolve networking issues.
 
-### 14. `repair_wmi.cmd`
+### 13. `repair_wmi.cmd`
    - Repairs Windows Management Instrumentation (WMI) repository.
 
-### 15. `reset_tcpip.cmd`
+### 14. `reset_tcpip.cmd`
    - Resets the TCP/IP stack to fix network connectivity problems.
 
 ### Git Utilities (in `Git/` folder)
@@ -83,6 +80,7 @@ Additional helpful scripts:
 - `restore_pip_default.cmd`: Restores default pip configuration.
 - `tts.cmd`: Text-to-speech utility.
 - `unpack_archives.ps1`: Unpacks various archive formats.
+- `repair_volumes.cmd`: Alternate method to repair volume errors using the CHKDSK utility on all detected drives.
 
 ## Usage
 
