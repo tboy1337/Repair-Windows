@@ -11,7 +11,6 @@ No more digging through forums or running manual commands – just fire up these
 ## Why This Repo? 💡
 Windows can be a beast sometimes – corrupted files, slow performance, network glitches... you name it. This repo consolidates powerful, automated repair tools into one place. All scripts are designed to be:
 - **Safe & Non-Destructive**: They prompt for admin rights and back up where needed.
-- **Cross-Compatible**: Works on Windows 10 Pro and above (tested on 10.0.19045).
 - **Easy to Use**: Just double-click or run from Command Prompt/PowerShell.
 
 Inspired by real-world troubleshooting, these scripts use built-in Windows tools like DISM, SFC, CHKDSK, and more, wrapped in user-friendly batches.
