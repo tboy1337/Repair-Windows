@@ -76,7 +76,6 @@ Additional helpful scripts:
 
 - `get_system_info.cmd`: Generates a detailed system information report including hardware and OS details.
 - `print_queue_viewer.ps1`: Views and manages the print queue.
-- `proxy_converter.py`: Converts proxy formats (Python script).
 - `restore_pip_default.cmd`: Restores default pip configuration.
 - `tts.cmd`: Text-to-speech utility.
 - `unpack_archives.ps1`: Unpacks various archive formats.
