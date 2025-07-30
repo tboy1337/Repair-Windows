@@ -67,7 +67,7 @@ Here's a breakdown of the goodies:
 
 3. **Run a Script**:
    - Right-click a `.cmd` file and select "Run as administrator".
-   - For `.ps1` files, open PowerShell as admin and run: `.\script.ps1`.
+   - For `.ps1` files, right click and select "Run with PowerShell".
    - **Pro Tip**: Always back up important data before running repairs!
 
 ## Usage Examples 📝
