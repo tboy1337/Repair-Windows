@@ -25,7 +25,5 @@ for /d %%D in (*) do (
     )
 )
 
-echo All repositories processed!
-
 timeout /t 5 /nobreak
 exit

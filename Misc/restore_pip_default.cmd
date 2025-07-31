@@ -22,7 +22,5 @@ del %TEMP_FILE%
 echo Purging pip cache...
 py -m pip cache purge
 
-echo Done! Your pip packages have been restored to default.
-
 timeout /t 5 /nobreak
 exit
