@@ -12,17 +12,11 @@ git config --global core.autocrlf false
 if %errorlevel% neq 0 (
     echo Failed to set autocrlf to false.  Error code: %errorlevel%
 )
-    else (
-        echo Autocrlf disabled successfully.
-    )
 
 git config --global core.eol lf
 if %errorlevel% neq 0 (
     echo Failed to set Git configuration for LF line endings.  Error code: %errorlevel%
 )
-    else (
-        echo Git configuration for LF line endings set successfully.
-    )
 
 timeout /t 5 /nobreak
 exit

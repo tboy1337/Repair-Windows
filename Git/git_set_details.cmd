@@ -20,8 +20,6 @@ if "%USER_NAME%"=="" (
 git config --global user.name "%USER_NAME%"
 if %errorlevel% neq 0 (
     echo Failed to set global Git user name.  Error code: %errorlevel%
-) else (
-    echo Global Git user name set successfully.
 )
 
 set /p USER_EMAIL="Enter Git user email: "
@@ -34,8 +32,6 @@ if "%USER_EMAIL%"=="" (
 git config --global user.email "%USER_EMAIL%"
 if %errorlevel% neq 0 (
     echo Failed to set global Git user email.  Error code: %errorlevel%
-) else (
-    echo Global Git user email set successfully.
 )
 
 timeout /t 5 /nobreak
