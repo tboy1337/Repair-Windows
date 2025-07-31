@@ -51,6 +51,5 @@ if %errorlevel% neq 0 (
     echo Failed to set MFT Zone. Error code: %errorlevel%
 )
 
-
 timeout /t 5 /nobreak
 exit /b 0
