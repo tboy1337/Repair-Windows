@@ -38,5 +38,8 @@ echo Starting Package Installation/Upgrade...
 %PYTHON_CMD% -m pip install --upgrade pytest-cov
 %PYTHON_CMD% -m pip install --upgrade pytest-xdist
 
+echo Purging pip cache...
+%PYTHON_CMD% -m pip cache purge
+
 timeout /t 5 /nobreak
 exit /b 0
