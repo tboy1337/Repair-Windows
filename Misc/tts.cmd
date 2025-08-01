@@ -16,11 +16,11 @@ set "message=%~1"
 set "tempvbs=%temp%\tts_temp.vbs"
 
 :: Write VBS script content
-echo Set objVoice = CreateObject("SAPI.SpVoice") > "%tempvbs%" >nul
-echo objVoice.Speak "%message%" >> "%tempvbs%" >nul
+echo Set objVoice = CreateObject("SAPI.SpVoice") > "%tempvbs%"
+echo objVoice.Speak "%message%" >> "%tempvbs%"
 
 :: Execute the VBS script
-cscript //nologo "%tempvbs%" >nul 2>&1
+cscript //nologo "%tempvbs%"
 if %errorlevel% neq 0 (
     echo Failed to speak message.  Error code: %errorlevel%
 )
