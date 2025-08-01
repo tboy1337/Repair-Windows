@@ -31,5 +31,4 @@ if %errorlevel% neq 0 (
     echo Failed to delete temporary file.  Error code: %errorlevel%
 )
 
-echo Message spoken successfully!
 exit /b 0
