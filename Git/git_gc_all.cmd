@@ -25,5 +25,11 @@ for /d %%D in (*) do (
     )
 )
 
+echo Purging git cache...
+git gc --prune=now >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to purge git cache.  Error code: %errorlevel%
+)
+
 timeout /t 5 /nobreak
 exit
