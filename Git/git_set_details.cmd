@@ -17,7 +17,7 @@ if "%USER_NAME%"=="" (
     exit /b 1
 )
 
-git config --global user.name "%USER_NAME%"
+git config --global user.name "%USER_NAME%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to set global Git user name.  Error code: %errorlevel%
 )
@@ -29,7 +29,7 @@ if "%USER_EMAIL%"=="" (
     exit /b 1
 )
 
-git config --global user.email "%USER_EMAIL%"
+git config --global user.email "%USER_EMAIL%" >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to set global Git user email.  Error code: %errorlevel%
 )
