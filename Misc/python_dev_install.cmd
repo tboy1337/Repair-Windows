@@ -1,0 +1,43 @@
+@echo off
+
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo This script requires administrator privileges.
+    echo Please right-click and select "Run as administrator".
+    timeout /t 5 /nobreak
+    exit /b 1
+)
+
+set PYTHON_CMD=
+py --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set PYTHON_CMD=py
+    echo Found Python launcher (py)
+) else (
+    python --version >nul 2>&1
+    if %errorlevel% equ 0 (
+        set PYTHON_CMD=python
+        echo Found Python command (python)
+    ) else (
+        echo ERROR: Python is not installed or not in PATH
+        echo Please install Python first and ensure it's added to your system PATH
+        pause
+        exit /b 2
+    )
+)
+
+echo Starting Package Installation/Upgrade...
+%PYTHON_CMD% -m pip install --upgrade pip
+%PYTHON_CMD% -m pip install --upgrade setuptools
+%PYTHON_CMD% -m pip install --upgrade wheel
+%PYTHON_CMD% -m pip install --upgrade virtualenv
+%PYTHON_CMD% -m pip install --upgrade python-dotenv
+%PYTHON_CMD% -m pip install --upgrade pytest
+%PYTHON_CMD% -m pip install --upgrade pytest-asyncio
+%PYTHON_CMD% -m pip install --upgrade pytest-timeout
+%PYTHON_CMD% -m pip install --upgrade pytest-mock
+%PYTHON_CMD% -m pip install --upgrade pytest-cov
+%PYTHON_CMD% -m pip install --upgrade pytest-xdist
+
+timeout /t 5 /nobreak
+exit /b 0
