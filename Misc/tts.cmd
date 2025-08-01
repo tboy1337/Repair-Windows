@@ -31,4 +31,5 @@ if %errorlevel% neq 0 (
     echo Failed to delete temporary file.  Error code: %errorlevel%
 )
 
+timeout /t 5 /nobreak
 exit /b 0
