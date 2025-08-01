@@ -21,7 +21,7 @@ if %errorlevel% equ 0 (
         echo ERROR: Python is not installed or not in PATH
         echo Please install Python first and ensure it's added to your system PATH
         pause
-        exit /b 2
+        exit /b 1
     )
 )
 
