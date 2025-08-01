@@ -16,14 +16,20 @@ set "message=%~1"
 set "tempvbs=%temp%\tts_temp.vbs"
 
 :: Write VBS script content
-echo Set objVoice = CreateObject("SAPI.SpVoice") > "%tempvbs%"
-echo objVoice.Speak "%message%" >> "%tempvbs%"
+echo Set objVoice = CreateObject("SAPI.SpVoice") > "%tempvbs%" >nul
+echo objVoice.Speak "%message%" >> "%tempvbs%" >nul
 
 :: Execute the VBS script
-cscript //nologo "%tempvbs%"
+cscript //nologo "%tempvbs%" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to speak message.  Error code: %errorlevel%
+)
 
 :: Clean up temporary file
-del "%tempvbs%" 2>nul
+del "%tempvbs%" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to delete temporary file.  Error code: %errorlevel%
+)
 
 echo Message spoken successfully!
 exit /b 0
