@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -12,12 +13,10 @@ set PYTHON_CMD=
 py --version >nul 2>&1
 if %errorlevel% equ 0 (
     set PYTHON_CMD=py
-    echo Found Python launcher (py)
 ) else (
     python --version >nul 2>&1
     if %errorlevel% equ 0 (
         set PYTHON_CMD=python
-        echo Found Python command (python)
     ) else (
         echo ERROR: Python is not installed or not in PATH
         echo Please install Python first and ensure it's added to your system PATH
