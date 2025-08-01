@@ -13,6 +13,7 @@ if %errorlevel% neq 0 (
     echo Failed to set Git configuration for CRLF line endings.  Error code: %errorlevel%
 )
 
+echo Setting Git configuration for explicit CRLF line endings...
 git config --global core.eol crlf >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to set explicit CRLF line endings.  Error code: %errorlevel%
