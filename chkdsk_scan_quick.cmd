@@ -40,4 +40,5 @@ if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
     chkdsk "%TARGET_DRIVE%" /F /X >nul 2>&1
 )
 
+endlocal
 exit /b 0

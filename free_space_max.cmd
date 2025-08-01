@@ -189,4 +189,5 @@ for /d %%u in (%SystemDrive%\Users\*) do (
 echo Temporary files deleted successfully.
 
 timeout /t 5 /nobreak
+endlocal
 exit /b 0

@@ -35,4 +35,5 @@ echo Restarting WMI service...
 net start winmgmt >nul 2>&1
 
 timeout /t 5 /nobreak
+endlocal
 exit /b 0

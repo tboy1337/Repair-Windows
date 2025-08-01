@@ -527,4 +527,5 @@ if %SFC_SUCCESS% neq 0 (
 )
 
 timeout /t 10 /nobreak
+endlocal
 exit /b 0

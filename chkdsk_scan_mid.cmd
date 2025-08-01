@@ -48,4 +48,5 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
     )
 )
 
+endlocal
 exit /b 0
