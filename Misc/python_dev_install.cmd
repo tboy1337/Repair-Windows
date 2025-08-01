@@ -25,6 +25,13 @@ if %errorlevel% equ 0 (
     )
 )
 
+where %PYTHON_CMD% -m pip --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Pip is not installed or in PATH.  Error code: %errorlevel%
+    timeout /t 5 /nobreak
+    exit /b 1
+)
+
 echo Starting Package Installation/Upgrade...
 %PYTHON_CMD% -m pip install --upgrade pip
 %PYTHON_CMD% -m pip install --upgrade setuptools

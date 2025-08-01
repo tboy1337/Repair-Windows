@@ -17,6 +17,13 @@ if %errorlevel% equ 0 (
     )
 )
 
+where %PYTHON_CMD% -m pip --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Pip is not installed or in PATH.  Error code: %errorlevel%
+    timeout /t 5 /nobreak
+    exit /b 1
+)
+
 set TEMP_FILE=%TEMP%\installed_packages_%RANDOM%_%RANDOM%.txt
 
 echo Generating list of installed packages...
