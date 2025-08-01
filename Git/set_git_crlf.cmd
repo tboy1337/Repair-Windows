@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 where git >nul 2>&1
 if %errorlevel% neq 0 (
