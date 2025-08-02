@@ -13,7 +13,7 @@ if "%~1"=="" (
 set "message=%~1"
 
 :: Create temporary VBS script for TTS
-set "tempvbs=%temp%\tts_temp.vbs"
+set "tempvbs=%temp%\tts_temp_%RANDOM%_%RANDOM%.vbs"
 
 :: Write VBS script content
 echo Set objVoice = CreateObject("SAPI.SpVoice") > "%tempvbs%"
