@@ -37,13 +37,13 @@ echo Starting Package Installation/Upgrade...
 %PYTHON_CMD% -m pip install --upgrade wheel
 %PYTHON_CMD% -m pip install --upgrade virtualenv
 %PYTHON_CMD% -m pip install --upgrade python-dotenv
+%PYTHON_CMD% -m pip install --upgrade pylint
 %PYTHON_CMD% -m pip install --upgrade pytest
 %PYTHON_CMD% -m pip install --upgrade pytest-asyncio
 %PYTHON_CMD% -m pip install --upgrade pytest-timeout
 %PYTHON_CMD% -m pip install --upgrade pytest-mock
 %PYTHON_CMD% -m pip install --upgrade pytest-cov
 %PYTHON_CMD% -m pip install --upgrade pytest-xdist
-%PYTHON_CMD% -m pip install --upgrade pylint
 
 echo Purging pip cache...
 %PYTHON_CMD% -m pip cache purge
