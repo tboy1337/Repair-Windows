@@ -36,7 +36,17 @@ for /f "delims==" %%p in (%TEMP_FILE%) do (
 echo Reinstalling default packages...
 %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to upgrade pip.  Error code: %errorlevel%
+    echo Failed to upgrade pip, trying to reinstall pip...
+    %PYTHON_CMD% -m ensurepip --upgrade >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo Successfully reinstalled pip, now trying to upgrade pip...
+        %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
+        if %errorlevel% neq 0 (
+            echo Failed to upgrade pip again.
+        )
+    ) else (
+        echo Failed to reinstall pip.
+    )
 )
 
 %PYTHON_CMD% -m pip install --upgrade setuptools >nul 2>&1
