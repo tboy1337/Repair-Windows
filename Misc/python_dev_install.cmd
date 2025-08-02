@@ -27,7 +27,7 @@ if %errorlevel% equ 0 (
 
 where %PYTHON_CMD% -m pip --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Pip is not installed or in PATH.  Error code: %errorlevel%
+    echo Pip is not installed or in PATH.
     timeout /t 5 /nobreak
     exit /b 1
 )
