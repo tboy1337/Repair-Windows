@@ -38,6 +38,7 @@ echo Starting Package Installation/Upgrade...
 %PYTHON_CMD% -m pip install --upgrade virtualenv
 %PYTHON_CMD% -m pip install --upgrade python-dotenv
 %PYTHON_CMD% -m pip install --upgrade pylint
+%PYTHON_CMD% -m pip install --upgrade flake8
 %PYTHON_CMD% -m pip install --upgrade pytest
 %PYTHON_CMD% -m pip install --upgrade pytest-asyncio
 %PYTHON_CMD% -m pip install --upgrade pytest-timeout
