@@ -43,6 +43,7 @@ echo Starting Package Installation/Upgrade...
 %PYTHON_CMD% -m pip install --upgrade pytest-mock
 %PYTHON_CMD% -m pip install --upgrade pytest-cov
 %PYTHON_CMD% -m pip install --upgrade pytest-xdist
+%PYTHON_CMD% -m pip install --upgrade pylint
 
 echo Purging pip cache...
 %PYTHON_CMD% -m pip cache purge
