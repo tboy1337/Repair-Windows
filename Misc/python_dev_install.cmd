@@ -18,7 +18,7 @@ if %errorlevel% equ 0 (
     if %errorlevel% equ 0 (
         set PYTHON_CMD=python
     ) else (
-        echo Python is not installed or not in PATH.
+        echo Python is not installed or in PATH.
         timeout /t 5 /nobreak
         exit /b 1
     )
