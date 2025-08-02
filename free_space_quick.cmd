@@ -15,13 +15,13 @@ if %errorlevel% neq 0 (
 )
 
 echo Freeing up space on %SystemDrive%...
-call cleanmgr /d "%SystemDrive%" /verylowdisk >nul 2>&1
+cleanmgr /d "%SystemDrive%" /verylowdisk >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to free up space on %SystemDrive%.  Error code: %errorlevel%
 )
 
 echo Deleting old Windows update files on %SystemDrive%...
-call cleanmgr /d "%SystemDrive%" /autoclean >nul 2>&1
+cleanmgr /d "%SystemDrive%" /autoclean >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to delete old Windows update files on %SystemDrive%.  Error code: %errorlevel%
 )
