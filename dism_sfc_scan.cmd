@@ -17,13 +17,6 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
-echo Checking integrity of all protected system files...
-sfc /scannow >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to check integrity of all protected system files.  Error code: %errorlevel%
-    set SFC_SUCCESS=1
-)
-
 echo Checking for corruption flags in the local Windows image...
 set "TEMP_FILE=%TEMP%\dism_checkhealth_%RANDOM%_%RANDOM%.txt"
 DISM /Online /Cleanup-Image /CheckHealth > "%TEMP_FILE%" 2>&1
@@ -58,12 +51,10 @@ if !HAS_CORRUPTION! equ 1 (
     )
 )
 
-if %SFC_SUCCESS% neq 0 (
-    echo Attempting to check integrity of all protected system files again...
-    sfc /scannow >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Failed to check integrity of all protected system files again.  Error code: %errorlevel%
-    )
+echo Checking integrity of all protected system files...
+sfc /scannow >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to check integrity of all protected system files.  Error code: %errorlevel%
 )
 
 echo Deleting resources associated with corrupted mounted images...
