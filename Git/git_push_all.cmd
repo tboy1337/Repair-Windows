@@ -36,4 +36,4 @@ for /d %%D in (*) do (
 
 timeout /t 5 /nobreak
 endlocal
-exit
+exit /b 0

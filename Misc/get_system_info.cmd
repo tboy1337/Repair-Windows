@@ -42,4 +42,4 @@ echo System information has been exported to: %outputFile%
 timeout /t 5 /nobreak
 
 endlocal
-exit
+exit /b
