@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Ubuntu Linux System Integrity Check and Repair Script
-# Equivalent to Windows DISM/SFC functionality
-# Fixed version with improved error handling and safety
 
 set -e
 
