@@ -20,10 +20,27 @@ if %errorlevel% neq 0 (
     echo Failed to analyze all drives.  Error code: %errorlevel%
 )
 
-echo Performing boot optimization on %SystemDrive%...
-defrag "%SystemDrive%" /B /H >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to perform boot optimization on %SystemDrive%.  Error code: %errorlevel%
+echo Checking if %SystemDrive% is an SSD...
+set "IsSSD=false"
+for /f "tokens=2 delims==" %%i in ('wmic diskdrive where "DeviceID like '%%PHYSICALDRIVE0%%'" get MediaType /value 2^>nul ^| find "="') do (
+    if /i "%%i"=="SSD" set "IsSSD=true"
+)
+
+REM Alternative method using PowerShell if WMIC fails
+if "!IsSSD!"=="false" (
+    for /f %%i in ('powershell -command "Get-PhysicalDisk | Where-Object {$_.DeviceID -eq 0} | Select-Object -ExpandProperty MediaType" 2^>nul') do (
+        if /i "%%i"=="SSD" set "IsSSD=true"
+    )
+)
+
+if "!IsSSD!"=="true" (
+    echo %SystemDrive% is an SSD - skipping boot optimization...
+) else (
+    echo Performing boot optimization on %SystemDrive%...
+    defrag "%SystemDrive%" /B /H >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to perform boot optimization on %SystemDrive%.  Error code: %errorlevel%
+    )
 )
 
 echo Optimizing the storage tiers on all drives...
