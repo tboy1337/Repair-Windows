@@ -45,7 +45,9 @@ if %errorlevel% neq 0 (
             echo Failed to upgrade pip again.
         )
     ) else (
-        echo Failed to reinstall pip.
+        echo Failed to reinstall pip.  Error code: %errorlevel%
+        timeout /t 5 /nobreak
+        exit /b 1
     )
 )
 
