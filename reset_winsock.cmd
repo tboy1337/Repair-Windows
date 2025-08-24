@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -23,5 +22,4 @@ if %errorlevel% neq 0 (
 )
 
 timeout /t 5 /nobreak
-endlocal
 exit /b 0
