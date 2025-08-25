@@ -42,7 +42,7 @@ if %errorlevel% neq 0 (
         echo Successfully reinstalled pip, now trying to upgrade pip again...
         %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
         if %errorlevel% neq 0 (
-            echo Failed to upgrade pip again.
+            echo Failed to upgrade pip again.  Error code: %errorlevel%
         )
     ) else (
         echo Failed to reinstall pip.  Error code: %errorlevel%
