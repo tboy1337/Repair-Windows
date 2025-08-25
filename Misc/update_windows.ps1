@@ -54,8 +54,19 @@ function Install-WindowsUpdateModule {
     
     if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
         Write-Host "PSWindowsUpdate module not found. Installing..." -ForegroundColor Yellow
+        
         try {
-            Install-Module -Name PSWindowsUpdate -Force -AllowClobber -Scope AllUsers
+            # Install NuGet provider first (required for module installation)
+            Write-Host "Installing NuGet provider..." -ForegroundColor Cyan
+            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -Confirm:$false
+            
+            # Set PSGallery as trusted repository to avoid prompts
+            Write-Host "Setting PSGallery as trusted repository..." -ForegroundColor Cyan
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+            
+            # Install the PSWindowsUpdate module
+            Write-Host "Installing PSWindowsUpdate module..." -ForegroundColor Cyan
+            Install-Module -Name PSWindowsUpdate -Force -AllowClobber -Scope AllUsers -Confirm:$false -SkipPublisherCheck
             Write-Host "PSWindowsUpdate module installed successfully." -ForegroundColor Green
         }
         catch {
@@ -78,7 +89,8 @@ Write-Host "Time: $(Get-Date)" -ForegroundColor Gray
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     Write-Error "This script must be run as Administrator!"
     Write-Host "Right-click PowerShell and select 'Run as Administrator'" -ForegroundColor Yellow
-    Read-Host "Press Enter to exit"
+    Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
+    Start-Sleep -Seconds 10
     exit 1
 }
 
@@ -93,7 +105,8 @@ try {
     
     if ($Updates.Count -eq 0) {
         Write-Host "No updates available. Your system is up to date!" -ForegroundColor Green
-        Read-Host "`nPress Enter to exit"
+        Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
+        Start-Sleep -Seconds 10
         exit 0
     }
     
@@ -144,13 +157,15 @@ try {
         }
     } else {
         Write-Host "`nNo restart required. All updates have been installed successfully!" -ForegroundColor Green
-        Read-Host "`nPress Enter to exit"
+        Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
+        Start-Sleep -Seconds 10
     }
     
 } catch {
     Write-Error "An error occurred during the update process: $_"
     Write-Host "`nYou may want to run Windows Update manually or try again later." -ForegroundColor Yellow
-    Read-Host "`nPress Enter to exit"
+    Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
+    Start-Sleep -Seconds 10
     exit 1
 }
 
