@@ -1,7 +1,5 @@
 @echo off
 
-echo Updating all programs via winget...
-
 winget --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: winget is not available or not installed on this system.
@@ -10,6 +8,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+echo Updating all programs via winget...
 winget upgrade --all --accept-package-agreements --accept-source-agreements --silent >nul 2>&1
 
 if %errorlevel% equ 0 (
