@@ -61,14 +61,10 @@ if %errorlevel% neq 0 (
     echo Failed to optimize all drives.  Error code: %errorlevel%
 )
 
-if "!IsSSD!"=="true" (
-    echo %SystemDrive% is an SSD - skipping free space consolidation...
-) else (
-    echo Performing free space consolidation on all drives...
-    defrag /C /X /H >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Failed to perform free space consolidation on all drives.  Error code: %errorlevel%
-    )
+echo Performing free space consolidation on all drives...
+defrag /C /X /H >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to perform free space consolidation on all drives.  Error code: %errorlevel%
 )
 
 timeout /t 5 /nobreak
