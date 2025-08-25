@@ -33,7 +33,7 @@ del "%TEMP_FILE%" >nul 2>&1
 
 if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
     echo y | chkdsk "%TARGET_DRIVE%" /F /X >nul 2>&1
-    echo Repair scheduled. Restarting system to complete repairs, please save your work.
+    echo Restarting system to complete repairs, please save your work.
     timeout /t 30 /nobreak
     shutdown /r /t 1 >nul 2>&1
 ) else (
