@@ -78,7 +78,7 @@ if /i "%rebootchoice%"=="Y" (
     timeout /t 10 /nobreak >nul 2>&1
     shutdown /r /t 1 >nul 2>&1
 ) else (
-    echo Please remember to reboot your system for changes to take effect.
+    echo Please reboot your system for changes to take effect.
 )
 
 timeout /t 5 /nobreak
