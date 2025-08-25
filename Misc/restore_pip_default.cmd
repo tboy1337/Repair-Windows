@@ -33,6 +33,8 @@ for /f "delims==" %%p in (%TEMP_FILE%) do (
     %PYTHON_CMD% -m pip uninstall -y %%p >nul 2>&1
 )
 
+del %TEMP_FILE% >nul 2>&1
+
 echo Reinstalling default packages...
 %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
 if %errorlevel% neq 0 (
@@ -60,8 +62,6 @@ if %errorlevel% neq 0 (
 if %errorlevel% neq 0 (
     echo Failed to upgrade wheel.  Error code: %errorlevel%
 )
-
-del %TEMP_FILE% >nul 2>&1
 
 echo Purging pip cache...
 %PYTHON_CMD% -m pip cache purge >nul 2>&1
