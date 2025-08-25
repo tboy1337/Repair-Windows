@@ -51,6 +51,36 @@ if %errorlevel% neq 0 (
     echo Failed to set MFT Zone. Error code: %errorlevel%
 )
 
+echo.
+echo Setting 8.3 filename creation:
+echo   0: Enable (default, required for legacy applications).
+echo   1: Disable (recommended for modern systems - improves performance).
+:dot3_prompt
+set /p dot3choice=Enter your choice (0-1): 
+if not "%dot3choice%"=="0" if not "%dot3choice%"=="1" (
+    echo Invalid choice. Please enter 0 or 1.
+    goto dot3_prompt
+)
+fsutil behavior set disable8dot3 %dot3choice% >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to set 8.3 filename creation. Error code: %errorlevel%
+)
+
+echo.
+echo NTFS optimization complete!
+echo.
+echo IMPORTANT: These changes require a system reboot to take effect.
+echo It is recommended to reboot your system now.
+echo.
+set /p rebootchoice=Would you like to reboot now? (Y/N): 
+if /i "%rebootchoice%"=="Y" (
+    echo Rebooting system in 10 seconds...
+    timeout /t 10 /nobreak >nul 2>&1
+    shutdown /r /t 1 >nul 2>&1
+) else (
+    echo Please remember to reboot your system for changes to take effect.
+)
+
 timeout /t 5 /nobreak
 endlocal
 exit /b 0
