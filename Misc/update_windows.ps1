@@ -101,7 +101,7 @@ Write-Host "`nChecking for available updates..." -ForegroundColor Cyan
 
 try {
     # Get list of available updates
-    $Updates = Get-WUList -Verbose
+    $Updates = Get-WUList -MicrosoftUpdate -Verbose
     
     if ($Updates.Count -eq 0) {
         Write-Host "No updates available. Your system is up to date!" -ForegroundColor Green
@@ -119,7 +119,7 @@ try {
     Write-Host "This may take several minutes depending on update size." -ForegroundColor Gray
     
     # Install updates and capture the result
-    $InstallResult = Install-WindowsUpdate -AcceptAll -IgnoreReboot -Verbose
+    $InstallResult = Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Verbose
     
     Write-Host "`nUpdate installation completed!" -ForegroundColor Green
     
