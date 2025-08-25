@@ -28,8 +28,9 @@ if %errorlevel% equ 0 (
     exit /b 0
 )
 
-echo Errors found on %TARGET_DRIVE%, preparing to repair...
 del "%TEMP_FILE%" >nul 2>&1
+
+echo Errors found on %TARGET_DRIVE%, preparing to repair...
 
 if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
     echo y | chkdsk "%TARGET_DRIVE%" /F /X >nul 2>&1
