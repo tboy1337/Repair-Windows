@@ -17,7 +17,7 @@ if %errorlevel% equ 0 (
 ) else if %errorlevel% equ -1978335189 (
     echo No updates were available.
 ) else (
-    echo Update process completed with some issues. Check output above.
+    echo Update process completed with some issues.
 )
 
 timeout /t 5 /nobreak
