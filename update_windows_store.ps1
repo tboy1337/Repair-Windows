@@ -54,11 +54,11 @@ function Update-StoreApps {
         Write-Host "Verifying Windows Store availability..." -ForegroundColor Gray
         $StoreApp = Get-AppxPackage -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
         if (-not $StoreApp) {
-            Write-Host "⚠️  Windows Store app not found. Cannot proceed with updates." -ForegroundColor Yellow
+            Write-Host "Windows Store app not found. Cannot proceed with updates." -ForegroundColor Yellow
             return $false
         }
         
-        Write-Host "✅ Windows Store found (Version: $($StoreApp.Version))" -ForegroundColor Green
+        Write-Host "Windows Store found (Version: $($StoreApp.Version))" -ForegroundColor Green
         
         # Try to programmatically trigger Store app updates using PowerShell
         Write-Host "Triggering automatic app updates..." -ForegroundColor Cyan
@@ -91,18 +91,18 @@ function Update-StoreApps {
                         $InstallResult = $Installer.Install()
                         
                         if ($InstallResult.ResultCode -eq 2) {  # Success
-                            Write-Host "✅ Store app updates processed successfully via Windows Update mechanism" -ForegroundColor Green
+                            Write-Host "Store app updates processed successfully via Windows Update mechanism" -ForegroundColor Green
                         } else {
-                            Write-Host "⚠️  Some Store app updates had issues (Result: $($InstallResult.ResultCode))" -ForegroundColor Yellow
+                            Write-Host "Some Store app updates had issues (Result: $($InstallResult.ResultCode))" -ForegroundColor Yellow
                         }
                     } else {
-                        Write-Host "⚠️  Failed to download some Store app updates (Result: $($DownloadResult.ResultCode))" -ForegroundColor Yellow
+                        Write-Host "Failed to download some Store app updates (Result: $($DownloadResult.ResultCode))" -ForegroundColor Yellow
                     }
                 } else {
-                    Write-Host "✅ No Store app updates available via Windows Update" -ForegroundColor Green
+                    Write-Host "No Store app updates available via Windows Update" -ForegroundColor Green
                 }
             } else {
-                Write-Host "✅ No app updates found via Windows Update mechanism" -ForegroundColor Green
+                Write-Host "No app updates found via Windows Update mechanism" -ForegroundColor Green
             }
         }
         catch {
@@ -118,13 +118,13 @@ function Update-StoreApps {
                 Start-ScheduledTask -TaskName $Task.TaskName -ErrorAction SilentlyContinue
                 Write-Host "Started task: $($Task.TaskName)" -ForegroundColor Gray
             }
-            Write-Host "✅ Store background tasks triggered" -ForegroundColor Green
+            Write-Host "Store background tasks triggered" -ForegroundColor Green
         }
         catch {
             Write-Host "Could not trigger all Store background tasks: $($_.Exception.Message)" -ForegroundColor Yellow
         }
         
-        Write-Host "`n✅ Store app update process completed automatically!" -ForegroundColor Green
+        Write-Host "`nStore app update process completed automatically!" -ForegroundColor Green
         Write-Host "Note: Store app updates may continue processing in the background." -ForegroundColor Cyan
         return $true
     }
@@ -145,10 +145,10 @@ function Test-WindowsStoreHealth {
         Write-Host "Checking Windows Store app package..." -ForegroundColor Gray
         $StoreApp = Get-AppxPackage -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
         if (-not $StoreApp) {
-            Write-Host "⚠️  Windows Store app package not found" -ForegroundColor Yellow
+            Write-Host "Windows Store app package not found" -ForegroundColor Yellow
             $IssuesFound = $true
         } else {
-            Write-Host "✅ Windows Store app package found (Version: $($StoreApp.Version))" -ForegroundColor Green
+            Write-Host "Windows Store app package found (Version: $($StoreApp.Version))" -ForegroundColor Green
         }
         
         # Check 2: Test Store COM interface
@@ -156,10 +156,10 @@ function Test-WindowsStoreHealth {
         try {
             $Shell = New-Object -ComObject Shell.Application -ErrorAction Stop
             $null = $Shell  # Just verify we can create it
-            Write-Host "✅ Store COM interface accessible" -ForegroundColor Green
+            Write-Host "Store COM interface accessible" -ForegroundColor Green
         }
         catch {
-            Write-Host "⚠️  Store COM interface not accessible" -ForegroundColor Yellow
+            Write-Host "Store COM interface not accessible" -ForegroundColor Yellow
             $IssuesFound = $true
         }
         
@@ -169,9 +169,9 @@ function Test-WindowsStoreHealth {
         foreach ($ServiceName in $StoreServices) {
             $Service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
             if ($Service -and $Service.Status -eq "Running") {
-                Write-Host "✅ $ServiceName service is running" -ForegroundColor Green
+                Write-Host "$ServiceName service is running" -ForegroundColor Green
             } else {
-                Write-Host "⚠️  $ServiceName service issue detected" -ForegroundColor Yellow
+                Write-Host "$ServiceName service issue detected" -ForegroundColor Yellow
                 $IssuesFound = $true
             }
         }
@@ -179,7 +179,7 @@ function Test-WindowsStoreHealth {
         return $IssuesFound
     }
     catch {
-        Write-Host "⚠️  Error during Store health check: $_" -ForegroundColor Yellow
+        Write-Host "Error during Store health check: $_" -ForegroundColor Yellow
         return $true  # Assume issues if we can't diagnose
     }
 }
@@ -242,7 +242,7 @@ try {
             $RepairPerformed = $true
         }
     } else {
-        Write-Host "`n✅ Windows Store appears healthy. No repair needed." -ForegroundColor Green
+        Write-Host "`nWindows Store appears healthy. No repair needed." -ForegroundColor Green
     }
     
     # Step 2: Update Store apps automatically
