@@ -20,9 +20,9 @@ echo These changes require a system reboot to take effect.
 echo.
 
 echo Setting NTFS memory usage:
-echo   0: Resets NTFS memory usage to the system default value.
-echo   1: Sets to the standard/default memory allocation for NTFS caching and operations (recommended for typical desktops and systems with standard workloads).
-echo   2: Increases the memory allocation for NTFS, allowing larger in-memory caches for improved performance (best for systems with 16GB+ RAM and heavy file I/O).
+echo   0: System default (automatic memory management).
+echo   1: Balanced memory usage (recommended for most systems).
+echo   2: High memory usage (better performance, requires 16GB+ RAM).
 :mem_prompt
 set /p memchoice=Enter your choice (0-2): 
 if not "%memchoice%"=="0" if not "%memchoice%"=="1" if not "%memchoice%"=="2" (
