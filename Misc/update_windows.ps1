@@ -1,4 +1,35 @@
-#Requires -RunAsAdministrator
+<# Self-Elevating PowerShell Script
+This script automatically handles execution policy and administrator elevation
+#>
+
+# Check if we're running with the right parameters (bypass execution policy and elevated)
+$IsElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+$CurrentPolicy = Get-ExecutionPolicy -Scope Process
+
+# If we're not elevated or don't have bypass policy, restart with proper parameters
+if (-NOT $IsElevated -or $CurrentPolicy -eq "Undefined" -or $CurrentPolicy -eq "Restricted") {
+    Write-Host "Initializing script with proper permissions..." -ForegroundColor Yellow
+    
+    try {
+        $ScriptPath = $MyInvocation.MyCommand.Path
+        $Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
+        
+        if (-NOT $IsElevated) {
+            # Need elevation
+            Start-Process PowerShell -Verb RunAs -ArgumentList $Arguments -Wait
+        } else {
+            # Just need execution policy bypass
+            Start-Process PowerShell -ArgumentList $Arguments -Wait
+        }
+        exit 0
+    }
+    catch {
+        Write-Error "Failed to restart script with proper parameters: $_"
+        Write-Host "Please run this script as Administrator with execution policy bypass." -ForegroundColor Yellow
+        Read-Host "Press Enter to exit"
+        exit 1
+    }
+}
 
 <#
 .SYNOPSIS
@@ -7,7 +38,7 @@
     Downloads and installs Windows updates using PowerShell, with user notification
     and 60-second countdown before restart if required.
 .NOTES
-    Must be run as Administrator
+    Automatically handles elevation and execution policy
 #>
 
 # Function to show countdown with option to cancel
@@ -85,14 +116,7 @@ function Install-WindowsUpdateModule {
 Write-Host "Windows Update Script Starting..." -ForegroundColor Green
 Write-Host "Time: $(Get-Date)" -ForegroundColor Gray
 
-# Check if running as administrator
-if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Error "This script must be run as Administrator!"
-    Write-Host "Right-click PowerShell and select 'Run as Administrator'" -ForegroundColor Yellow
-    Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
-    Start-Sleep -Seconds 10
-    exit 1
-}
+# At this point, we're running as administrator with bypass execution policy
 
 # Install/Import the Windows Update module
 Install-WindowsUpdateModule
