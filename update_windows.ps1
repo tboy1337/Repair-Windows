@@ -89,7 +89,7 @@ function Install-WindowsUpdateModule {
         try {
             # Install NuGet provider first (required for module installation)
             Write-Host "Installing NuGet provider..." -ForegroundColor Cyan
-            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -Confirm:$false | Out-Null
+            Install-PackageProvider -Name NuGet -Force -Scope AllUsers -Confirm:$false | Out-Null
             
             # Set PSGallery as trusted repository to avoid prompts
             Write-Host "Setting PSGallery as trusted repository..." -ForegroundColor Cyan
