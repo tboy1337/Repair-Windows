@@ -3,6 +3,8 @@ setlocal enabledelayedexpansion
 
 set "SFC_SUCCESS=0"
 set "HAS_CORRUPTION=0"
+set "TEMP_FILE=%TEMP%\dism_checkhealth_%RANDOM%_%RANDOM%.txt"
+set "TEMP_FILE=%TEMP%\dism_scanhealth_%RANDOM%_%RANDOM%.txt"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -18,7 +20,6 @@ if %errorlevel% neq 0 (
 )
 
 echo Checking for corruption flags in the local Windows image...
-set "TEMP_FILE=%TEMP%\dism_checkhealth_%RANDOM%_%RANDOM%.txt"
 DISM /Online /Cleanup-Image /CheckHealth > "%TEMP_FILE%" 2>&1
 set "DISM_ERROR=%errorlevel%"
 if !DISM_ERROR! neq 0 (
@@ -31,7 +32,6 @@ if !DISM_ERROR! neq 0 (
 del "%TEMP_FILE%" >nul 2>&1
 
 echo Checking for corruption in the local Windows image...
-set "TEMP_FILE=%TEMP%\dism_scanhealth_%RANDOM%_%RANDOM%.txt"
 DISM /Online /Cleanup-Image /ScanHealth > "%TEMP_FILE%" 2>&1
 set "DISM_ERROR=%errorlevel%"
 if !DISM_ERROR! neq 0 (
