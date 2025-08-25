@@ -274,8 +274,8 @@ try {
     Write-Host "`nNote: Some Store app updates may continue in the background." -ForegroundColor Cyan
     Write-Host "You can check the Microsoft Store 'Downloads and updates' page for progress." -ForegroundColor Cyan
     
-    Write-Host "`nExiting in 15 seconds..." -ForegroundColor Gray
-    Start-Sleep -Seconds 15
+    Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
+    Start-Sleep -Seconds 10
     
 } catch {
     Write-Error "An error occurred during the update process: $_"
