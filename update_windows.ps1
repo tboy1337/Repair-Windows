@@ -26,7 +26,7 @@ if (-NOT $IsElevated -or $CurrentPolicy -eq "Undefined" -or $CurrentPolicy -eq "
     catch {
         Write-Error "Failed to restart script with proper parameters: $_"
         Write-Host "Please run this script as Administrator with execution policy bypass." -ForegroundColor Yellow
-        Read-Host "Press Enter to exit"
+        Start-Sleep -Seconds 10
         exit 1
     }
 }
