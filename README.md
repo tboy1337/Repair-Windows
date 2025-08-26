@@ -38,12 +38,6 @@ Here's a breakdown of the goodies:
 - **enable_ultimate_performance.cmd**: Unlock the Ultimate Performance power plan for high-end hardware.
 - **ntfs_optimise.cmd**: Tune NTFS file system settings.
 
-### Git Utilities (in `./Git/`)
-- **git_gc_all.cmd**: Clean up and optimize all Git repos.
-- **git_pull_all.cmd / git_push_all.cmd**: Batch pull/push for multiple repos.
-- **git_set_details.cmd**: Set global Git user details.
-- **set_git_crlf.cmd / set_git_lf.cmd**: Configure line endings for cross-platform repos.
-
 ### Miscellaneous (in `./Misc/`)
 - **get_system_info.cmd**: Generate a detailed system report.
 - **print_queue_viewer.ps1**: View and manage print queues.
@@ -62,7 +56,7 @@ Here's a breakdown of the goodies:
 2. **Requirements**:
    - Windows 10/11 (with admin privileges).
    - PowerShell 5.1+ (included in Windows).
-   - Optional: Git and Python.
+   - Optional: Python.
 
 3. **Run a Script**:
    - Right-click a `.cmd` file and select "Run as administrator".
@@ -72,7 +66,6 @@ Here's a breakdown of the goodies:
 ## Usage Examples 📝
 - Fix system files: `dism_sfc_scan.cmd`
 - Optimize disk: `defrag_optimise.cmd`
-- Batch Git pull: `Git\git_pull_all.cmd`
 
 For detailed usage, check each script's comments.
 
