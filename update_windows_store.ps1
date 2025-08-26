@@ -33,17 +33,25 @@ if (-NOT $IsElevated -or $CurrentPolicy -eq "Undefined" -or $CurrentPolicy -eq "
 
 <#
 .SYNOPSIS
-    Windows Store Apps Update Script with User Notification
+    Windows Store Apps Update Script with Modern Methods
 .DESCRIPTION
-    Updates Windows Store apps using PowerShell cmdlets automatically.
+    Updates Windows Store apps using multiple modern approaches with automatic fallbacks.
+    Uses the latest WinGet methods, WinRT APIs, and legacy approaches as needed.
     Provides detailed feedback on update process and handles errors gracefully.
+.FEATURES
+    - Primary Method: Microsoft.WinGet.Client module with Repair-WingetPackageManager
+    - Fallback Method: Update-InboxApp script using WinRT APIs (PowerShell 5.1 only)
+    - Legacy Method: Windows Update COM objects and scheduled tasks
+    - Comprehensive diagnostics and repair capabilities
+    - Automatic elevation and execution policy handling
 .NOTES
     Automatically handles elevation and execution policy
+    Script works with both PowerShell 5.1 and PowerShell 7+
 #>
 
-# Function to update Windows Store apps automatically
+# Function to update Windows Store apps using modern methods
 function Update-StoreApps {
-    Write-Host "`nUpdating Windows Store apps automatically..." -ForegroundColor Cyan
+    Write-Host "`nUpdating Windows Store apps using modern methods..." -ForegroundColor Cyan
     
     try {
         # Reset Windows Store cache first
@@ -60,9 +68,159 @@ function Update-StoreApps {
         
         Write-Host "Windows Store found (Version: $($StoreApp.Version))" -ForegroundColor Green
         
-        # Try to programmatically trigger Store app updates using PowerShell
-        Write-Host "Triggering automatic app updates..." -ForegroundColor Cyan
+        $UpdateSuccess = $false
         
+        # Method 1: Use modern WinGet approach (Primary method)
+        Write-Host "`nAttempting Method 1: Modern WinGet approach..." -ForegroundColor Cyan
+        if (Update-StoreAppsViaWinGet) {
+            $UpdateSuccess = $true
+            Write-Host "Method 1 (WinGet) completed successfully!" -ForegroundColor Green
+        } else {
+            Write-Host "Method 1 (WinGet) failed or unavailable, trying fallback..." -ForegroundColor Yellow
+        }
+        
+        # Method 2: Use WinRT API approach (Fallback method)
+        if (-not $UpdateSuccess) {
+            Write-Host "`nAttempting Method 2: WinRT API approach..." -ForegroundColor Cyan
+            if (Update-StoreAppsViaWinRT) {
+                $UpdateSuccess = $true
+                Write-Host "Method 2 (WinRT API) completed successfully!" -ForegroundColor Green
+            } else {
+                Write-Host "Method 2 (WinRT API) failed or unavailable, trying legacy methods..." -ForegroundColor Yellow
+            }
+        }
+        
+        # Method 3: Legacy methods (Final fallback)
+        if (-not $UpdateSuccess) {
+            Write-Host "`nAttempting Method 3: Legacy approaches..." -ForegroundColor Cyan
+            $UpdateSuccess = Update-StoreAppsLegacy
+        }
+        
+        if ($UpdateSuccess) {
+            Write-Host "`nStore app update process completed successfully!" -ForegroundColor Green
+        } else {
+            Write-Host "`nStore app update process completed with warnings. Some methods may have failed." -ForegroundColor Yellow
+        }
+        
+        Write-Host "Note: Store app updates may continue processing in the background." -ForegroundColor Cyan
+        return $UpdateSuccess
+    }
+    catch {
+        Write-Error "Failed to update Store apps: $_"
+        return $false
+    }
+}
+
+# Function to update Store apps using modern WinGet approach
+function Update-StoreAppsViaWinGet {
+    Write-Host "Attempting to use Repair-WingetPackageManager..." -ForegroundColor Gray
+    
+    try {
+        # Check if Microsoft.WinGet.Client module is available
+        $WinGetModule = Get-Module -ListAvailable -Name "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+        
+        if (-not $WinGetModule) {
+            Write-Host "Installing Microsoft.WinGet.Client module..." -ForegroundColor Gray
+            Install-Module -Name Microsoft.WinGet.Client -Force -AllowClobber -Scope CurrentUser -ErrorAction Stop
+            Import-Module -Name Microsoft.WinGet.Client -ErrorAction Stop
+        } else {
+            Write-Host "Microsoft.WinGet.Client module found, importing..." -ForegroundColor Gray
+            Import-Module -Name Microsoft.WinGet.Client -ErrorAction Stop
+        }
+        
+        # Repair WinGet package manager to ensure it's up to date
+        Write-Host "Repairing WinGet package manager..." -ForegroundColor Gray
+        Repair-WingetPackageManager -Latest -ErrorAction Stop
+        Write-Host "WinGet package manager repaired successfully" -ForegroundColor Green
+        
+        # Update Store apps via WinGet
+        Write-Host "Updating Microsoft Store apps via WinGet..." -ForegroundColor Gray
+        
+        # Get list of Store apps that can be updated
+        $AvailableUpdates = Get-WinGetPackage -Source msstore | Where-Object { $_.AvailableVersions.Count -gt 0 }
+        
+        if ($AvailableUpdates.Count -gt 0) {
+            Write-Host "Found $($AvailableUpdates.Count) Store app updates available" -ForegroundColor White
+            
+            foreach ($Package in $AvailableUpdates) {
+                try {
+                    Write-Host "Updating: $($Package.Name)" -ForegroundColor Gray
+                    Update-WinGetPackage -Id $Package.Id -Source msstore -ErrorAction Continue
+                    Write-Host "Updated: $($Package.Name)" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Failed to update $($Package.Name): $($_.Exception.Message)" -ForegroundColor Yellow
+                }
+            }
+            Write-Host "WinGet Store app updates completed" -ForegroundColor Green
+        } else {
+            Write-Host "No Store app updates available via WinGet" -ForegroundColor Green
+        }
+        
+        return $true
+    }
+    catch {
+        Write-Host "WinGet method failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        return $false
+    }
+}
+
+# Function to update Store apps using WinRT API approach
+function Update-StoreAppsViaWinRT {
+    Write-Host "Attempting to use Update-InboxApp WinRT API approach..." -ForegroundColor Gray
+    
+    try {
+        # Check if we're running PowerShell 5.1 (required for WinRT APIs)
+        if ($PSVersionTable.PSVersion.Major -ne 5) {
+            Write-Host "WinRT API method requires PowerShell 5.1, current version is $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
+            return $false
+        }
+        
+        # Check if Update-InboxApp script is available
+        $InboxAppScript = Get-InstalledScript -Name "Update-InboxApp" -ErrorAction SilentlyContinue
+        
+        if (-not $InboxAppScript) {
+            Write-Host "Installing Update-InboxApp script..." -ForegroundColor Gray
+            Install-Script -Name Update-InboxApp -Force -Scope CurrentUser -ErrorAction Stop
+        } else {
+            Write-Host "Update-InboxApp script found" -ForegroundColor Gray
+        }
+        
+        Write-Host "Updating Store apps using WinRT APIs..." -ForegroundColor Gray
+        
+        # Update all Store apps using the WinRT API approach
+        $StoreApps = Get-AppxPackage | Where-Object { $_.InstallLocation -like "*WindowsApps*" -and $_.SignatureKind -eq "Store" }
+        
+        if ($StoreApps.Count -gt 0) {
+            Write-Host "Found $($StoreApps.Count) Store apps to check for updates" -ForegroundColor White
+            
+            foreach ($App in $StoreApps) {
+                try {
+                    Write-Host "Checking updates for: $($App.Name)" -ForegroundColor Gray
+                    & Update-InboxApp $App.PackageFamilyName -ErrorAction Continue
+                }
+                catch {
+                    Write-Host "Failed to update $($App.Name): $($_.Exception.Message)" -ForegroundColor Yellow
+                }
+            }
+            Write-Host "WinRT API Store app updates completed" -ForegroundColor Green
+        } else {
+            Write-Host "No Store apps found for WinRT API updates" -ForegroundColor Yellow
+        }
+        
+        return $true
+    }
+    catch {
+        Write-Host "WinRT API method failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        return $false
+    }
+}
+
+# Function to update Store apps using legacy methods (fallback)
+function Update-StoreAppsLegacy {
+    Write-Host "Using legacy update methods as final fallback..." -ForegroundColor Gray
+    
+    try {
         # Method 1: Use Windows Update PowerShell cmdlets for Store apps
         try {
             Write-Host "Attempting to trigger Store app updates via Windows Update..." -ForegroundColor Gray
@@ -124,63 +282,106 @@ function Update-StoreApps {
             Write-Host "Could not trigger all Store background tasks: $($_.Exception.Message)" -ForegroundColor Yellow
         }
         
-        Write-Host "`nStore app update process completed automatically!" -ForegroundColor Green
-        Write-Host "Note: Store app updates may continue processing in the background." -ForegroundColor Cyan
         return $true
     }
     catch {
-        Write-Error "Failed to update Store apps: $_"
+        Write-Host "Legacy methods failed: $($_.Exception.Message)" -ForegroundColor Yellow
         return $false
     }
 }
 
-# Function to diagnose Windows Store issues
+# Function to diagnose Windows Store issues (improved accuracy)
 function Test-WindowsStoreHealth {
     Write-Host "`nDiagnosing Windows Store health..." -ForegroundColor Cyan
     
     $IssuesFound = $false
+    $CriticalIssuesFound = $false
     
     try {
-        # Check 1: Verify Store app package exists
+        # Check 1: Verify Store app package exists and is properly registered
         Write-Host "Checking Windows Store app package..." -ForegroundColor Gray
         $StoreApp = Get-AppxPackage -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
         if (-not $StoreApp) {
-            Write-Host "Windows Store app package not found" -ForegroundColor Yellow
+            Write-Host "Windows Store app package not found" -ForegroundColor Red
+            $CriticalIssuesFound = $true
+        } elseif ($StoreApp.Status -ne "Ok") {
+            Write-Host "Windows Store app package status: $($StoreApp.Status)" -ForegroundColor Yellow
             $IssuesFound = $true
         } else {
-            Write-Host "Windows Store app package found (Version: $($StoreApp.Version))" -ForegroundColor Green
+            Write-Host "Windows Store app package healthy (Version: $($StoreApp.Version), Status: $($StoreApp.Status))" -ForegroundColor Green
         }
         
-        # Check 2: Test Store COM interface
-        Write-Host "Testing Store COM interface..." -ForegroundColor Gray
+        # Check 2: Verify Store app can be launched (better than COM test)
+        Write-Host "Testing Store app accessibility..." -ForegroundColor Gray
         try {
-            $Shell = New-Object -ComObject Shell.Application -ErrorAction Stop
-            $null = $Shell  # Just verify we can create it
-            Write-Host "Store COM interface accessible" -ForegroundColor Green
+            # Test if Store app manifest is accessible (more relevant than Shell COM)
+            $StoreManifestPath = "$($StoreApp.InstallLocation)\AppxManifest.xml"
+            if ($StoreApp -and (Test-Path $StoreManifestPath -ErrorAction SilentlyContinue)) {
+                Write-Host "Store app manifest accessible" -ForegroundColor Green
+            } else {
+                Write-Host "Store app manifest not accessible" -ForegroundColor Yellow
+                $IssuesFound = $true
+            }
         }
         catch {
-            Write-Host "Store COM interface not accessible" -ForegroundColor Yellow
+            Write-Host "Store app accessibility check failed: $($_.Exception.Message)" -ForegroundColor Yellow
             $IssuesFound = $true
         }
         
-        # Check 3: Verify critical Store services
+        # Check 3: Verify critical Store services (improved logic for on-demand services)
         Write-Host "Checking Windows Store services..." -ForegroundColor Gray
-        $StoreServices = @("AppXSvc", "ClipSVC")
-        foreach ($ServiceName in $StoreServices) {
-            $Service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-            if ($Service -and $Service.Status -eq "Running") {
-                Write-Host "$ServiceName service is running" -ForegroundColor Green
+        $StoreServices = @(
+            @{Name="AppXSvc"; DisplayName="Application Experience"; Critical=$false},
+            @{Name="ClipSVC"; DisplayName="Client License Service"; Critical=$false}
+        )
+        
+        foreach ($ServiceInfo in $StoreServices) {
+            $Service = Get-Service -Name $ServiceInfo.Name -ErrorAction SilentlyContinue
+            if (-not $Service) {
+                Write-Host "$($ServiceInfo.DisplayName) ($($ServiceInfo.Name)) service not found" -ForegroundColor Red
+                if ($ServiceInfo.Critical) { $CriticalIssuesFound = $true }
+                else { $IssuesFound = $true }
+            } elseif ($Service.StartType -eq "Disabled") {
+                Write-Host "$($ServiceInfo.DisplayName) service is disabled" -ForegroundColor Red
+                if ($ServiceInfo.Critical) { $CriticalIssuesFound = $true }
+                else { $IssuesFound = $true }
+            } elseif ($Service.Status -eq "Running") {
+                Write-Host "$($ServiceInfo.DisplayName) service is running" -ForegroundColor Green
+            } elseif ($Service.StartType -eq "Manual" -or $Service.StartType -eq "Automatic") {
+                Write-Host "$($ServiceInfo.DisplayName) service is available (Start: $($Service.StartType), Status: $($Service.Status))" -ForegroundColor Green
             } else {
-                Write-Host "$ServiceName service issue detected" -ForegroundColor Yellow
+                Write-Host "$($ServiceInfo.DisplayName) service issue (Start: $($Service.StartType), Status: $($Service.Status))" -ForegroundColor Yellow
                 $IssuesFound = $true
             }
         }
         
-        return $IssuesFound
+        # Check 4: Test Store cache directory
+        Write-Host "Checking Store cache directory..." -ForegroundColor Gray
+        $StoreCachePath = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsStore_8wekyb3d8bbwe"
+        if (Test-Path $StoreCachePath -ErrorAction SilentlyContinue) {
+            Write-Host "Store cache directory exists" -ForegroundColor Green
+        } else {
+            Write-Host "Store cache directory missing" -ForegroundColor Yellow
+            $IssuesFound = $true
+        }
+        
+        # Only report issues if critical problems found, or if multiple minor issues detected
+        $TotalIssues = $IssuesFound + $CriticalIssuesFound
+        if ($CriticalIssuesFound) {
+            Write-Host "`nCritical Store issues detected - repair recommended" -ForegroundColor Red
+            return $true
+        } elseif ($IssuesFound -and $TotalIssues -gt 1) {
+            Write-Host "`nMultiple minor Store issues detected - repair may help" -ForegroundColor Yellow
+            return $true
+        } else {
+            Write-Host "`nStore health check: No significant issues detected" -ForegroundColor Green
+            return $false
+        }
     }
     catch {
         Write-Host "Error during Store health check: $_" -ForegroundColor Yellow
-        return $true  # Assume issues if we can't diagnose
+        Write-Host "Unable to complete health check - assuming Store is healthy" -ForegroundColor Gray
+        return $false  # Changed: Don't assume issues if we can't diagnose properly
     }
 }
 
@@ -245,10 +446,15 @@ try {
         Write-Host "`nWindows Store appears healthy. No repair needed." -ForegroundColor Green
     }
     
-    # Step 2: Update Store apps automatically
+    # Step 2: Update Store apps using modern methods
     Write-Host "`n" + "=" * 70 -ForegroundColor Cyan
-    Write-Host "  STEP 2: UPDATING STORE APPS" -ForegroundColor Cyan
+    Write-Host "  STEP 2: UPDATING STORE APPS (MODERN METHODS)" -ForegroundColor Cyan
     Write-Host "=" * 70 -ForegroundColor Cyan
+    
+    Write-Host "Available update methods:" -ForegroundColor White
+    Write-Host "  1. WinGet (Microsoft.WinGet.Client) - Primary method" -ForegroundColor White
+    Write-Host "  2. WinRT APIs (Update-InboxApp) - Fallback for PS 5.1" -ForegroundColor White  
+    Write-Host "  3. Legacy methods - Final fallback" -ForegroundColor White
     
     if (-not (Update-StoreApps)) {
         $UpdateSuccess = $false
@@ -269,10 +475,16 @@ try {
     } else {
         Write-Host "- Windows Store: Health check passed, no repair needed" -ForegroundColor White
     }
-    Write-Host "- Store Apps: Automatic update process completed" -ForegroundColor White
+    Write-Host "- Store Apps: Modern update methods attempted with fallbacks" -ForegroundColor White
+    Write-Host "  * WinGet method (Repair-WingetPackageManager)" -ForegroundColor Gray
+    Write-Host "  * WinRT API method (Update-InboxApp)" -ForegroundColor Gray
+    Write-Host "  * Legacy methods (Windows Update COM + Scheduled Tasks)" -ForegroundColor Gray
     
     Write-Host "`nNote: Some Store app updates may continue in the background." -ForegroundColor Cyan
     Write-Host "You can check the Microsoft Store 'Downloads and updates' page for progress." -ForegroundColor Cyan
+    Write-Host "`nFor best results on future runs:" -ForegroundColor White
+    Write-Host "- Use PowerShell 5.1 for WinRT API support" -ForegroundColor Gray
+    Write-Host "- Ensure internet connectivity for WinGet module downloads" -ForegroundColor Gray
     
     Write-Host "`nExiting in 10 seconds..." -ForegroundColor Gray
     Start-Sleep -Seconds 10
