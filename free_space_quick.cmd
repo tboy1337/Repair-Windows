@@ -5,7 +5,7 @@ net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
     echo Please right-click and select "Run as administrator".
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 
@@ -26,6 +26,6 @@ if %errorlevel% neq 0 (
     echo Failed to delete old Windows update files on %SystemDrive%.  Error code: %errorlevel%
 )
 
-timeout /t 5 /nobreak
+timeout /t 10 /nobreak
 endlocal
 exit /b 0

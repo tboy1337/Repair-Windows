@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 if "%~1"=="" (
     echo Usage: %~nx0 "Your message here"
     echo Example: %~nx0 "Hello, this is a test message"
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 

@@ -8,7 +8,7 @@ net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
     echo Please right-click and select "Run as administrator".
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 
@@ -24,7 +24,7 @@ findstr /c:"found no problems" "%TEMP_FILE%" >nul
 if %errorlevel% equ 0 (
     echo No errors found on %TARGET_DRIVE%.
     del "%TEMP_FILE%" >nul 2>&1
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 0
 )
 
@@ -37,9 +37,13 @@ if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
     echo Restarting system to complete repairs, please save your work.
     timeout /t 30 /nobreak
     shutdown /r /t 1 >nul 2>&1
+    exit /b 1
 ) else (
     chkdsk "%TARGET_DRIVE%" /F /X >nul 2>&1
 )
 
+echo Error repair finished.
+
+timeout /t 10 /nobreak
 endlocal
-exit /b 0
+exit /b 1

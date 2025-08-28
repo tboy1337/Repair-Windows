@@ -13,7 +13,7 @@ reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinPE" >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script must be run in Windows Recovery Environment.
     echo Please boot into Windows RE and try again.
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 
@@ -34,7 +34,7 @@ for %%d in (A B C D E F G H I J K L M N O P Q R S T U V W Y Z) do (
 if not defined WINDOWS_DRIVE (
     echo Could not find Windows installation.
     echo Please ensure Windows is installed and accessible.
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 

@@ -11,7 +11,7 @@ if %errorlevel% equ 0 (
         set PYTHON_CMD=python
     ) else (
         echo Python is not installed or in PATH.
-        timeout /t 5 /nobreak
+        timeout /t 10 /nobreak
         exit /b 1
     )
 )
@@ -21,7 +21,7 @@ set TEMP_FILE=%TEMP%\installed_packages_%RANDOM%_%RANDOM%.txt
 where %PYTHON_CMD% -m pip --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo Pip is not installed or in PATH.
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 
@@ -48,7 +48,7 @@ if %errorlevel% neq 0 (
         )
     ) else (
         echo Failed to reinstall pip.  Error code: %errorlevel%
-        timeout /t 5 /nobreak
+        timeout /t 10 /nobreak
         exit /b 1
     )
 )
@@ -69,6 +69,6 @@ if %errorlevel% neq 0 (
     echo Failed to purge pip cache.  Error code: %errorlevel%
 )
 
-timeout /t 5 /nobreak
+timeout /t 10 /nobreak
 endlocal
 exit /b 0

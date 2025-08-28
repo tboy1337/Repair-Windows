@@ -39,7 +39,7 @@ call powershell -Command "$networkAdapters = Get-CimInstance -ClassName Win32_Ne
 
 echo System information has been exported to: %outputFile%
 
-timeout /t 5 /nobreak
+timeout /t 10 /nobreak
 
 endlocal
 exit /b

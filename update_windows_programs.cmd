@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 net session >nul 2>&1
 if %errorlevel% equ 0 (
     echo This script is intended to be run as a user. Please run without administrator privileges.
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 
@@ -12,7 +12,7 @@ winget --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: winget is not available or not installed on this system.
     echo Please install Windows App Installer from Microsoft Store.
-    timeout /t 5 /nobreak
+    timeout /t 10 /nobreak
     exit /b 1
 )
 
@@ -26,5 +26,5 @@ if %errorlevel% equ 0 (
     echo Update process completed with some issues.
 )
 
-timeout /t 5 /nobreak
+timeout /t 10 /nobreak
 exit /b 0
