@@ -27,6 +27,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
             echo Restarting system to complete repairs, please save your work.
             timeout /t 30 /nobreak
             shutdown /r /t 1 >nul 2>&1
+            exit /b 1
         ) else (
             chkdsk "%TARGET_DRIVE%" /R /X >nul 2>&1
         )
@@ -40,6 +41,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
             echo Run chkdsk "%TARGET_DRIVE%" /sdcleanup after repair finishes.
             timeout /t 30 /nobreak
             shutdown /r /t 1 >nul 2>&1
+            exit /b 1
         ) else (
             chkdsk "%TARGET_DRIVE%" /B /X >nul 2>&1
             echo Cleaning up unnecessary data structures and unallocated metadata files...
@@ -48,5 +50,8 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
     )
 )
 
+echo Error repair finished.
+
+timeout /t 10 /nobreak
 endlocal
-exit /b 0
+exit /b 1
