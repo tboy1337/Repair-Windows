@@ -16,7 +16,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Updating all programs via winget...
+echo Updating all programs via winget (might take a long time)...
 winget upgrade --all --accept-package-agreements --accept-source-agreements --silent >nul 2>&1
 if %errorlevel% equ 0 (
     echo All updates completed successfully.
