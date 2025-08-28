@@ -14,10 +14,10 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
-echo Analysing all drives...
+echo Analysing all applicable drives...
 defrag /C /A /H >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to analyze all drives.  Error code: %errorlevel%
+    echo Failed to analyze all applicable drives.  Error code: %errorlevel%
 )
 
 echo Checking if %SystemDrive% is an SSD...
