@@ -43,13 +43,13 @@ if "!IsSSD!"=="true" (
     )
 )
 
-echo Optimizing the storage tiers on all drives...
+echo Optimizing the storage tiers on all applicable drives...
 defrag /C /G /I 300 /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to optimize the storage tiers on all drives.  Error code: %errorlevel%
 )
 
-echo Performing slab consolidation on all drives...
+echo Performing slab consolidation on all applicable drives...
 defrag /C /K /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to perform slab consolidation on all drives.  Error code: %errorlevel%
@@ -61,7 +61,7 @@ if %errorlevel% neq 0 (
     echo Failed to optimize all drives.  Error code: %errorlevel%
 )
 
-echo Performing free space consolidation on all drives...
+echo Performing free space consolidation on all applicable drives...
 defrag /C /X /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to perform free space consolidation on all drives.  Error code: %errorlevel%
