@@ -25,6 +25,17 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+echo Checking internet connectivity...
+set INTERNET_AVAILABLE=0
+ping -n 1 google.com >nul 2>&1
+if %errorlevel% equ 0 (
+    echo Internet access: Available
+    set INTERNET_AVAILABLE=1
+) else (
+    echo Internet access: Not Available
+    echo Skipping online package upgrades.
+)
+
 echo Generating list of installed packages...
 %PYTHON_CMD% -m pip freeze > %TEMP_FILE% >nul
 
@@ -35,32 +46,36 @@ for /f "delims==" %%p in (%TEMP_FILE%) do (
 
 del %TEMP_FILE% >nul 2>&1
 
-echo Reinstalling default packages...
-%PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to upgrade pip, trying to reinstall pip...
-    %PYTHON_CMD% -m ensurepip --upgrade >nul 2>&1
-    if %errorlevel% equ 0 (
-        echo Successfully reinstalled pip, now trying to upgrade pip again...
-        %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
-        if %errorlevel% neq 0 (
-            echo Failed to upgrade pip again.  Error code: %errorlevel%
+if %INTERNET_AVAILABLE% equ 1 (
+    echo Reinstalling default packages...
+    %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to upgrade pip, trying to reinstall pip...
+        %PYTHON_CMD% -m ensurepip --upgrade >nul 2>&1
+        if %errorlevel% equ 0 (
+            echo Successfully reinstalled pip, now trying to upgrade pip again...
+            %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
+            if %errorlevel% neq 0 (
+                echo Failed to upgrade pip again.  Error code: %errorlevel%
+            )
+        ) else (
+            echo Failed to reinstall pip.  Error code: %errorlevel%
+            timeout /t 10 /nobreak
+            exit /b 1
         )
-    ) else (
-        echo Failed to reinstall pip.  Error code: %errorlevel%
-        timeout /t 10 /nobreak
-        exit /b 1
     )
-)
 
-%PYTHON_CMD% -m pip install --upgrade setuptools >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to upgrade setuptools.  Error code: %errorlevel%
-)
+    %PYTHON_CMD% -m pip install --upgrade setuptools >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to upgrade setuptools.  Error code: %errorlevel%
+    )
 
-%PYTHON_CMD% -m pip install --upgrade wheel >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to upgrade wheel.  Error code: %errorlevel%
+    %PYTHON_CMD% -m pip install --upgrade wheel >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Failed to upgrade wheel.  Error code: %errorlevel%
+    )
+) else (
+    echo Skipping pip, setuptools, and wheel upgrades due to no internet connection.
 )
 
 echo Purging pip cache...
