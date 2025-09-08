@@ -46,7 +46,7 @@ if %errorlevel% equ 0 (
 )
 
 if %INTERNET_AVAILABLE% equ 1 (
-    echo Reinstalling and updating default packages...
+    echo Reinstalling and upgrading default packages...
     %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
     if %errorlevel% neq 0 (
         echo Failed to upgrade pip, trying to reinstall pip...
@@ -74,7 +74,7 @@ if %INTERNET_AVAILABLE% equ 1 (
         echo Failed to upgrade wheel.  Error code: %errorlevel%
     )
 ) else (
-    echo Skipping package update due to no internet connection.
+    echo Skipping package upgrades due to no internet connection.
 )
 
 echo Purging pip cache...
