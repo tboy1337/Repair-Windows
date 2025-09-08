@@ -59,6 +59,7 @@ if %INTERNET_AVAILABLE% equ 1 (
             )
         ) else (
             echo Failed to reinstall pip.  Error code: %errorlevel%
+            echo There is a problem with your Python installation.
             timeout /t 10 /nobreak
             exit /b 1
         )
