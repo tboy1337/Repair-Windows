@@ -40,6 +40,7 @@ if !DISM_ERROR! neq 0 (
     set "FIND_ERROR=%errorlevel%"
     if !FIND_ERROR! neq 0 set HAS_CORRUPTION=1
 )
+
 del "%TEMP_FILE_1%" >nul 2>&1
 del "%TEMP_FILE_2%" >nul 2>&1
 
