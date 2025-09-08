@@ -74,7 +74,7 @@ if %INTERNET_AVAILABLE% equ 1 (
         echo Failed to upgrade wheel.  Error code: %errorlevel%
     )
 ) else (
-    echo Skipping pip, setuptools, and wheel upgrades due to no internet connection.
+    echo Skipping package upgrades due to no internet connection.
 )
 
 echo Purging pip cache...
