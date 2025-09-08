@@ -165,8 +165,7 @@ if %errorlevel% neq 0 (
     echo Failed to free up space on all drives.  Error code: %errorlevel%
 )
 
-echo Deleting system temporary files...
-
+echo Deleting all system temporary files...
 del /q /f /s %temp%\* >nul 2>&1
 for /d %%i in ("%temp%\*") do rd /s /q "%%i" >nul 2>&1
 
