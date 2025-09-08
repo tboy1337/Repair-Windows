@@ -25,6 +25,16 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+echo Generating list of installed packages...
+%PYTHON_CMD% -m pip freeze > %TEMP_FILE% >nul
+
+echo Uninstalling all packages...
+for /f "delims==" %%p in (%TEMP_FILE%) do (
+    %PYTHON_CMD% -m pip uninstall -y %%p >nul 2>&1
+)
+
+del %TEMP_FILE% >nul 2>&1
+
 echo Checking internet connectivity...
 set INTERNET_AVAILABLE=0
 ping -n 1 google.com >nul 2>&1
@@ -35,16 +45,6 @@ if %errorlevel% equ 0 (
     echo Internet access: Not Available
     echo Skipping online package upgrades.
 )
-
-echo Generating list of installed packages...
-%PYTHON_CMD% -m pip freeze > %TEMP_FILE% >nul
-
-echo Uninstalling all packages...
-for /f "delims==" %%p in (%TEMP_FILE%) do (
-    %PYTHON_CMD% -m pip uninstall -y %%p >nul 2>&1
-)
-
-del %TEMP_FILE% >nul 2>&1
 
 if %INTERNET_AVAILABLE% equ 1 (
     echo Reinstalling and updating default packages...
