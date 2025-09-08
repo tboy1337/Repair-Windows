@@ -78,8 +78,8 @@ echo.
 
 set /p rebootchoice=Would you like to reboot now? (Y/N): 
 if /i "%rebootchoice%"=="Y" (
-    echo Rebooting system in 10 seconds...
-    timeout /t 10 /nobreak >nul 2>&1
+    echo Rebooting system in 30 seconds...
+    timeout /t 30 /nobreak >nul 2>&1
     shutdown /r /t 1 >nul 2>&1
 ) else (
     echo Please reboot your system for changes to take effect.
