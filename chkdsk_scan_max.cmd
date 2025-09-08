@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 set "TARGET_DRIVE=%SystemDrive%"
 

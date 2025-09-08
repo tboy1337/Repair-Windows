@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -18,5 +17,4 @@ echo Repairing System Volumes...
 call powershell -Command "$ProgressPreference = 'SilentlyContinue'; Repair-Volume -FileSystemLabel * -OfflineScanAndFix" >nul 2>&1
 
 timeout /t 10 /nobreak
-endlocal
 exit /b 0

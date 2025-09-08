@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -27,5 +26,4 @@ if %errorlevel% neq 0 (
 )
 
 timeout /t 10 /nobreak
-endlocal
 exit /b 0

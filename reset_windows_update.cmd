@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -53,5 +52,4 @@ bitsadmin /reset /allusers >nul 2>&1
 if %errorlevel% neq 0 ( echo Failed to reset BITS queue.  Error code: %errorlevel% )
 
 timeout /t 10 /nobreak
-endlocal
 exit /b 0

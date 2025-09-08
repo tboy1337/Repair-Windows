@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 set "TARGET_DRIVE=%SystemDrive%"
 set "TEMP_FILE=%TEMP%\chkdsk_output_%RANDOM%_%RANDOM%.txt"

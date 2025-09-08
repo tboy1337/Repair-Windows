@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -189,5 +188,4 @@ for /d %%u in (%SystemDrive%\Users\*) do (
 echo Temporary files deleted successfully.
 
 timeout /t 10 /nobreak
-endlocal
 exit /b 0

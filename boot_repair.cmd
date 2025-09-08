@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 echo Windows Recovery Environment Repair Script
 echo =====================================

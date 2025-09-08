@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -41,5 +40,4 @@ echo Clearing npm cache...
 npm cache clean --force
 
 timeout /t 10 /nobreak
-endlocal
 exit /b 0

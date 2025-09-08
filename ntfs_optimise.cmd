@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (

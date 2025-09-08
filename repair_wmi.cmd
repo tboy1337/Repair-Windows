@@ -1,5 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -35,5 +34,4 @@ echo Restarting WMI service...
 net start winmgmt >nul 2>&1
 
 timeout /t 10 /nobreak
-endlocal
 exit /b 0
