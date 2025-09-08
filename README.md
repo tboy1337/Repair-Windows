@@ -53,7 +53,7 @@ Here's a breakdown of the goodies:
 - **get_system_info.cmd**: Generate a detailed system report.
 - **organise_videos.ps1**: Organize .mp4 and .mkv files by creating individual folders for each video.
 - **print_queue_viewer.ps1**: View and manage print queues.
-- **repair_volumes.cmd**: Repair all volumes on your system.
+- **repair_volumes.cmd**: Alternative repair all volumes on your system method.
 - **restore_pip_default.cmd**: Reset Python's pip to default settings.
 - **tts.cmd**: Text-to-Speech utility for fun or accessibility.
 - **unpack_archives.ps1**: Batch unpack archives (ZIP, RAR, etc.).
