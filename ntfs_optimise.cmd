@@ -14,9 +14,10 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo.
-echo Optimizing NTFS behavior settings.
-echo These changes require a system reboot to take effect.
+echo #=======================================================#
+echo #          Optimizing NTFS behavior settings.           #
+echo # These changes require a system reboot to take effect. #
+echo #=======================================================#
 echo.
 
 echo Setting NTFS memory usage:
@@ -67,11 +68,14 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo NTFS optimization complete!
+echo #==================================================================#
+echo #                   NTFS optimization complete!                    #
+echo #==================================================================#
+echo # IMPORTANT: These changes require a system reboot to take effect. #
+echo #           It is recommended to reboot your system now.           #
+echo #==================================================================#
 echo.
-echo IMPORTANT: These changes require a system reboot to take effect.
-echo It is recommended to reboot your system now.
-echo.
+
 set /p rebootchoice=Would you like to reboot now? (Y/N): 
 if /i "%rebootchoice%"=="Y" (
     echo Rebooting system in 10 seconds...
