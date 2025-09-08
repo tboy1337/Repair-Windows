@@ -1,6 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
+cd /d "%SystemDrive%" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
+)
+
 :: Check if message was provided as parameter
 if "%~1"=="" (
     echo Usage: %~nx0 "Your message here"

@@ -3,17 +3,17 @@ setlocal enabledelayedexpansion
 
 set "TARGET_DRIVE=%SystemDrive%"
 
+cd /d "%SystemDrive%" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
+)
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo This script requires administrator privileges.
     echo Please right-click and select "Run as administrator".
     timeout /t 10 /nobreak
     exit /b 1
-)
-
-cd /d "%SystemDrive%" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|find "File System Name"') do (
