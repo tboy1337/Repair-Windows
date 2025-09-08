@@ -43,7 +43,6 @@ if %errorlevel% equ 0 (
     set INTERNET_AVAILABLE=1
 ) else (
     echo Internet access: Not Available
-    echo Skipping online package upgrades.
 )
 
 if %INTERNET_AVAILABLE% equ 1 (
