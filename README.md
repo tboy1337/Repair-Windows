@@ -31,7 +31,7 @@ Here's a breakdown of the goodies:
 - **update_windows_store.ps1**: Update Windows Store apps and reset store cache if needed.
 
 ### Disk Optimization
-- **defrag_optimise.cmd**: Defragment and optimize your drives for peak performance.
+- **defrag_optimize.cmd**: Defragment and optimize your drives for peak performance.
 - **free_space_quick.cmd / mid.cmd / max.cmd**: Free up disk space by cleaning temp files, logs, and more.
 
 ### Network & Connectivity Fixes
@@ -42,7 +42,7 @@ Here's a breakdown of the goodies:
 
 ### Performance Boosters
 - **enable_ultimate_performance.cmd**: Unlock the Ultimate Performance power plan for high-end hardware.
-- **ntfs_optimise.cmd**: Tune NTFS file system settings.
+- **ntfs_optimize.cmd**: Tune NTFS file system settings.
 
 ### Development Environment Setup (in `./Misc/`)
 - **node_dev_install.cmd**: Install essential Node.js development packages and tools globally.
@@ -83,7 +83,7 @@ Here's a breakdown of the goodies:
 
 ## Usage Examples 📝
 - **Fix system files**: `dism_sfc_scan.cmd`
-- **Optimize disk**: `defrag_optimise.cmd`
+- **Optimize disk**: `defrag_optimize.cmd`
 - **Update all programs**: `update_windows_programs.cmd`
 - **Full Windows update**: `update_windows.ps1`
 - **Set up Python dev environment**: `Misc/python_dev_install.cmd`
