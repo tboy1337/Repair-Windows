@@ -25,7 +25,7 @@ if %errorlevel% equ 0 (
 )
 
 %PYTHON_CMD% -m pip --version >nul 2>&1
-if errorlevel 1 (
+if errorlevel neq 0 (
     echo ERROR: Pip is not installed or not in PATH
     timeout /t 10 /nobreak
     exit /b 1
@@ -37,7 +37,7 @@ echo.
 
 echo Updating pip itself...
 %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
-if errorlevel 1 (
+if errorlevel neq 0 (
     echo WARNING: Failed to update pip itself
     echo.
 )
@@ -89,7 +89,7 @@ for /f "skip=2 tokens=1" %%i in ("%TEMP_FILE%") do (
         echo.
         echo Updating %%i...
         %PYTHON_CMD% -m pip install --upgrade %%i >nul 2>&1
-        if errorlevel 1 (
+        if errorlevel neq 0 (
             echo ERROR: Failed to update %%i
             set /a failed+=1
         ) else (
@@ -109,7 +109,7 @@ echo Successfully updated: !updated! packages
 echo Failed to update: !failed! packages
 echo.
 
-if !failed! gtr 0 (
+if !failed! neq 0 (
     echo Some packages failed to update. This could be due to:
     echo - Permission issues ^(try running as administrator^)
     echo - Package conflicts or dependencies
