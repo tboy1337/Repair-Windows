@@ -43,7 +43,7 @@ echo Getting list of outdated packages...
 
 %PYTHON_CMD% -m pip list --outdated > "%TEMP_FILE%" 2>nul
 if errorlevel neq 0 (
-    echo WARNING: Failed to create temporary file.
+    echo WARNING: Failed to save list of outdated packages to temporary file.
     timeout /t 10 /nobreak
     exit /b 1
 )
