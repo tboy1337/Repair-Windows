@@ -42,9 +42,14 @@ echo.
 echo Getting list of outdated packages...
 
 %PYTHON_CMD% -m pip list --outdated > "%TEMP_FILE%" 2>nul
+if errorlevel neq 0 (
+    echo WARNING: Failed to create temporary file.
+    timeout /t 10 /nobreak
+    exit /b 1
+)
 
 if not exist "%TEMP_FILE%" (
-    echo No outdated packages found or error occurred.
+    echo No outdated packages found.
     timeout /t 10 /nobreak
     exit /b 0
 )
