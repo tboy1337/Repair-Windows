@@ -35,7 +35,6 @@ echo Updating pip itself...
 %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
 if errorlevel neq 0 (
     echo WARNING: Failed to update pip itself
-    echo.
 )
 
 echo.
