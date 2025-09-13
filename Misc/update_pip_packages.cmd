@@ -31,10 +31,6 @@ if errorlevel neq 0 (
     exit /b 1
 )
 
-echo Current pip version:
-%PYTHON_CMD% -m pip --version
-echo.
-
 echo Updating pip itself...
 %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
 if errorlevel neq 0 (
