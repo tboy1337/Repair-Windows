@@ -36,7 +36,7 @@ echo Current pip version:
 echo.
 
 echo Updating pip itself...
-%PYTHON_CMD% -m pip install --upgrade pip
+%PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
 if errorlevel 1 (
     echo WARNING: Failed to update pip itself
     echo.
@@ -88,7 +88,7 @@ for /f "skip=2 tokens=1" %%i in ("%TEMP_FILE%") do (
     if not "%%i"=="" (
         echo.
         echo Updating %%i...
-        %PYTHON_CMD% -m pip install --upgrade %%i
+        %PYTHON_CMD% -m pip install --upgrade %%i >nul 2>&1
         if errorlevel 1 (
             echo ERROR: Failed to update %%i
             set /a failed+=1
