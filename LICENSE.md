@@ -1,8 +1,8 @@
 # Commercial Restricted License (CRL)
 
-**Version 1.0**
+**Version 1.1**
 
-**Copyright (c) 2025 tboy1337**
+**Copyright (c) [YEAR] [YOUR NAME]**
 
 ## Grant of Rights
 
@@ -40,7 +40,6 @@ For Non-Commercial Use, you may:
 You must:
 
 - Include this license notice in all copies or substantial portions of the Software
-- Clearly mark any modifications you make to the Software
 - Not remove or alter any copyright notices
 
 ## Restrictions
@@ -54,7 +53,13 @@ You may not:
 
 ## No Warranty
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## Termination
 
@@ -62,4 +67,4 @@ This license terminates automatically if you violate any of its terms. Upon term
 
 ## Governing Law
 
-This license shall be governed by and construed in accordance with the laws of the United Kingdom, without regard to its conflict of law provisions.
+This license shall be governed by and construed in accordance with the laws of [YOUR COUNTRY], without regard to its conflict of law provisions.
