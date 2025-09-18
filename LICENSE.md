@@ -2,7 +2,7 @@
 
 **Version 1.1**
 
-**Copyright (c) [YEAR] [YOUR NAME]**
+**Copyright (c) 2025 tboy1337**
 
 ## Grant of Rights
 
@@ -67,4 +67,4 @@ This license terminates automatically if you violate any of its terms. Upon term
 
 ## Governing Law
 
-This license shall be governed by and construed in accordance with the laws of [YOUR COUNTRY], without regard to its conflict of law provisions.
+This license shall be governed by and construed in accordance with the laws of the United Kingdom, without regard to its conflict of law provisions.
