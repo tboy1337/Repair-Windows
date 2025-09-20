@@ -36,10 +36,24 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Updating pip itself...
+echo Updating pip...
 %PYTHON_CMD% -m pip install --upgrade pip >nul 2>&1
 if %errorlevel% neq 0 (
-    echo WARNING: Failed to update pip itself.  Error code: %errorlevel%
+    echo WARNING: Failed to update pip.  Error code: %errorlevel%
+)
+
+
+
+echo Updating setuptools...
+%PYTHON_CMD% -m pip install --upgrade setuptools >nul 2>&1
+if %errorlevel% neq 0 (
+    echo WARNING: Failed to update setuptools.  Error code: %errorlevel%
+)
+
+echo Updating wheel...
+%PYTHON_CMD% -m pip install --upgrade wheel >nul 2>&1
+if %errorlevel% neq 0 (
+    echo WARNING: Failed to update wheel.  Error code: %errorlevel%
 )
 
 echo.
