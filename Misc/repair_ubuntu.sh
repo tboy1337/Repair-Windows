@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Ubuntu Linux System Integrity Check and Repair Script
-# Fixed version addressing security and reliability issues
 
 # Exit on error, but handle errors gracefully in functions
 set -euo pipefail
