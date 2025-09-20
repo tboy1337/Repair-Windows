@@ -45,6 +45,7 @@ echo Starting Package Installation and/or Upgrade...
 %PYTHON_CMD% -m pip install --upgrade mypy
 %PYTHON_CMD% -m pip install --upgrade black
 %PYTHON_CMD% -m pip install --upgrade isort
+%PYTHON_CMD% -m pip install --upgrade autopep8
 %PYTHON_CMD% -m pip install --upgrade pytest
 %PYTHON_CMD% -m pip install --upgrade pytest-asyncio
 %PYTHON_CMD% -m pip install --upgrade pytest-timeout
