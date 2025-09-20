@@ -14,7 +14,7 @@ if %errorlevel% equ 0 (
 
 winget --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ERROR: winget is not available or not installed on this system.
+    echo ERROR: winget is not in PATH or not installed on this system.
     echo Please install Windows App Installer from the Microsoft Store.
     timeout /t 10 /nobreak
     exit /b 1
