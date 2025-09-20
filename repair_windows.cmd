@@ -41,12 +41,12 @@ if !DISM_ERROR! neq 0 (
 )
 
 del "%TEMP_FILE_1%" >nul 2>&1
-if errorlevel neq 0 (
+if %errorlevel% neq 0 (
     echo Failed to delete temporary file: %TEMP_FILE_1%.  Error code: %errorlevel%
 )
 
 del "%TEMP_FILE_2%" >nul 2>&1
-if errorlevel neq 0 (
+if %errorlevel% neq 0 (
     echo Failed to delete temporary file: %TEMP_FILE_2%.  Error code: %errorlevel%
 )
 

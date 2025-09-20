@@ -23,7 +23,7 @@ chkdsk %TARGET_DRIVE% > "%TEMP_FILE%" 2>&1
 findstr /c:"found no problems" "%TEMP_FILE%" >nul
 if %errorlevel% equ 0 (
     del "%TEMP_FILE%" >nul 2>&1
-    if errorlevel neq 0 (
+    if %errorlevel% neq 0 (
         echo Failed to delete temporary file %TEMP_FILE%.  Error code: %errorlevel%
     )
     echo No errors found on %TARGET_DRIVE%
@@ -33,7 +33,7 @@ if %errorlevel% equ 0 (
 )
 
 del "%TEMP_FILE%" >nul 2>&1
-if errorlevel neq 0 (
+if %errorlevel% neq 0 (
     echo Failed to delete temporary file: %TEMP_FILE%.  Error code: %errorlevel%
 )
 

@@ -39,7 +39,7 @@ for /f "delims==" %%p in (%TEMP_FILE%) do (
 )
 
 del %TEMP_FILE% >nul 2>&1
-if errorlevel neq 0 (
+if %errorlevel% neq 0 (
     echo Failed to delete temporary file: %TEMP_FILE%.  Error code: %errorlevel%
 )
 
