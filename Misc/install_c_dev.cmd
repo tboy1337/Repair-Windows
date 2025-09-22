@@ -14,7 +14,7 @@ if %errorlevel% equ 0 (
 
 where cl >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Visual Studio compiler (cl) not found in PATH.
+    echo Visual Studio compiler (cl) not installed or not in PATH.
     echo Please run from Visual Studio Developer Command Prompt or install Visual Studio.
     timeout /t 10 /nobreak
     exit /b 1
@@ -22,7 +22,7 @@ if %errorlevel% neq 0 (
 
 where vcpkg >nul 2>&1
 if %errorlevel% neq 0 (
-    echo vcpkg not found in PATH. Please install vcpkg first.
+    echo vcpkg not installed or not in PATH. Please install vcpkg first.
     timeout /t 10 /nobreak
     exit /b 1
 )
