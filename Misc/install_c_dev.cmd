@@ -27,7 +27,19 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+where winget >nul 2>&1
+if %errorlevel% neq 0 (
+    echo winget is not available on this system. Please install App Installer from Microsoft Store.
+    timeout /t 10 /nobreak
+    exit /b 1
+)
+
 echo Starting C++ Development Tools Installation...
+
+REM Static Analysis and Code Coverage Tools
+echo Installing LLVM and OpenCppCoverage...
+winget install --id LLVM.LLVM --silent --accept-package-agreements --accept-source-agreements
+winget install --id OpenCppCoverage.OpenCppCoverage --silent --accept-package-agreements --accept-source-agreements
 
 REM Package Manager & Build Tools
 echo Installing vcpkg packages...
@@ -53,11 +65,6 @@ echo Installing additional development libraries...
 vcpkg install catch2:x64-windows
 vcpkg install benchmark:x64-windows
 vcpkg install cpprestsdk:x64-windows
-
-echo.
-echo Manual installations still needed:
-echo - OpenCppCoverage (code coverage)
-echo - Clang Static Analyzer (static analysis)
 
 timeout /t 10 /nobreak
 exit /b 0
