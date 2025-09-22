@@ -35,6 +35,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Starting C++ Development Tools Installation...
+echo.
 
 REM Static Analysis and Code Coverage Tools
 echo Installing LLVM and OpenCppCoverage...
