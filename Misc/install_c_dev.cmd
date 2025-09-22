@@ -22,7 +22,7 @@ if %errorlevel% neq 0 (
 
 where vcpkg >nul 2>&1
 if %errorlevel% neq 0 (
-    echo vcpkg not installed or not in PATH. Please install vcpkg first.
+    echo vcpkg not installed or not in PATH. Please check or install vcpkg first.
     timeout /t 10 /nobreak
     exit /b 1
 )
