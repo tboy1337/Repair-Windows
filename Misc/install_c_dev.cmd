@@ -55,8 +55,6 @@ vcpkg install benchmark:x64-windows
 vcpkg install cpprestsdk:x64-windows
 
 echo.
-echo C++ Development Environment Setup Complete!
-echo.
 echo Manual installations still needed:
 echo - OpenCppCoverage (code coverage)
 echo - Clang Static Analyzer (static analysis)

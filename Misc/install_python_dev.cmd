@@ -35,7 +35,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Starting Package Installation and/or Upgrade...
+echo Starting Python Development Tools Installation and/or Upgrade...
 %PYTHON_CMD% -m pip install --upgrade pip
 %PYTHON_CMD% -m pip install --upgrade setuptools
 %PYTHON_CMD% -m pip install --upgrade wheel
