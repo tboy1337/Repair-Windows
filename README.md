@@ -46,20 +46,13 @@ Here's a breakdown of the goodies:
 - **enable_ultimate_performance.cmd**: Unlock the Ultimate Performance power plan for high-end hardware.
 - **optimize_ntfs.cmd**: Tune NTFS file system settings.
 
-### Development Environment Setup (in `./Misc/`)
-- **install_node_dev.cmd**: Install essential Node.js development packages and tools globally.
-- **install_python_dev.cmd**: Set up basic Python development environment with essential packages.
-- **install_python_dev_extended.cmd**: Extended Python development setup with additional frameworks and tools.
-
 ### Utility & Organization Tools (in `./Misc/`)
 - **get_system_info.cmd**: Generate a detailed system report.
 - **organise_videos.ps1**: Organize .mp4 and .mkv files by creating individual folders for each video.
 - **print_queue_viewer.ps1**: View and manage print queues.
 - **repair_volumes.cmd**: Alternative repair all volumes on your system method.
-- **restore_pip_default.cmd**: Reset Python's pip to default settings.
 - **tts.cmd**: Text-to-Speech utility for fun or accessibility.
 - **unpack_archives.ps1**: Batch unpack archives (ZIP, RAR, etc.).
-- **update_pip_packages.cmd**: Update all installed Python packages using pip to their latest versions.
 
 ### Cross-Platform Tools (in `./Misc/`)
 - **repair_ubuntu.sh**: Comprehensive Ubuntu/Linux system repair and integrity check script.
@@ -91,8 +84,6 @@ Here's a breakdown of the goodies:
 - **Update all programs**: `update_windows_programs.cmd`
 - **Full Windows update**: `update_windows.ps1`
 - **Repair time service**: `repair_time_service.cmd`
-- **Set up Python dev environment**: `Misc/install_python_dev.cmd`
-- **Update Python packages**: `Misc/update_pip_packages.cmd`
 - **Organize video files**: `Misc/organise_videos.ps1`
 - **Repair Ubuntu system** (in WSL): `Misc/repair_ubuntu.sh`
 
