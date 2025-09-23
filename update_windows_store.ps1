@@ -1,4 +1,4 @@
-﻿<# Self-Elevating PowerShell Script
+<# Self-Elevating PowerShell Script
 This script automatically handles execution policy and administrator elevation
 #>
 
@@ -44,10 +44,14 @@ if (-NOT $IsElevated -or $CurrentPolicy -eq "Undefined" -or $CurrentPolicy -eq "
     Provides detailed feedback on update process and handles errors gracefully.
 .FEATURES
     - Primary Method: Microsoft.WinGet.Client module with Repair-WingetPackageManager
-    - Fallback Method: Update-InboxApp script using WinRT APIs (PowerShell 5.1 only)
+    - Enhanced Fallback Method: Direct WinRT AppInstallManager with progress monitoring (PowerShell 5.1 only)
     - Legacy Method: Windows Update COM objects and scheduled tasks
+    - Real-time progress monitoring with percentage completion
+    - Dynamic discovery and updating of all installed Windows Store apps
+    - Priority processing (critical apps like DesktopAppInstaller/WinGet updated first)
     - Comprehensive diagnostics and repair capabilities
     - Automatic elevation and execution policy handling
+    - Advanced async operation handling for WinRT APIs
 .NOTES
     Automatically handles elevation and execution policy
     Script works with both PowerShell 5.1 and PowerShell 7+
@@ -183,7 +187,7 @@ function Update-StoreAppViaWinGet {
     }
 }
 
-# Function to update Store apps using WinRT API approach
+# Function to update Store apps using WinRT API approach (improved direct method)
 function Update-StoreAppViaWinRT {
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
@@ -192,7 +196,7 @@ function Update-StoreAppViaWinRT {
         return $false
     }
 
-    Write-Host "Attempting to use Update-InboxApp WinRT API approach..." -ForegroundColor Gray
+    Write-Host "Attempting direct WinRT API approach with AppInstallManager..." -ForegroundColor Gray
 
     try {
         # Check if we're running PowerShell 5.1 (required for WinRT APIs)
@@ -201,37 +205,139 @@ function Update-StoreAppViaWinRT {
             return $false
         }
 
-        # Check if Update-InboxApp script is available
-        $InboxAppScript = Get-InstalledScript -Name "Update-InboxApp" -ErrorAction SilentlyContinue
+        # Set up WinRT async support
+        Write-Host "Setting up WinRT async operations..." -ForegroundColor Gray
+        Add-Type -AssemblyName System.Runtime.WindowsRuntime
+        $asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' })[0]
 
-        if (-not $InboxAppScript) {
-            Write-Host "Installing Update-InboxApp script..." -ForegroundColor Gray
-            Install-Script -Name Update-InboxApp -Force -Scope CurrentUser -ErrorAction Stop
-        } else {
-            Write-Host "Update-InboxApp script found" -ForegroundColor Gray
+        function Await($WinRtTask, $ResultType) {
+            $asTask = $asTaskGeneric.MakeGenericMethod($ResultType)
+            $netTask = $asTask.Invoke($null, @($WinRtTask))
+            $netTask.Wait(-1) | Out-Null
+            $netTask.Result
         }
 
-        Write-Host "Updating Store apps using WinRT APIs..." -ForegroundColor Gray
+        # Initialize AppInstallManager
+        Write-Host "Enabling Windows.ApplicationModel.Store.Preview.InstallControl.AppInstallManager WinRT type..." -ForegroundColor Gray
+        [Windows.ApplicationModel.Store.Preview.InstallControl.AppInstallManager,Windows.ApplicationModel.Store.Preview,ContentType=WindowsRuntime] | Out-Null
+        $appManager = New-Object -TypeName Windows.ApplicationModel.Store.Preview.InstallControl.AppInstallManager
 
-        # Update all Store apps using the WinRT API approach
-        $StoreApps = Get-AppxPackage | Where-Object { $_.InstallLocation -like "*WindowsApps*" -and $_.SignatureKind -eq "Store" }
+        # Discover all installed Store apps dynamically
+        Write-Host "Discovering installed Windows Store apps..." -ForegroundColor Gray
+        $StoreApps = Get-AppxPackage | Where-Object {
+            $_.SignatureKind -eq "Store" -and
+            $null -ne $_.PackageFamilyName -and
+            $_.InstallLocation -like "*WindowsApps*"
+        }
 
-        if ($StoreApps.Count -gt 0) {
-            Write-Host "Found $($StoreApps.Count) Store apps to check for updates" -ForegroundColor White
+        if ($StoreApps.Count -eq 0) {
+            Write-Host "No Windows Store apps found to update" -ForegroundColor Yellow
+            return $false
+        }
 
-            foreach ($App in $StoreApps) {
-                try {
-                    Write-Host "Checking updates for: $($App.Name)" -ForegroundColor Gray
-                    & Update-InboxApp $App.PackageFamilyName -ErrorAction Continue
+        # Extract PackageFamilyNames for updates
+        $appsToUpdate = @()
+
+        # Prioritize critical apps first (DesktopAppInstaller/WinGet and Store itself)
+        $PriorityApps = @(
+            "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe",
+            "Microsoft.WindowsStore_8wekyb3d8bbwe"
+        )
+
+        # Add priority apps first if they exist
+        foreach ($PriorityApp in $PriorityApps) {
+            if ($StoreApps | Where-Object { $_.PackageFamilyName -eq $PriorityApp }) {
+                $appsToUpdate += $PriorityApp
+            }
+        }
+
+        # Add all other Store apps
+        foreach ($App in $StoreApps) {
+            if ($App.PackageFamilyName -notin $PriorityApps) {
+                $appsToUpdate += $App.PackageFamilyName
+            }
+        }
+
+        $UpdatedCount = 0
+        $SkippedCount = 0
+        $ErrorCount = 0
+
+        Write-Host "Found $($StoreApps.Count) Windows Store apps to check for updates" -ForegroundColor White
+        Write-Host "Attempting to update all discovered Store apps..." -ForegroundColor White
+
+        foreach ($app in $appsToUpdate) {
+            try {
+                Write-Host "`nRequesting update for: $app" -ForegroundColor Gray
+                $updateOp = $appManager.UpdateAppByPackageFamilyNameAsync($app)
+                $updateResult = Await $updateOp ([Windows.ApplicationModel.Store.Preview.InstallControl.AppInstallItem])
+
+                if ($null -eq $updateResult) {
+                    Write-Host "  No update needed or already up-to-date" -ForegroundColor Green
+                    $SkippedCount++
+                    continue
                 }
-                catch {
-                    Write-Host "Failed to update $($App.Name): $($_.Exception.Message)" -ForegroundColor Yellow
+
+                # Monitor update progress
+                $LastProgress = -1
+                $ProgressTimeout = 0
+                while ($true) {
+                    $CurrentStatus = $updateResult.GetCurrentStatus()
+
+                    if ($null -eq $CurrentStatus) {
+                        Write-Host "  Update status unavailable - assuming completed" -ForegroundColor Yellow
+                        break
+                    }
+
+                    $Progress = $CurrentStatus.PercentComplete
+
+                    # Only show progress if it changed significantly or every 30 seconds
+                    if ($Progress -ne $LastProgress -or $ProgressTimeout -ge 10) {
+                        Write-Host "  Progress: $Progress%" -ForegroundColor Cyan
+                        $LastProgress = $Progress
+                        $ProgressTimeout = 0
+                    }
+
+                    if ($Progress -eq 100) {
+                        Write-Host "  Update completed successfully" -ForegroundColor Green
+                        $UpdatedCount++
+                        break
+                    }
+
+                    Start-Sleep -Seconds 3
+                    $ProgressTimeout++
+
+                    # Timeout after 5 minutes per app
+                    if ($ProgressTimeout -gt 100) {
+                        Write-Host "  Update timeout - may continue in background" -ForegroundColor Yellow
+                        break
+                    }
                 }
             }
-            Write-Host "WinRT API Store app updates completed" -ForegroundColor Green
-        } else {
-            Write-Host "No Store apps found for WinRT API updates" -ForegroundColor Yellow
+            catch [System.AggregateException] {
+                # Handle common case where app is not installed or other aggregate exceptions
+                $problem = $_.Exception.InnerException
+                if ($problem.Message -like "*Value does not fall within the expected range*") {
+                    Write-Host "  App may not be installed or accessible - skipping" -ForegroundColor Gray
+                    $SkippedCount++
+                } else {
+                    Write-Host "  Update error: $problem" -ForegroundColor Yellow
+                    $ErrorCount++
+                }
+            }
+            catch {
+                Write-Host "  Unexpected error: $($_.Exception.Message)" -ForegroundColor Yellow
+                $ErrorCount++
+            }
         }
+
+        Write-Host "`nWinRT API update summary:" -ForegroundColor White
+        Write-Host "  Total apps checked: $($appsToUpdate.Count)" -ForegroundColor White
+        Write-Host "  Apps updated: $UpdatedCount" -ForegroundColor Green
+        Write-Host "  Apps skipped: $SkippedCount" -ForegroundColor Gray
+        if ($ErrorCount -gt 0) {
+            Write-Host "  Apps with errors: $ErrorCount" -ForegroundColor Yellow
+        }
+        Write-Host "WinRT Store app updates completed" -ForegroundColor Green
 
         return $true
     }
@@ -492,8 +598,8 @@ try {
 
     Write-Host "Available update methods:" -ForegroundColor White
     Write-Host "  1. WinGet (Microsoft.WinGet.Client) - Primary method" -ForegroundColor White
-    Write-Host "  2. WinRT APIs (Update-InboxApp) - Fallback for PS 5.1" -ForegroundColor White
-    Write-Host "  3. Legacy methods - Final fallback" -ForegroundColor White
+    Write-Host "  2. Direct WinRT APIs (AppInstallManager) - Updates ALL Store apps with progress monitoring" -ForegroundColor White
+    Write-Host "  3. Legacy methods (Windows Update COM + Tasks) - Final fallback" -ForegroundColor White
 
     if (-not (Update-StoreApp)) {
         $UpdateSuccess = $false
@@ -516,7 +622,7 @@ try {
     }
     Write-Host "- Store Apps: Modern update methods attempted with fallbacks" -ForegroundColor White
     Write-Host "  * WinGet method (Repair-WingetPackageManager)" -ForegroundColor Gray
-    Write-Host "  * WinRT API method (Update-InboxApp)" -ForegroundColor Gray
+    Write-Host "  * Direct WinRT API method (AppInstallManager with progress monitoring)" -ForegroundColor Gray
     Write-Host "  * Legacy methods (Windows Update COM + Scheduled Tasks)" -ForegroundColor Gray
 
     Write-Host "`nNote: Some Store app updates may continue in the background." -ForegroundColor Cyan
