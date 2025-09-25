@@ -18,7 +18,7 @@ if %errorlevel% neq 0 (
 
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
-    if %errorlevel% neq 1 (
+    if not errorlevel 1 (
         echo %TARGET_DRIVE% drive is FAT-based.
         echo Repairing %TARGET_DRIVE% file system...
         echo This may take a while...
