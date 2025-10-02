@@ -20,8 +20,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
     echo %%A | findstr /i /r "^FAT" >nul
     if %errorlevel% equ 1 (
         echo %TARGET_DRIVE% drive is FAT-based.
-        echo Repairing %TARGET_DRIVE% file system...
-        echo This may take a while...
+        echo Repairing %TARGET_DRIVE% file system (Might take a while)...
         if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
             echo y | chkdsk "%TARGET_DRIVE%" /R /X >nul 2>&1
             echo Restarting system to complete repairs, please save your work!
@@ -33,8 +32,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
         )
     ) else (
         echo %TARGET_DRIVE% drive is NTFS-based.
-        echo Repairing %TARGET_DRIVE% file system...
-        echo This may take a while...
+        echo Repairing %TARGET_DRIVE% file system (Might take a while)...
         if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
             echo y | chkdsk "%TARGET_DRIVE%" /B /X >nul 2>&1
             echo Restarting system to complete repairs, please save your work!
