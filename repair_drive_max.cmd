@@ -38,7 +38,11 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|fi
         if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
             echo y | chkdsk "%TARGET_DRIVE%" /B /X >nul 2>&1
             echo Restarting system to complete repairs, please save your work.
-            echo Run chkdsk "%TARGET_DRIVE%" /sdcleanup after repair finishes.
+            echo.
+            echo Run:
+            echo chkdsk "%TARGET_DRIVE%" /sdcleanup
+            echo after the repair finishes.
+            echo.
             timeout /t 30 /nobreak
             shutdown /r /t 1 >nul 2>&1
             exit /b 1
