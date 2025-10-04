@@ -11,6 +11,10 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
+:: Check for /y flag (skip confirmation)
+set "AUTO_CONFIRM=0"
+if /i "%~1"=="/y" set "AUTO_CONFIRM=1"
+
 :: Check admin rights
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -24,12 +28,19 @@ if %errorlevel% neq 0 (
     set "ADMIN=1"
 )
 
-:: Generate timestamp using PowerShell
+:: Generate timestamp using PowerShell with fallback
 for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "Get-Date -Format 'yyyyMMdd_HHmmss'" 2^>nul`) do set "TIMESTAMP=%%I"
 if not defined TIMESTAMP (
-    :: Fallback to DATE/TIME if PowerShell fails
-    set "TIMESTAMP=%DATE:~-4%%DATE:~-7,2%%DATE:~-10,2%_%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%"
-    set "TIMESTAMP=!TIMESTAMP: =0!"
+    :: Improved fallback using WMIC for locale-independent timestamp
+    for /f "tokens=1-6 delims=." %%a in ('wmic os get localdatetime /value ^| find "="') do (
+        for /f "tokens=2 delims==" %%x in ("%%a") do set "dt=%%x"
+    )
+    if defined dt (
+        set "TIMESTAMP=!dt:~0,8!_!dt:~8,6!"
+    ) else (
+        :: Last resort: use simple counter
+        set "TIMESTAMP=backup_%RANDOM%"
+    )
 )
 
 set "BACKUP_DIR=%USERPROFILE%\PATH_Backup"
@@ -44,14 +55,7 @@ if not exist "%TEMP%\" (
     exit /b 1
 )
 
-:: Set step count based on admin status
-if "%ADMIN%"=="1" (
-    set "TOTAL_STEPS=6"
-) else (
-    set "TOTAL_STEPS=5"
-)
-
-echo [1/%TOTAL_STEPS%] Creating backup directory...
+echo [1/6] Creating backup directory...
 if not exist "%BACKUP_DIR%" (
     mkdir "%BACKUP_DIR%" >nul 2>&1
     if !errorlevel! neq 0 (
@@ -61,7 +65,7 @@ if not exist "%BACKUP_DIR%" (
     )
 )
 
-echo [2/%TOTAL_STEPS%] Backing up current PATH environment variables...
+echo [2/6] Backing up current PATH environment variables...
 echo ===== PATH BACKUP %TIMESTAMP% ===== > "%BACKUP_FILE%"
 echo. >> "%BACKUP_FILE%"
 echo [USER PATH] >> "%BACKUP_FILE%"
@@ -83,7 +87,7 @@ if exist "%BACKUP_FILE%" (
 )
 echo.
 
-echo [3/%TOTAL_STEPS%] Reading current PATH values...
+echo [3/6] Reading current PATH values...
 for /f "skip=2 tokens=2*" %%a in ('reg query "HKCU\Environment" /v Path 2^>nul') do (
     if /i "%%a"=="REG_SZ" set "USER_PATH=%%b"
     if /i "%%a"=="REG_EXPAND_SZ" set "USER_PATH=%%b"
@@ -103,11 +107,7 @@ if "%ADMIN%"=="1" (
 )
 
 echo.
-if "%ADMIN%"=="1" (
-    echo [4/%TOTAL_STEPS%] Cleaning USER PATH...
-) else (
-    echo [4/%TOTAL_STEPS%] Cleaning USER PATH...
-)
+echo [4/6] Cleaning USER PATH...
 set "CLEAN_USER_PATH="
 set "USER_ORIG_COUNT=0"
 set "USER_DUPLICATES_REMOVED=0"
@@ -122,34 +122,27 @@ if defined USER_PATH (
         set /a USER_ORIG_COUNT+=1
         set "ENTRY=%%~p"
         
-        REM Remove quotes
-        set "ENTRY=!ENTRY:"=!"
-        
-        REM Remove trailing backslash (unless it's a root path like C:\ or UNC path)
-        if "!ENTRY:~-1!"=="\" (
-            set "IS_ROOT=0"
-            REM Check for drive root (C:\)
-            if "!ENTRY:~-2,1!"==":" set "IS_ROOT=1"
-            REM Check for UNC path root (\\server\share\)
-            echo !ENTRY! | findstr /r /c:"^\\\\[^\\][^\\]*\\[^\\][^\\]*\\$" >nul 2>&1
-            if !errorlevel! equ 0 set "IS_ROOT=1"
+        REM Check for completely empty entry first (before any processing)
+        if "!ENTRY!"=="" (
+            set /a USER_EMPTY_REMOVED+=1
+        ) else (
+            REM Remove quotes
+            set "ENTRY=!ENTRY:"=!"
             
-            if !IS_ROOT! equ 0 (
-                set "ENTRY=!ENTRY:~0,-1!"
+            REM Remove trailing backslash (unless it's a root path like C:\)
+            if "!ENTRY:~-1!"=="\" (
+                if not "!ENTRY:~-2,1!"==":" (
+                    set "ENTRY=!ENTRY:~0,-1!"
+                )
             )
-        )
-        
-        REM Skip empty entries
-        if not "!ENTRY!"=="" (
-            set "IS_VALID=0"
-            set "IS_DUPLICATE=0"
             
-            REM Check for invalid characters
-            echo !ENTRY! | findstr /r /c:"[<>|]" >nul 2>&1
-            if !errorlevel! equ 0 (
-                echo   [INVALID CHARS] Removing: !ENTRY!
-                set /a USER_INVALID_REMOVED+=1
+            REM Check again after processing for empty entries
+            if "!ENTRY!"=="" (
+                set /a USER_EMPTY_REMOVED+=1
             ) else (
+                set "IS_VALID=0"
+                set "IS_DUPLICATE=0"
+                
                 REM Check if path contains environment variables
                 echo !ENTRY! | findstr /i /c:"%%" >nul 2>&1
                 if !errorlevel! equ 0 (
@@ -165,7 +158,7 @@ if defined USER_PATH (
                     )
                 )
                 
-                REM Check for duplicates using case-insensitive exact matching
+                REM Check for duplicates using exact matching
                 if !IS_VALID! equ 1 (
                     findstr /i /x /c:"!ENTRY!" "%TEMP_ENTRIES%" >nul 2>&1
                     if !errorlevel! equ 0 (
@@ -188,8 +181,6 @@ if defined USER_PATH (
                     )
                 )
             )
-        ) else (
-            set /a USER_EMPTY_REMOVED+=1
         )
     )
 )
@@ -200,16 +191,37 @@ if defined CLEAN_USER_PATH (
     for %%p in ("%CLEAN_USER_PATH:;=";"%") do set /a USER_CLEAN_COUNT+=1
 )
 
+:: Check USER PATH length
+set "USER_PATH_LEN=0"
+if defined CLEAN_USER_PATH (
+    call :StrLen USER_PATH_LEN "!CLEAN_USER_PATH!"
+)
+
 echo.
 echo   Original entries: !USER_ORIG_COUNT!
 echo   Cleaned entries: !USER_CLEAN_COUNT!
 echo   Empty entries removed: !USER_EMPTY_REMOVED!
 echo   Duplicates removed: !USER_DUPLICATES_REMOVED!
 echo   Invalid paths removed: !USER_INVALID_REMOVED!
+if !USER_PATH_LEN! gtr 0 (
+    echo   Path length: !USER_PATH_LEN! characters ^(limit: 2047^)
+    if !USER_PATH_LEN! gtr 2047 (
+        echo   WARNING: Path length EXCEEDS Windows limit!
+    ) else if !USER_PATH_LEN! gtr 1800 (
+        echo   WARNING: Path length is approaching the limit
+    )
+)
+if !USER_CLEAN_COUNT! equ 0 (
+    if !USER_ORIG_COUNT! gtr 0 (
+        echo.
+        echo   *** CRITICAL: All USER PATH entries are invalid! ***
+        echo   *** PATH will be EMPTY after cleaning! ***
+    )
+)
 echo.
 
 if "%ADMIN%"=="1" (
-    echo [5/%TOTAL_STEPS%] Cleaning SYSTEM PATH...
+    echo [5/6] Cleaning SYSTEM PATH...
     set "CLEAN_SYSTEM_PATH="
     set "SYSTEM_ORIG_COUNT=0"
     set "SYSTEM_DUPLICATES_REMOVED=0"
@@ -224,34 +236,27 @@ if "%ADMIN%"=="1" (
             set /a SYSTEM_ORIG_COUNT+=1
             set "ENTRY=%%~p"
             
-            REM Remove quotes
-            set "ENTRY=!ENTRY:"=!"
-            
-            REM Remove trailing backslash (unless it's a root path like C:\ or UNC path)
-            if "!ENTRY:~-1!"=="\" (
-                set "IS_ROOT=0"
-                REM Check for drive root (C:\)
-                if "!ENTRY:~-2,1!"==":" set "IS_ROOT=1"
-                REM Check for UNC path root (\\server\share\)
-                echo !ENTRY! | findstr /r /c:"^\\\\[^\\][^\\]*\\[^\\][^\\]*\\$" >nul 2>&1
-                if !errorlevel! equ 0 set "IS_ROOT=1"
+            REM Check for completely empty entry first (before any processing)
+            if "!ENTRY!"=="" (
+                set /a SYSTEM_EMPTY_REMOVED+=1
+            ) else (
+                REM Remove quotes
+                set "ENTRY=!ENTRY:"=!"
                 
-                if !IS_ROOT! equ 0 (
-                    set "ENTRY=!ENTRY:~0,-1!"
+                REM Remove trailing backslash (unless it's a root path like C:\)
+                if "!ENTRY:~-1!"=="\" (
+                    if not "!ENTRY:~-2,1!"==":" (
+                        set "ENTRY=!ENTRY:~0,-1!"
+                    )
                 )
-            )
-            
-            REM Skip empty entries
-            if not "!ENTRY!"=="" (
-                set "IS_VALID=0"
-                set "IS_DUPLICATE=0"
                 
-                REM Check for invalid characters
-                echo !ENTRY! | findstr /r /c:"[<>|]" >nul 2>&1
-                if !errorlevel! equ 0 (
-                    echo   [INVALID CHARS] Removing: !ENTRY!
-                    set /a SYSTEM_INVALID_REMOVED+=1
+                REM Check again after processing for empty entries
+                if "!ENTRY!"=="" (
+                    set /a SYSTEM_EMPTY_REMOVED+=1
                 ) else (
+                    set "IS_VALID=0"
+                    set "IS_DUPLICATE=0"
+                    
                     REM Check if path contains environment variables
                     echo !ENTRY! | findstr /i /c:"%%" >nul 2>&1
                     if !errorlevel! equ 0 (
@@ -267,7 +272,7 @@ if "%ADMIN%"=="1" (
                         )
                     )
                     
-                    REM Check for duplicates using case-insensitive exact matching
+                    REM Check for duplicates using exact matching
                     if !IS_VALID! equ 1 (
                         findstr /i /x /c:"!ENTRY!" "%TEMP_SYSTEM_ENTRIES%" >nul 2>&1
                         if !errorlevel! equ 0 (
@@ -290,8 +295,6 @@ if "%ADMIN%"=="1" (
                         )
                     )
                 )
-            ) else (
-                set /a SYSTEM_EMPTY_REMOVED+=1
             )
         )
     )
@@ -302,12 +305,33 @@ if "%ADMIN%"=="1" (
         for %%p in ("%CLEAN_SYSTEM_PATH:;=";"%") do set /a SYSTEM_CLEAN_COUNT+=1
     )
     
+    :: Check SYSTEM PATH length
+    set "SYSTEM_PATH_LEN=0"
+    if defined CLEAN_SYSTEM_PATH (
+        call :StrLen SYSTEM_PATH_LEN "!CLEAN_SYSTEM_PATH!"
+    )
+    
     echo.
     echo   Original entries: !SYSTEM_ORIG_COUNT!
     echo   Cleaned entries: !SYSTEM_CLEAN_COUNT!
     echo   Empty entries removed: !SYSTEM_EMPTY_REMOVED!
     echo   Duplicates removed: !SYSTEM_DUPLICATES_REMOVED!
     echo   Invalid paths removed: !SYSTEM_INVALID_REMOVED!
+    if !SYSTEM_PATH_LEN! gtr 0 (
+        echo   Path length: !SYSTEM_PATH_LEN! characters ^(limit: 8191^)
+        if !SYSTEM_PATH_LEN! gtr 8191 (
+            echo   WARNING: Path length EXCEEDS Windows limit!
+        ) else if !SYSTEM_PATH_LEN! gtr 7500 (
+            echo   WARNING: Path length is approaching the limit
+        )
+    )
+    if !SYSTEM_CLEAN_COUNT! equ 0 (
+        if !SYSTEM_ORIG_COUNT! gtr 0 (
+            echo.
+            echo   *** CRITICAL: All SYSTEM PATH entries are invalid! ***
+            echo   *** PATH will be EMPTY after cleaning! ***
+        )
+    )
     echo.
 )
 
@@ -320,18 +344,21 @@ if "%ADMIN%"=="1" (
 set /a TOTAL_CHANGES=!USER_TOTAL_CHANGES!+!SYSTEM_TOTAL_CHANGES!
 
 if !TOTAL_CHANGES! gtr 0 (
-    echo [%TOTAL_STEPS%/%TOTAL_STEPS%] Applying changes...
+    echo [6/6] Applying changes...
     echo.
     echo WARNING: About to modify PATH environment variables
-    echo Press Ctrl+C to cancel or
-    pause
+    if "%AUTO_CONFIRM%"=="1" (
+        echo Auto-confirm mode enabled, proceeding...
+    ) else (
+        echo Press Ctrl+C to cancel or
+        pause
+    )
     echo.
     
     :: Update USER PATH
     if !USER_TOTAL_CHANGES! gtr 0 (
         if defined CLEAN_USER_PATH (
             :: Check PATH length
-            call :StrLen USER_PATH_LEN "!CLEAN_USER_PATH!"
             if !USER_PATH_LEN! gtr 2047 (
                 echo   ERROR: USER PATH length (!USER_PATH_LEN! chars) exceeds Windows limit (2047 chars)
                 echo   Please remove more paths manually or use shorter path names
@@ -346,7 +373,10 @@ if !TOTAL_CHANGES! gtr 0 (
                 )
             )
         ) else (
-            echo   Warning: USER PATH is empty after cleaning. Skipping update.
+            echo   ERROR: USER PATH would be EMPTY after cleaning!
+            echo   Skipping update to prevent loss of all paths.
+            echo   Please manually review your PATH entries.
+            echo   Backup available at: %BACKUP_FILE%
         )
     ) else (
         echo USER PATH: No changes needed
@@ -356,8 +386,7 @@ if !TOTAL_CHANGES! gtr 0 (
     if "%ADMIN%"=="1" (
         if !SYSTEM_TOTAL_CHANGES! gtr 0 (
             if defined CLEAN_SYSTEM_PATH (
-                :: Check PATH length (registry allows up to 8191 characters for system PATH)
-                call :StrLen SYSTEM_PATH_LEN "!CLEAN_SYSTEM_PATH!"
+                :: Check PATH length
                 if !SYSTEM_PATH_LEN! gtr 8191 (
                     echo   ERROR: SYSTEM PATH length (!SYSTEM_PATH_LEN! chars) exceeds Windows limit (8191 chars)
                     echo   Please remove more paths manually or use shorter path names
@@ -372,7 +401,10 @@ if !TOTAL_CHANGES! gtr 0 (
                     )
                 )
             ) else (
-                echo   Warning: SYSTEM PATH is empty after cleaning. Skipping update.
+                echo   ERROR: SYSTEM PATH would be EMPTY after cleaning!
+                echo   Skipping update to prevent loss of all paths.
+                echo   Please manually review your PATH entries.
+                echo   Backup available at: %BACKUP_FILE%
             )
         ) else (
             echo SYSTEM PATH: No changes needed
@@ -381,8 +413,8 @@ if !TOTAL_CHANGES! gtr 0 (
     
     echo.
     echo Broadcasting environment change notification...
-    :: Use PowerShell to broadcast WM_SETTINGCHANGE with better error handling
-    powershell -NoProfile -WindowStyle Hidden -Command "try { $signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru -ErrorAction Stop; $result = [UIntPtr]::Zero; $null = $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result); exit 0 } catch { exit 1 }" 2>nul
+    :: Use simpler PowerShell approach for WM_SETTINGCHANGE
+    powershell -NoProfile -WindowStyle Hidden -Command "$signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru; $result = [UIntPtr]::Zero; $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result) | Out-Null;" 2>nul
     if !errorlevel! equ 0 (
         echo   System notified successfully
     ) else (
@@ -401,7 +433,7 @@ if !TOTAL_CHANGES! gtr 0 (
     echo NOTE: New command prompts will use the updated PATH.
     echo Some applications may need to be restarted to see changes.
 ) else (
-    echo [%TOTAL_STEPS%/%TOTAL_STEPS%] Analysis complete
+    echo [6/6] Analysis complete
     echo.
     echo +==================================+
     echo + No issues found - PATH is clean! +
@@ -411,6 +443,8 @@ if !TOTAL_CHANGES! gtr 0 (
 )
 
 echo.
+echo Usage: %~nx0 [/y]
+echo   /y  Skip confirmation prompt (auto-confirm changes)
 
 :: Cleanup temporary files
 if exist "%TEMP_ENTRIES%" del "%TEMP_ENTRIES%"
@@ -421,18 +455,17 @@ endlocal
 exit /b 0
 
 :StrLen
-:: Improved subroutine to calculate string length accurately
+:: Subroutine to calculate string length
 :: Usage: call :StrLen result_var "string"
 setlocal enabledelayedexpansion
 set "str=%~2"
 set "len=0"
 if defined str (
-    :: Use a more accurate character counting method
-    set "tempstr=!str!"
+    :: Count characters by progressively checking string positions
     :strlen_loop
-    if defined tempstr (
+    if defined str (
+        set "str=!str:~1!"
         set /a len+=1
-        set "tempstr=!tempstr:~1!"
         goto :strlen_loop
     )
 )
