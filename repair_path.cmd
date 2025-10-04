@@ -44,7 +44,14 @@ if not exist "%TEMP%\" (
     exit /b 1
 )
 
-echo [1/6] Creating backup directory...
+:: Set step count based on admin status
+if "%ADMIN%"=="1" (
+    set "TOTAL_STEPS=6"
+) else (
+    set "TOTAL_STEPS=5"
+)
+
+echo [1/%TOTAL_STEPS%] Creating backup directory...
 if not exist "%BACKUP_DIR%" (
     mkdir "%BACKUP_DIR%" >nul 2>&1
     if !errorlevel! neq 0 (
@@ -54,7 +61,7 @@ if not exist "%BACKUP_DIR%" (
     )
 )
 
-echo [2/6] Backing up current PATH environment variables...
+echo [2/%TOTAL_STEPS%] Backing up current PATH environment variables...
 echo ===== PATH BACKUP %TIMESTAMP% ===== > "%BACKUP_FILE%"
 echo. >> "%BACKUP_FILE%"
 echo [USER PATH] >> "%BACKUP_FILE%"
@@ -76,7 +83,7 @@ if exist "%BACKUP_FILE%" (
 )
 echo.
 
-echo [3/6] Reading current PATH values...
+echo [3/%TOTAL_STEPS%] Reading current PATH values...
 for /f "skip=2 tokens=2*" %%a in ('reg query "HKCU\Environment" /v Path 2^>nul') do (
     if /i "%%a"=="REG_SZ" set "USER_PATH=%%b"
     if /i "%%a"=="REG_EXPAND_SZ" set "USER_PATH=%%b"
@@ -96,7 +103,11 @@ if "%ADMIN%"=="1" (
 )
 
 echo.
-echo [4/6] Cleaning USER PATH...
+if "%ADMIN%"=="1" (
+    echo [4/%TOTAL_STEPS%] Cleaning USER PATH...
+) else (
+    echo [4/%TOTAL_STEPS%] Cleaning USER PATH...
+)
 set "CLEAN_USER_PATH="
 set "USER_ORIG_COUNT=0"
 set "USER_DUPLICATES_REMOVED=0"
@@ -114,9 +125,16 @@ if defined USER_PATH (
         REM Remove quotes
         set "ENTRY=!ENTRY:"=!"
         
-        REM Remove trailing backslash (unless it's a root path like C:\)
+        REM Remove trailing backslash (unless it's a root path like C:\ or UNC path)
         if "!ENTRY:~-1!"=="\" (
-            if not "!ENTRY:~-2,1!"==":" (
+            set "IS_ROOT=0"
+            REM Check for drive root (C:\)
+            if "!ENTRY:~-2,1!"==":" set "IS_ROOT=1"
+            REM Check for UNC path root (\\server\share\)
+            echo !ENTRY! | findstr /r /c:"^\\\\[^\\][^\\]*\\[^\\][^\\]*\\$" >nul 2>&1
+            if !errorlevel! equ 0 set "IS_ROOT=1"
+            
+            if !IS_ROOT! equ 0 (
                 set "ENTRY=!ENTRY:~0,-1!"
             )
         )
@@ -126,40 +144,47 @@ if defined USER_PATH (
             set "IS_VALID=0"
             set "IS_DUPLICATE=0"
             
-            REM Check if path contains environment variables
-            echo !ENTRY! | findstr /i /c:"%%" >nul 2>&1
+            REM Check for invalid characters
+            echo !ENTRY! | findstr /r /c:"[<>|]" >nul 2>&1
             if !errorlevel! equ 0 (
-                REM Contains environment variable, keep it
-                set "IS_VALID=1"
+                echo   [INVALID CHARS] Removing: !ENTRY!
+                set /a USER_INVALID_REMOVED+=1
             ) else (
-                REM Check if directory exists
-                if exist "!ENTRY!\." (
+                REM Check if path contains environment variables
+                echo !ENTRY! | findstr /i /c:"%%" >nul 2>&1
+                if !errorlevel! equ 0 (
+                    REM Contains environment variable, keep it
                     set "IS_VALID=1"
                 ) else (
-                    echo   [INVALID] Removing: !ENTRY!
-                    set /a USER_INVALID_REMOVED+=1
-                )
-            )
-            
-            REM Check for duplicates using exact matching
-            if !IS_VALID! equ 1 (
-                findstr /i /x /c:"!ENTRY!" "%TEMP_ENTRIES%" >nul 2>&1
-                if !errorlevel! equ 0 (
-                    echo   [DUPLICATE] Removing: !ENTRY!
-                    set /a USER_DUPLICATES_REMOVED+=1
-                    set "IS_DUPLICATE=1"
-                ) else (
-                    echo !ENTRY!>> "%TEMP_ENTRIES%"
-                )
-            )
-            
-            REM Add to clean path if valid and not duplicate
-            if !IS_VALID! equ 1 (
-                if !IS_DUPLICATE! equ 0 (
-                    if "!CLEAN_USER_PATH!"=="" (
-                        set "CLEAN_USER_PATH=!ENTRY!"
+                    REM Check if directory exists
+                    if exist "!ENTRY!\." (
+                        set "IS_VALID=1"
                     ) else (
-                        set "CLEAN_USER_PATH=!CLEAN_USER_PATH!;!ENTRY!"
+                        echo   [INVALID] Removing: !ENTRY!
+                        set /a USER_INVALID_REMOVED+=1
+                    )
+                )
+                
+                REM Check for duplicates using case-insensitive exact matching
+                if !IS_VALID! equ 1 (
+                    findstr /i /x /c:"!ENTRY!" "%TEMP_ENTRIES%" >nul 2>&1
+                    if !errorlevel! equ 0 (
+                        echo   [DUPLICATE] Removing: !ENTRY!
+                        set /a USER_DUPLICATES_REMOVED+=1
+                        set "IS_DUPLICATE=1"
+                    ) else (
+                        echo !ENTRY!>> "%TEMP_ENTRIES%"
+                    )
+                )
+                
+                REM Add to clean path if valid and not duplicate
+                if !IS_VALID! equ 1 (
+                    if !IS_DUPLICATE! equ 0 (
+                        if "!CLEAN_USER_PATH!"=="" (
+                            set "CLEAN_USER_PATH=!ENTRY!"
+                        ) else (
+                            set "CLEAN_USER_PATH=!CLEAN_USER_PATH!;!ENTRY!"
+                        )
                     )
                 )
             )
@@ -184,7 +209,7 @@ echo   Invalid paths removed: !USER_INVALID_REMOVED!
 echo.
 
 if "%ADMIN%"=="1" (
-    echo [5/6] Cleaning SYSTEM PATH...
+    echo [5/%TOTAL_STEPS%] Cleaning SYSTEM PATH...
     set "CLEAN_SYSTEM_PATH="
     set "SYSTEM_ORIG_COUNT=0"
     set "SYSTEM_DUPLICATES_REMOVED=0"
@@ -202,9 +227,16 @@ if "%ADMIN%"=="1" (
             REM Remove quotes
             set "ENTRY=!ENTRY:"=!"
             
-            REM Remove trailing backslash (unless it's a root path like C:\)
+            REM Remove trailing backslash (unless it's a root path like C:\ or UNC path)
             if "!ENTRY:~-1!"=="\" (
-                if not "!ENTRY:~-2,1!"==":" (
+                set "IS_ROOT=0"
+                REM Check for drive root (C:\)
+                if "!ENTRY:~-2,1!"==":" set "IS_ROOT=1"
+                REM Check for UNC path root (\\server\share\)
+                echo !ENTRY! | findstr /r /c:"^\\\\[^\\][^\\]*\\[^\\][^\\]*\\$" >nul 2>&1
+                if !errorlevel! equ 0 set "IS_ROOT=1"
+                
+                if !IS_ROOT! equ 0 (
                     set "ENTRY=!ENTRY:~0,-1!"
                 )
             )
@@ -214,40 +246,47 @@ if "%ADMIN%"=="1" (
                 set "IS_VALID=0"
                 set "IS_DUPLICATE=0"
                 
-                REM Check if path contains environment variables
-                echo !ENTRY! | findstr /i /c:"%%" >nul 2>&1
+                REM Check for invalid characters
+                echo !ENTRY! | findstr /r /c:"[<>|]" >nul 2>&1
                 if !errorlevel! equ 0 (
-                    REM Contains environment variable, keep it
-                    set "IS_VALID=1"
+                    echo   [INVALID CHARS] Removing: !ENTRY!
+                    set /a SYSTEM_INVALID_REMOVED+=1
                 ) else (
-                    REM Check if directory exists
-                    if exist "!ENTRY!\." (
+                    REM Check if path contains environment variables
+                    echo !ENTRY! | findstr /i /c:"%%" >nul 2>&1
+                    if !errorlevel! equ 0 (
+                        REM Contains environment variable, keep it
                         set "IS_VALID=1"
                     ) else (
-                        echo   [INVALID] Removing: !ENTRY!
-                        set /a SYSTEM_INVALID_REMOVED+=1
-                    )
-                )
-                
-                REM Check for duplicates using exact matching
-                if !IS_VALID! equ 1 (
-                    findstr /i /x /c:"!ENTRY!" "%TEMP_SYSTEM_ENTRIES%" >nul 2>&1
-                    if !errorlevel! equ 0 (
-                        echo   [DUPLICATE] Removing: !ENTRY!
-                        set /a SYSTEM_DUPLICATES_REMOVED+=1
-                        set "IS_DUPLICATE=1"
-                    ) else (
-                        echo !ENTRY!>> "%TEMP_SYSTEM_ENTRIES%"
-                    )
-                )
-                
-                REM Add to clean path if valid and not duplicate
-                if !IS_VALID! equ 1 (
-                    if !IS_DUPLICATE! equ 0 (
-                        if "!CLEAN_SYSTEM_PATH!"=="" (
-                            set "CLEAN_SYSTEM_PATH=!ENTRY!"
+                        REM Check if directory exists
+                        if exist "!ENTRY!\." (
+                            set "IS_VALID=1"
                         ) else (
-                            set "CLEAN_SYSTEM_PATH=!CLEAN_SYSTEM_PATH!;!ENTRY!"
+                            echo   [INVALID] Removing: !ENTRY!
+                            set /a SYSTEM_INVALID_REMOVED+=1
+                        )
+                    )
+                    
+                    REM Check for duplicates using case-insensitive exact matching
+                    if !IS_VALID! equ 1 (
+                        findstr /i /x /c:"!ENTRY!" "%TEMP_SYSTEM_ENTRIES%" >nul 2>&1
+                        if !errorlevel! equ 0 (
+                            echo   [DUPLICATE] Removing: !ENTRY!
+                            set /a SYSTEM_DUPLICATES_REMOVED+=1
+                            set "IS_DUPLICATE=1"
+                        ) else (
+                            echo !ENTRY!>> "%TEMP_SYSTEM_ENTRIES%"
+                        )
+                    )
+                    
+                    REM Add to clean path if valid and not duplicate
+                    if !IS_VALID! equ 1 (
+                        if !IS_DUPLICATE! equ 0 (
+                            if "!CLEAN_SYSTEM_PATH!"=="" (
+                                set "CLEAN_SYSTEM_PATH=!ENTRY!"
+                            ) else (
+                                set "CLEAN_SYSTEM_PATH=!CLEAN_SYSTEM_PATH!;!ENTRY!"
+                            )
                         )
                     )
                 )
@@ -281,7 +320,7 @@ if "%ADMIN%"=="1" (
 set /a TOTAL_CHANGES=!USER_TOTAL_CHANGES!+!SYSTEM_TOTAL_CHANGES!
 
 if !TOTAL_CHANGES! gtr 0 (
-    echo [6/6] Applying changes...
+    echo [%TOTAL_STEPS%/%TOTAL_STEPS%] Applying changes...
     echo.
     echo WARNING: About to modify PATH environment variables
     echo Press Ctrl+C to cancel or
@@ -342,8 +381,8 @@ if !TOTAL_CHANGES! gtr 0 (
     
     echo.
     echo Broadcasting environment change notification...
-    :: Use simpler PowerShell approach for WM_SETTINGCHANGE
-    powershell -NoProfile -WindowStyle Hidden -Command "$signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru; $result = [UIntPtr]::Zero; $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result) | Out-Null;" 2>nul
+    :: Use PowerShell to broadcast WM_SETTINGCHANGE with better error handling
+    powershell -NoProfile -WindowStyle Hidden -Command "try { $signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru -ErrorAction Stop; $result = [UIntPtr]::Zero; $null = $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result); exit 0 } catch { exit 1 }" 2>nul
     if !errorlevel! equ 0 (
         echo   System notified successfully
     ) else (
@@ -362,7 +401,7 @@ if !TOTAL_CHANGES! gtr 0 (
     echo NOTE: New command prompts will use the updated PATH.
     echo Some applications may need to be restarted to see changes.
 ) else (
-    echo [6/6] Analysis complete
+    echo [%TOTAL_STEPS%/%TOTAL_STEPS%] Analysis complete
     echo.
     echo +==================================+
     echo + No issues found - PATH is clean! +
@@ -382,19 +421,20 @@ endlocal
 exit /b 0
 
 :StrLen
-:: Optimized subroutine to calculate string length
+:: Improved subroutine to calculate string length accurately
 :: Usage: call :StrLen result_var "string"
 setlocal enabledelayedexpansion
 set "str=%~2"
 set "len=0"
 if defined str (
-    :: Use binary search for faster length calculation
-    for /l %%i in (12,-1,0) do (
-        set /a "len|=1<<%%i"
-        for %%j in (!len!) do if "!str:~%%j,1!"=="" set /a "len&=~1<<%%i"
+    :: Use a more accurate character counting method
+    set "tempstr=!str!"
+    :strlen_loop
+    if defined tempstr (
+        set /a len+=1
+        set "tempstr=!tempstr:~1!"
+        goto :strlen_loop
     )
-    :: Add 1 if string is not empty
-    if defined str set /a len+=1
 )
 endlocal & set "%~1=%len%"
 exit /b
