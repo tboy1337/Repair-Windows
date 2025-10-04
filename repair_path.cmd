@@ -32,9 +32,11 @@ if %errorlevel% neq 0 (
 for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "Get-Date -Format 'yyyyMMdd_HHmmss'" 2^>nul`) do set "TIMESTAMP=%%I"
 if not defined TIMESTAMP (
     :: Improved fallback using WMIC for locale-independent timestamp
-    for /f "tokens=1-6 delims=." %%a in ('wmic os get localdatetime /value ^| find "="') do (
-        for /f "tokens=2 delims==" %%x in ("%%a") do set "dt=%%x"
+    for /f "skip=1 tokens=1" %%a in ('wmic os get localdatetime 2^>nul') do (
+        set "dt=%%a"
+        if defined dt goto :gottime
     )
+    :gottime
     if defined dt (
         set "TIMESTAMP=!dt:~0,8!_!dt:~8,6!"
     ) else (
@@ -88,7 +90,8 @@ if exist "%BACKUP_FILE%" (
 echo.
 
 echo [3/6] Reading current PATH values...
-for /f "skip=2 tokens=2*" %%a in ('reg query "HKCU\Environment" /v Path 2^>nul') do (
+set "USER_PATH="
+for /f "skip=2 tokens=2,*" %%a in ('reg query "HKCU\Environment" /v Path 2^>nul') do (
     if /i "%%a"=="REG_SZ" set "USER_PATH=%%b"
     if /i "%%a"=="REG_EXPAND_SZ" set "USER_PATH=%%b"
 )
@@ -97,7 +100,8 @@ if not defined USER_PATH (
 )
 
 if "%ADMIN%"=="1" (
-    for /f "skip=2 tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do (
+    set "SYSTEM_PATH="
+    for /f "skip=2 tokens=2,*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do (
         if /i "%%a"=="REG_SZ" set "SYSTEM_PATH=%%b"
         if /i "%%a"=="REG_EXPAND_SZ" set "SYSTEM_PATH=%%b"
     )
@@ -129,31 +133,12 @@ if defined USER_PATH (
             REM Remove quotes
             set "ENTRY=!ENTRY:"=!"
             
-            REM Remove trailing backslash with improved logic
-            REM Check if last char is backslash
-            if "!ENTRY:~-1!"=="\" (
-                REM Get the length to check if it's more than 3 chars (C:\)
-                set "TEMP_ENTRY=!ENTRY!"
-                set "KEEP_SLASH=0"
-                
-                REM Check for root paths: C:\, D:\, etc.
-                if "!ENTRY:~1,2!"==":\" (
-                    if "!ENTRY:~3,1!"=="" set "KEEP_SLASH=1"
-                )
-                
-                REM Check for UNC root paths: \\server\
-                if "!ENTRY:~0,2!"=="\\" (
-                    REM Count backslashes to see if it's a UNC root
-                    set "SLASH_COUNT=0"
-                    for %%c in (0 1 2 3 4 5 6 7 8 9) do (
-                        if "!ENTRY:~%%c,1!"=="\" set /a SLASH_COUNT+=1
-                    )
-                    REM If only 2 or 3 backslashes, it's a UNC root
-                    if !SLASH_COUNT! leq 3 set "KEEP_SLASH=1"
-                )
-                
-                REM Remove trailing slash if not a root path
-                if !KEEP_SLASH! equ 0 (
+            REM Remove trailing backslash (unless it's a root path)
+            set "TEMP_LEN=0"
+            call :GetLength "!ENTRY!" TEMP_LEN
+            
+            if !TEMP_LEN! gtr 3 (
+                if "!ENTRY:~-1!"=="\" (
                     set "ENTRY=!ENTRY:~0,-1!"
                 )
             )
@@ -172,7 +157,10 @@ if defined USER_PATH (
                     set "IS_VALID=1"
                 ) else (
                     REM Check if directory exists
-                    if exist "!ENTRY!\." (
+                    if exist "!ENTRY!\*" (
+                        set "IS_VALID=1"
+                    ) else if exist "!ENTRY!" (
+                        REM Check if it's a file (some PATH entries point to files)
                         set "IS_VALID=1"
                     ) else (
                         echo   [INVALID] Removing: !ENTRY!
@@ -265,31 +253,12 @@ if "%ADMIN%"=="1" (
                 REM Remove quotes
                 set "ENTRY=!ENTRY:"=!"
                 
-                REM Remove trailing backslash with improved logic
-                REM Check if last char is backslash
-                if "!ENTRY:~-1!"=="\" (
-                    REM Get the length to check if it's more than 3 chars (C:\)
-                    set "TEMP_ENTRY=!ENTRY!"
-                    set "KEEP_SLASH=0"
-                    
-                    REM Check for root paths: C:\, D:\, etc.
-                    if "!ENTRY:~1,2!"==":\" (
-                        if "!ENTRY:~3,1!"=="" set "KEEP_SLASH=1"
-                    )
-                    
-                    REM Check for UNC root paths: \\server\
-                    if "!ENTRY:~0,2!"=="\\" (
-                        REM Count backslashes to see if it's a UNC root
-                        set "SLASH_COUNT=0"
-                        for %%c in (0 1 2 3 4 5 6 7 8 9) do (
-                            if "!ENTRY:~%%c,1!"=="\" set /a SLASH_COUNT+=1
-                        )
-                        REM If only 2 or 3 backslashes, it's a UNC root
-                        if !SLASH_COUNT! leq 3 set "KEEP_SLASH=1"
-                    )
-                    
-                    REM Remove trailing slash if not a root path
-                    if !KEEP_SLASH! equ 0 (
+                REM Remove trailing backslash (unless it's a root path)
+                set "TEMP_LEN=0"
+                call :GetLength "!ENTRY!" TEMP_LEN
+                
+                if !TEMP_LEN! gtr 3 (
+                    if "!ENTRY:~-1!"=="\" (
                         set "ENTRY=!ENTRY:~0,-1!"
                     )
                 )
@@ -308,7 +277,10 @@ if "%ADMIN%"=="1" (
                         set "IS_VALID=1"
                     ) else (
                         REM Check if directory exists
-                        if exist "!ENTRY!\." (
+                        if exist "!ENTRY!\*" (
+                            set "IS_VALID=1"
+                        ) else if exist "!ENTRY!" (
+                            REM Check if it's a file (some PATH entries point to files)
                             set "IS_VALID=1"
                         ) else (
                             echo   [INVALID] Removing: !ENTRY!
@@ -377,6 +349,9 @@ if "%ADMIN%"=="1" (
         )
     )
     echo.
+) else (
+    echo [5/6] Skipping SYSTEM PATH (requires Administrator privileges)...
+    echo.
 )
 
 :: Calculate total changes
@@ -404,7 +379,7 @@ if !TOTAL_CHANGES! gtr 0 (
         if defined CLEAN_USER_PATH (
             :: Check PATH length
             if !USER_PATH_LEN! gtr 2047 (
-                echo   ERROR: USER PATH length (!USER_PATH_LEN! chars) exceeds Windows limit (2047 chars)
+                echo   ERROR: USER PATH length (!USER_PATH_LEN! chars^) exceeds Windows limit ^(2047 chars^)
                 echo   Please remove more paths manually or use shorter path names
             ) else (
                 echo Updating USER PATH via registry...
@@ -412,7 +387,7 @@ if !TOTAL_CHANGES! gtr 0 (
                 if !errorlevel! equ 0 (
                     echo   USER PATH updated successfully
                 ) else (
-                    echo   ERROR: Failed to update USER PATH (Error code: !errorlevel!)
+                    echo   ERROR: Failed to update USER PATH ^(Error code: !errorlevel!^)
                     echo   You can restore from backup: %BACKUP_FILE%
                 )
             )
@@ -432,7 +407,7 @@ if !TOTAL_CHANGES! gtr 0 (
             if defined CLEAN_SYSTEM_PATH (
                 :: Check PATH length
                 if !SYSTEM_PATH_LEN! gtr 8191 (
-                    echo   ERROR: SYSTEM PATH length (!SYSTEM_PATH_LEN! chars) exceeds Windows limit (8191 chars)
+                    echo   ERROR: SYSTEM PATH length (!SYSTEM_PATH_LEN! chars^) exceeds Windows limit ^(8191 chars^)
                     echo   Please remove more paths manually or use shorter path names
                 ) else (
                     echo Updating SYSTEM PATH via registry...
@@ -440,7 +415,7 @@ if !TOTAL_CHANGES! gtr 0 (
                     if !errorlevel! equ 0 (
                         echo   SYSTEM PATH updated successfully
                     ) else (
-                        echo   ERROR: Failed to update SYSTEM PATH (Error code: !errorlevel!)
+                        echo   ERROR: Failed to update SYSTEM PATH ^(Error code: !errorlevel!^)
                         echo   You can restore from backup: %BACKUP_FILE%
                     )
                 )
@@ -488,7 +463,7 @@ if !TOTAL_CHANGES! gtr 0 (
 
 echo.
 echo Usage: %~nx0 [/y]
-echo   /y  Skip confirmation prompt (auto-confirm changes)
+echo   /y  Skip confirmation prompt ^(auto-confirm changes^)
 
 :: Cleanup temporary files
 if exist "%TEMP_ENTRIES%" del "%TEMP_ENTRIES%"
@@ -497,6 +472,19 @@ if exist "%TEMP_SYSTEM_ENTRIES%" del "%TEMP_SYSTEM_ENTRIES%"
 timeout /t 10 /nobreak
 endlocal
 exit /b 0
+
+:GetLength
+:: Simple helper to get string length for root path check
+setlocal enabledelayedexpansion
+set "str=%~1"
+set "len=0"
+:GetLength_Loop
+if "!str:~%len%,1!" neq "" (
+    set /a len+=1
+    goto :GetLength_Loop
+)
+endlocal & set "%~2=%len%"
+exit /b
 
 :StrLen
 :: Subroutine to calculate string length using binary search method
