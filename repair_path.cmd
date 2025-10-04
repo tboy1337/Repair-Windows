@@ -203,7 +203,7 @@ echo   Cleaned entries: !USER_CLEAN_COUNT!
 echo   Empty entries removed: !USER_EMPTY_REMOVED!
 echo   Duplicates removed: !USER_DUPLICATES_REMOVED!
 echo   Invalid paths removed: !USER_INVALID_REMOVED!
-if !USER_PATH_LEN! gtr 0 (
+if defined CLEAN_USER_PATH (
     echo   Path length: !USER_PATH_LEN! characters ^(limit: 2047^)
     if !USER_PATH_LEN! gtr 2047 (
         echo   WARNING: Path length EXCEEDS Windows limit!
@@ -317,7 +317,7 @@ if "%ADMIN%"=="1" (
     echo   Empty entries removed: !SYSTEM_EMPTY_REMOVED!
     echo   Duplicates removed: !SYSTEM_DUPLICATES_REMOVED!
     echo   Invalid paths removed: !SYSTEM_INVALID_REMOVED!
-    if !SYSTEM_PATH_LEN! gtr 0 (
+    if defined CLEAN_SYSTEM_PATH (
         echo   Path length: !SYSTEM_PATH_LEN! characters ^(limit: 8191^)
         if !SYSTEM_PATH_LEN! gtr 8191 (
             echo   WARNING: Path length EXCEEDS Windows limit!
@@ -455,19 +455,13 @@ endlocal
 exit /b 0
 
 :StrLen
-:: Subroutine to calculate string length
+:: Subroutine to calculate string length efficiently using PowerShell
 :: Usage: call :StrLen result_var "string"
-setlocal enabledelayedexpansion
+setlocal
 set "str=%~2"
 set "len=0"
 if defined str (
-    :: Count characters by progressively checking string positions
-    :strlen_loop
-    if defined str (
-        set "str=!str:~1!"
-        set /a len+=1
-        goto :strlen_loop
-    )
+    for /f %%a in ('powershell -NoProfile -Command "('%~2').Length"') do set "len=%%a"
 )
 endlocal & set "%~1=%len%"
 exit /b
