@@ -11,6 +11,7 @@ if %errorlevel% neq 0 (
     echo Failed to change to %SystemDrive%.  Error code: %errorlevel%
 )
 
+:: Check admin rights
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo WARNING: Not running as Administrator
@@ -64,11 +65,14 @@ if "%ADMIN%"=="1" (
     reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path >> "%BACKUP_FILE%" 2>&1
 )
 
+:: Verify backup was created successfully
 if exist "%BACKUP_FILE%" (
     echo Backup saved to: %BACKUP_FILE%
 ) else (
-    echo WARNING: Failed to create backup file
-    timeout /t 5 /nobreak
+    echo ERROR: Failed to create backup file
+    echo Cannot proceed without backup
+    timeout /t 10 /nobreak
+    exit /b 1
 )
 echo.
 
@@ -279,31 +283,27 @@ set /a TOTAL_CHANGES=!USER_TOTAL_CHANGES!+!SYSTEM_TOTAL_CHANGES!
 if !TOTAL_CHANGES! gtr 0 (
     echo [6/6] Applying changes...
     echo.
+    echo WARNING: About to modify PATH environment variables
+    echo Press Ctrl+C to cancel or
+    pause
+    echo.
     
     :: Update USER PATH
     if !USER_TOTAL_CHANGES! gtr 0 (
         if defined CLEAN_USER_PATH (
-            :: Check PATH length (setx has a limit of 1024 characters, registry allows up to 2047)
+            :: Check PATH length
             call :StrLen USER_PATH_LEN "!CLEAN_USER_PATH!"
             if !USER_PATH_LEN! gtr 2047 (
                 echo   ERROR: USER PATH length (!USER_PATH_LEN! chars) exceeds Windows limit (2047 chars)
                 echo   Please remove more paths manually or use shorter path names
-            ) else if !USER_PATH_LEN! gtr 1024 (
-                echo   WARNING: USER PATH length (!USER_PATH_LEN! chars) exceeds setx limit (1024 chars)
-                echo   Attempting registry update instead...
-                reg add "HKCU\Environment" /v Path /t REG_EXPAND_SZ /d "!CLEAN_USER_PATH!" /f >nul 2>&1
-                if !errorlevel! equ 0 (
-                    echo   USER PATH updated successfully via registry
-                ) else (
-                    echo   ERROR: Failed to update USER PATH
-                )
             ) else (
-                echo Updating USER PATH...
-                setx PATH "!CLEAN_USER_PATH!" >nul 2>&1
+                echo Updating USER PATH via registry...
+                reg add "HKCU\Environment" /v Path /t REG_EXPAND_SZ /d "!CLEAN_USER_PATH!" /f >nul 2>&1
                 if !errorlevel! equ 0 (
                     echo   USER PATH updated successfully
                 ) else (
-                    echo   ERROR: Failed to update USER PATH
+                    echo   ERROR: Failed to update USER PATH (Error code: !errorlevel!)
+                    echo   You can restore from backup: %BACKUP_FILE%
                 )
             )
         ) else (
@@ -322,22 +322,14 @@ if !TOTAL_CHANGES! gtr 0 (
                 if !SYSTEM_PATH_LEN! gtr 8191 (
                     echo   ERROR: SYSTEM PATH length (!SYSTEM_PATH_LEN! chars) exceeds Windows limit (8191 chars)
                     echo   Please remove more paths manually or use shorter path names
-                ) else if !SYSTEM_PATH_LEN! gtr 1024 (
-                    echo   WARNING: SYSTEM PATH length (!SYSTEM_PATH_LEN! chars) exceeds setx limit (1024 chars)
-                    echo   Attempting registry update instead...
-                    reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_EXPAND_SZ /d "!CLEAN_SYSTEM_PATH!" /f >nul 2>&1
-                    if !errorlevel! equ 0 (
-                        echo   SYSTEM PATH updated successfully via registry
-                    ) else (
-                        echo   ERROR: Failed to update SYSTEM PATH
-                    )
                 ) else (
-                    echo Updating SYSTEM PATH...
-                    setx PATH "!CLEAN_SYSTEM_PATH!" /M >nul 2>&1
+                    echo Updating SYSTEM PATH via registry...
+                    reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_EXPAND_SZ /d "!CLEAN_SYSTEM_PATH!" /f >nul 2>&1
                     if !errorlevel! equ 0 (
                         echo   SYSTEM PATH updated successfully
                     ) else (
-                        echo   ERROR: Failed to update SYSTEM PATH
+                        echo   ERROR: Failed to update SYSTEM PATH (Error code: !errorlevel!)
+                        echo   You can restore from backup: %BACKUP_FILE%
                     )
                 )
             ) else (
@@ -349,9 +341,15 @@ if !TOTAL_CHANGES! gtr 0 (
     )
     
     echo.
-    echo Notifying system of environment changes...
-    :: Broadcast WM_SETTINGCHANGE to notify applications of environment changes
-    powershell -NoProfile -Command "Add-Type -TypeDefinition @\"[DllImport(\\\"user32.dll\\\", SetLastError = true, CharSet = CharSet.Auto)]public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);\"@ -Name NativeMethods -Namespace Win32; [UIntPtr]$result = 0; [Win32.NativeMethods]::SendMessageTimeout([IntPtr]0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result) | Out-Null" 2>nul
+    echo Broadcasting environment change notification...
+    :: Use simpler PowerShell approach for WM_SETTINGCHANGE
+    powershell -NoProfile -WindowStyle Hidden -Command "$signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru; $result = [UIntPtr]::Zero; $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result) | Out-Null;" 2>nul
+    if !errorlevel! equ 0 (
+        echo   System notified successfully
+    ) else (
+        echo   Warning: Failed to broadcast change notification
+        echo   You may need to log off and back on for changes to take full effect
+    )
     
     echo.
     echo +=====================================+
@@ -361,9 +359,8 @@ if !TOTAL_CHANGES! gtr 0 (
     echo Total changes made: !TOTAL_CHANGES!
     echo Backup location: %BACKUP_DIR%
     echo.
-    echo NOTE: Running applications have been notified.
-    echo New command prompts will use the updated PATH.
-    echo Some applications may still need to be restarted.
+    echo NOTE: New command prompts will use the updated PATH.
+    echo Some applications may need to be restarted to see changes.
 ) else (
     echo [6/6] Analysis complete
     echo.
@@ -385,15 +382,19 @@ endlocal
 exit /b 0
 
 :StrLen
-:: Subroutine to calculate string length
+:: Optimized subroutine to calculate string length
 :: Usage: call :StrLen result_var "string"
 setlocal enabledelayedexpansion
 set "str=%~2"
 set "len=0"
 if defined str (
-    for /l %%i in (0,1,8191) do (
-        if not "!str:~%%i,1!"=="" set /a len+=1
+    :: Use binary search for faster length calculation
+    for /l %%i in (12,-1,0) do (
+        set /a "len|=1<<%%i"
+        for %%j in (!len!) do if "!str:~%%j,1!"=="" set /a "len&=~1<<%%i"
     )
+    :: Add 1 if string is not empty
+    if defined str set /a len+=1
 )
 endlocal & set "%~1=%len%"
 exit /b
