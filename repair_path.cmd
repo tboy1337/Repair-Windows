@@ -129,9 +129,31 @@ if defined USER_PATH (
             REM Remove quotes
             set "ENTRY=!ENTRY:"=!"
             
-            REM Remove trailing backslash (unless it's a root path like C:\)
+            REM Remove trailing backslash with improved logic
+            REM Check if last char is backslash
             if "!ENTRY:~-1!"=="\" (
-                if not "!ENTRY:~-2,1!"==":" (
+                REM Get the length to check if it's more than 3 chars (C:\)
+                set "TEMP_ENTRY=!ENTRY!"
+                set "KEEP_SLASH=0"
+                
+                REM Check for root paths: C:\, D:\, etc.
+                if "!ENTRY:~1,2!"==":\" (
+                    if "!ENTRY:~3,1!"=="" set "KEEP_SLASH=1"
+                )
+                
+                REM Check for UNC root paths: \\server\
+                if "!ENTRY:~0,2!"=="\\" (
+                    REM Count backslashes to see if it's a UNC root
+                    set "SLASH_COUNT=0"
+                    for %%c in (0 1 2 3 4 5 6 7 8 9) do (
+                        if "!ENTRY:~%%c,1!"=="\" set /a SLASH_COUNT+=1
+                    )
+                    REM If only 2 or 3 backslashes, it's a UNC root
+                    if !SLASH_COUNT! leq 3 set "KEEP_SLASH=1"
+                )
+                
+                REM Remove trailing slash if not a root path
+                if !KEEP_SLASH! equ 0 (
                     set "ENTRY=!ENTRY:~0,-1!"
                 )
             )
@@ -203,7 +225,7 @@ echo   Cleaned entries: !USER_CLEAN_COUNT!
 echo   Empty entries removed: !USER_EMPTY_REMOVED!
 echo   Duplicates removed: !USER_DUPLICATES_REMOVED!
 echo   Invalid paths removed: !USER_INVALID_REMOVED!
-if defined CLEAN_USER_PATH (
+if !USER_PATH_LEN! gtr 0 (
     echo   Path length: !USER_PATH_LEN! characters ^(limit: 2047^)
     if !USER_PATH_LEN! gtr 2047 (
         echo   WARNING: Path length EXCEEDS Windows limit!
@@ -243,9 +265,31 @@ if "%ADMIN%"=="1" (
                 REM Remove quotes
                 set "ENTRY=!ENTRY:"=!"
                 
-                REM Remove trailing backslash (unless it's a root path like C:\)
+                REM Remove trailing backslash with improved logic
+                REM Check if last char is backslash
                 if "!ENTRY:~-1!"=="\" (
-                    if not "!ENTRY:~-2,1!"==":" (
+                    REM Get the length to check if it's more than 3 chars (C:\)
+                    set "TEMP_ENTRY=!ENTRY!"
+                    set "KEEP_SLASH=0"
+                    
+                    REM Check for root paths: C:\, D:\, etc.
+                    if "!ENTRY:~1,2!"==":\" (
+                        if "!ENTRY:~3,1!"=="" set "KEEP_SLASH=1"
+                    )
+                    
+                    REM Check for UNC root paths: \\server\
+                    if "!ENTRY:~0,2!"=="\\" (
+                        REM Count backslashes to see if it's a UNC root
+                        set "SLASH_COUNT=0"
+                        for %%c in (0 1 2 3 4 5 6 7 8 9) do (
+                            if "!ENTRY:~%%c,1!"=="\" set /a SLASH_COUNT+=1
+                        )
+                        REM If only 2 or 3 backslashes, it's a UNC root
+                        if !SLASH_COUNT! leq 3 set "KEEP_SLASH=1"
+                    )
+                    
+                    REM Remove trailing slash if not a root path
+                    if !KEEP_SLASH! equ 0 (
                         set "ENTRY=!ENTRY:~0,-1!"
                     )
                 )
@@ -317,7 +361,7 @@ if "%ADMIN%"=="1" (
     echo   Empty entries removed: !SYSTEM_EMPTY_REMOVED!
     echo   Duplicates removed: !SYSTEM_DUPLICATES_REMOVED!
     echo   Invalid paths removed: !SYSTEM_INVALID_REMOVED!
-    if defined CLEAN_SYSTEM_PATH (
+    if !SYSTEM_PATH_LEN! gtr 0 (
         echo   Path length: !SYSTEM_PATH_LEN! characters ^(limit: 8191^)
         if !SYSTEM_PATH_LEN! gtr 8191 (
             echo   WARNING: Path length EXCEEDS Windows limit!
@@ -413,8 +457,8 @@ if !TOTAL_CHANGES! gtr 0 (
     
     echo.
     echo Broadcasting environment change notification...
-    :: Use simpler PowerShell approach for WM_SETTINGCHANGE
-    powershell -NoProfile -WindowStyle Hidden -Command "$signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru; $result = [UIntPtr]::Zero; $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result) | Out-Null;" 2>nul
+    :: Use simpler PowerShell approach for WM_SETTINGCHANGE with error handling
+    powershell -NoProfile -WindowStyle Hidden -Command "try { $signature = '[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Auto)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);'; $type = Add-Type -MemberDefinition $signature -Name 'Win32' -Namespace 'NativeMethods' -PassThru -ErrorAction Stop; $result = [UIntPtr]::Zero; $type::SendMessageTimeout(0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result) | Out-Null; exit 0 } catch { exit 1 }" 2>nul
     if !errorlevel! equ 0 (
         echo   System notified successfully
     ) else (
@@ -455,13 +499,26 @@ endlocal
 exit /b 0
 
 :StrLen
-:: Subroutine to calculate string length efficiently using PowerShell
+:: Subroutine to calculate string length using binary search method
 :: Usage: call :StrLen result_var "string"
-setlocal
+:: This is much faster than character-by-character iteration
+setlocal enabledelayedexpansion
 set "str=%~2"
 set "len=0"
 if defined str (
-    for /f %%a in ('powershell -NoProfile -Command "('%~2').Length"') do set "len=%%a"
+    :: Use binary search to find length efficiently
+    :: This handles strings up to 8192 characters (2^13)
+    for /l %%i in (12,-1,0) do (
+        set /a "pow=1<<%%i"
+        for %%p in (!pow!) do (
+            if "!str:~%%p,1!" neq "" (
+                set /a "len+=%%p"
+                set "str=!str:~%%p!"
+            )
+        )
+    )
+    :: Check if there's one remaining character
+    if "!str!" neq "" set /a len+=1
 )
 endlocal & set "%~1=%len%"
 exit /b
