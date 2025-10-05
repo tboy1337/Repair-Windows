@@ -41,7 +41,7 @@ if not defined TIMESTAMP (
         set "TIMESTAMP=!dt:~0,8!_!dt:~8,6!"
     ) else (
         :: Last resort: use simple counter
-        set "TIMESTAMP=backup_%RANDOM%"
+        set "TIMESTAMP=backup_%RANDOM%_%RANDOM%"
     )
 )
 
