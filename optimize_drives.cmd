@@ -24,16 +24,9 @@ echo Checking if %SystemDrive% is an SSD...
 set "IsSSD=false"
 set "PhysicalDiskNum="
 
-REM Find which physical disk contains the C: drive
-for /f "tokens=2 delims==" %%i in ('wmic logicaldisk where "DeviceID='%SystemDrive%'" assoc:diskpartition 2^>nul ^| findstr "DiskIndex"') do (
+REM Find which physical disk contains the C: drive using PowerShell
+for /f %%i in ('powershell -command "Get-Partition -DriveLetter '%SystemDrive:~0,1%' | Select-Object -ExpandProperty DiskNumber" 2^>nul') do (
     set "PhysicalDiskNum=%%i"
-)
-
-REM Alternative method using PowerShell to find physical disk
-if "!PhysicalDiskNum!"=="" (
-    for /f %%i in ('powershell -command "Get-Partition -DriveLetter '%SystemDrive:~0,1%' | Select-Object -ExpandProperty DiskNumber" 2^>nul') do (
-        set "PhysicalDiskNum=%%i"
-    )
 )
 
 if "!PhysicalDiskNum!"=="" (
@@ -44,22 +37,6 @@ if "!PhysicalDiskNum!"=="" (
     REM Method 1: PowerShell MediaType
     for /f %%i in ('powershell -command "Get-PhysicalDisk | Where-Object {$_.DeviceID -eq !PhysicalDiskNum!} | Select-Object -ExpandProperty MediaType" 2^>nul') do (
         if /i "%%i"=="SSD" set "IsSSD=true"
-    )
-    
-    REM Method 2: PowerShell SpindleSpeed check
-    if "!IsSSD!"=="false" (
-        for /f %%i in ('powershell -command "Get-PhysicalDisk | Where-Object {$_.DeviceID -eq !PhysicalDiskNum!} | Select-Object -ExpandProperty SpindleSpeed" 2^>nul') do (
-            if "%%i"=="0" set "IsSSD=true"
-        )
-    )
-    
-    REM Method 3: Check if TRIM is enabled
-    if "!IsSSD!"=="false" (
-        for /f %%i in ('fsutil behavior query DisableDeleteNotify 2^>nul') do (
-            if "%%i"=="0" (
-                set "IsSSD=true"
-            )
-        )
     )
 )
 
