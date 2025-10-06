@@ -33,8 +33,7 @@ if "!PhysicalDiskNum!"=="" (
     echo WARNING: Could not determine physical disk type for %SystemDrive% - assuming SSD for safety
     set "IsSSD=true"
 ) else (
-    REM Check if this physical disk is an SSD:
-    REM Method 1: PowerShell MediaType
+    REM Check if this physical disk is an SSD
     for /f %%i in ('powershell -command "Get-PhysicalDisk | Where-Object {$_.DeviceID -eq !PhysicalDiskNum!} | Select-Object -ExpandProperty MediaType" 2^>nul') do (
         if /i "%%i"=="SSD" set "IsSSD=true"
     )
