@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Analysing all applicable drives...
+echo Analyzing all applicable drives...
 defrag /C /A /H >nul 2>&1
 if %errorlevel% neq 0 (
     echo Failed to analyze all applicable drives.  Error code: %errorlevel%
