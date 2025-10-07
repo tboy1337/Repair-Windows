@@ -88,7 +88,7 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|f
 
 echo File system: %FS_TYPE%
 echo %%FS_TYPE%% | findstr /i /r "^FAT" >nul
-if %errorlevel% neq 1 (
+if !errorlevel! equ 0 (
     echo Repairing FAT file system...
     chkdsk "%WINDOWS_DRIVE%" /r /x >nul 2>&1
     if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
@@ -99,6 +99,7 @@ if %errorlevel% neq 1 (
     
     echo Cleaning up metadata and unallocated space...
     chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
+    if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
 )
 
 echo Disk repair completed.
