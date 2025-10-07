@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 set "TARGET_DRIVE=%SystemDrive%"
 
@@ -18,7 +18,7 @@ if %errorlevel% neq 0 (
 
 for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %TARGET_DRIVE%^|find "File System Name"') do (
     echo %%A | findstr /i /r "^FAT" >nul
-    if %errorlevel% equ 1 (
+    if !errorlevel! equ 0 (
         echo %TARGET_DRIVE% drive is FAT-based.
         echo Repairing %TARGET_DRIVE% file system ^(might take a long time^)...
         if /i "%TARGET_DRIVE%"=="%SystemDrive%" (
@@ -56,4 +56,4 @@ echo Error repair finished.
 
 timeout /t 10 /nobreak
 endlocal
-exit /b 1
+exit /b 0
