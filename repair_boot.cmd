@@ -20,7 +20,7 @@ set "WINDOWS_DRIVE="
 set "windir="
 echo Detecting Windows installation...
 for %%d in (A B C D E F G H I J K L M N O P Q R S T U V W Y Z) do (
-    if "%%d" neq "X" if exist "%%d:\Windows\System32\config\SYSTEM" (
+    if exist "%%d:\Windows\System32\config\SYSTEM" (
         set "WINDOWS_DRIVE=%%d:"
         set "windir=%%d:\Windows"
         echo Found Windows installation on %%d:
@@ -82,24 +82,24 @@ echo Running CHKDSK on %WINDOWS_DRIVE%...
 echo This may take a while...
 
 :: Get file system type
-for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%^|find "File System Name"') do (
+for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%\^|find "File System Name"') do (
     set "FS_TYPE=%%A"
 )
 
 echo File system: %FS_TYPE%
-echo %%FS_TYPE%% | findstr /i /r "^FAT" >nul
+echo %FS_TYPE% | findstr /i /r "^FAT" >nul
 if !errorlevel! equ 0 (
     echo Repairing FAT file system...
     chkdsk "%WINDOWS_DRIVE%" /r /x >nul 2>&1
-    if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
+    if !errorlevel! neq 0 echo Warning: CHKDSK reported errors.
 ) else (
     echo Repairing NTFS file system...
     chkdsk "%WINDOWS_DRIVE%" /r /x >nul 2>&1
-    if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
-    
+    if !errorlevel! neq 0 echo Warning: CHKDSK reported errors.
+
     echo Cleaning up metadata and unallocated space...
     chkdsk "%WINDOWS_DRIVE%" /sdcleanup >nul 2>&1
-    if %errorlevel% neq 0 echo Warning: CHKDSK reported errors.
+    if !errorlevel! neq 0 echo Warning: CHKDSK reported errors.
 )
 
 echo Disk repair completed.
@@ -128,7 +128,7 @@ if !DISM_ERROR! neq 0 (
     echo This may indicate access issues or missing files.
 ) else (
     findstr /c:"No component store corruption detected" "%TEMP_FILE_1%" >nul
-    set "FIND_ERROR=%errorlevel%"
+    set "FIND_ERROR=!errorlevel!"
     if !FIND_ERROR! neq 0 (
         set HAS_CORRUPTION=1
         echo Corruption flags detected in Windows image.
@@ -145,7 +145,7 @@ if !DISM_ERROR! neq 0 (
     echo This may indicate access issues or missing files.
 ) else (
     findstr /c:"No component store corruption detected" "%TEMP_FILE_2%" >nul
-    set "FIND_ERROR=%errorlevel%"
+    set "FIND_ERROR=!errorlevel!"
     if !FIND_ERROR! neq 0 (
         set HAS_CORRUPTION=1
         echo Corruption detected in Windows image.
@@ -172,8 +172,8 @@ if !HAS_CORRUPTION! equ 1 (
 echo.
 echo Checking integrity of protected system files...
 sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to check integrity of all protected system files. Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to check integrity of all protected system files. Error code: !errorlevel!
     echo This may indicate access issues or missing files.
 )
 
@@ -229,6 +229,20 @@ if /i not "%confirm%"=="Y" goto menu
 call :advanced_boot_repair
 goto menu
 
+:: ========================= HELPER FUNCTIONS =========================
+:find_available_drive_letter
+:: Find an available drive letter and return it in the variable name passed as parameter
+:: Usage: call :find_available_drive_letter RESULT_VAR
+set "RESULT_VAR_NAME=%~1"
+for %%d in (S T U V W R Q P O N M L K J I H G F E) do (
+    if not exist "%%d:\" (
+        set "%RESULT_VAR_NAME%=%%d:"
+        exit /b 0
+    )
+)
+:: No available drive letter found
+exit /b 1
+
 :: ========================= SYSTEM DETECTION =========================
 :detect_system_info
 set "BOOT_MODE=Unknown"
@@ -258,7 +272,7 @@ set "NEED_CLEANUP=0"
 :: Determine BCD location based on boot mode
 if "%BOOT_MODE%"=="UEFI" (
     call :find_efi_partition
-    if %errorlevel% neq 0 (
+    if !errorlevel! neq 0 (
         echo Error: Could not locate EFI system partition.
         exit /b 1
     )
@@ -271,7 +285,7 @@ if "%BOOT_MODE%"=="UEFI" (
 :: Verify BCD exists
 if not exist "%BCD_PATH%" (
     echo Error: Boot configuration data not found at %BCD_PATH%
-    if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+    if !NEED_CLEANUP! == 1 call :cleanup_efi_drive
     exit /b 1
 )
 
@@ -280,7 +294,7 @@ bcdedit /store "%BCD_PATH%" /enum {memdiag} >nul 2>&1
 if %errorlevel% neq 0 (
     echo Warning: Memory diagnostic entry not found in BCD.
     echo This may indicate BCD corruption or missing Windows components.
-    if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+    if !NEED_CLEANUP! == 1 call :cleanup_efi_drive
     exit /b 1
 )
 
@@ -289,7 +303,7 @@ bcdedit /store "%BCD_PATH%" /bootsequence {memdiag} >nul 2>&1
 set "CMD_ERROR=%errorlevel%"
 
 :: Cleanup EFI drive letter if needed
-if %NEED_CLEANUP%==1 call :cleanup_efi_drive
+if !NEED_CLEANUP! == 1 call :cleanup_efi_drive
 
 :: Return result
 if %CMD_ERROR% neq 0 (
@@ -324,7 +338,7 @@ if "%BOOT_MODE%"=="UEFI" (
     echo Legacy BIOS system - repairing MBR...
     bootrec /fixmbr >nul 2>&1
     bootrec /fixboot >nul 2>&1
-    if %errorlevel% neq 0 (
+    if !errorlevel! neq 0 (
         echo Boot sector repair failed. Trying alternative method...
         bootsect /nt60 %WINDOWS_DRIVE% /mbr /force >nul 2>&1
     )
@@ -354,7 +368,7 @@ call :find_efi_partition
 if %errorlevel% neq 0 (
     echo EFI partition not found or corrupted. Attempting recreation...
     call :recreate_efi_partition
-    exit /b %errorlevel%
+    exit /b !errorlevel!
 )
 
 echo Repairing EFI boot files...
@@ -367,7 +381,15 @@ set "TEMP=X:"
 set "tmpfile=%TEMP%\diskpart_%RANDOM%_%RANDOM%.txt"
 set "EFI_DISK="
 set "EFI_PARTITION="
-set "EFI_DRIVE=S:"
+set "EFI_DRIVE="
+
+:: Find an available drive letter for EFI partition
+call :find_available_drive_letter EFI_DRIVE
+if %errorlevel% neq 0 (
+    echo Error: No available drive letters for EFI partition
+    if exist "%tmpfile%" del "%tmpfile%"
+    exit /b 1
+)
 
 :: List all disks and find EFI partition
 echo list disk > "%tmpfile%"
@@ -427,12 +449,12 @@ exit /b 0
 if defined EFI_DRIVE if defined EFI_DISK if defined EFI_PARTITION (
     :: Use Windows RE RAM drive (X:) for temp files
     set "TEMP=X:"
-    set "tmpfile=%TEMP%\diskpart_%RANDOM%_%RANDOM%.txt"
-    echo select disk %EFI_DISK% > "%tmpfile%"
-    echo select partition %EFI_PARTITION% >> "%tmpfile%"
-    echo remove letter=%EFI_DRIVE:~0,1% >> "%tmpfile%"
-    diskpart /s "%tmpfile%" >nul
-    if exist "%tmpfile%" del "%tmpfile%"
+    set "tmpfile=!TEMP!\diskpart_%RANDOM%_%RANDOM%.txt"
+    echo select disk %EFI_DISK% > "!tmpfile!"
+    echo select partition %EFI_PARTITION% >> "!tmpfile!"
+    echo remove letter=%EFI_DRIVE:~0,1% >> "!tmpfile!"
+    diskpart /s "!tmpfile!" >nul
+    if exist "!tmpfile!" del "!tmpfile!"
 )
 exit /b 0
 
@@ -450,7 +472,15 @@ if not defined EFI_DISK (
 :: Use Windows RE RAM drive (X:) for temp files
 set "TEMP=X:"
 set "tmpfile=%TEMP%\diskpart_%RANDOM%_%RANDOM%.txt"
-set "NEW_EFI_DRIVE=T:"
+set "NEW_EFI_DRIVE="
+
+:: Find an available drive letter for new EFI partition
+call :find_available_drive_letter NEW_EFI_DRIVE
+if %errorlevel% neq 0 (
+    echo Error: No available drive letters for new EFI partition
+    if exist "%tmpfile%" del "%tmpfile%"
+    exit /b 1
+)
 
 echo Deleting corrupted EFI partition...
 echo select disk %EFI_DISK% > "%tmpfile%"
