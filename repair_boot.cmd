@@ -1,9 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo Windows Recovery Environment Repair Script
-echo =====================================
-echo Version 2.0
+echo +============================================+
+echo + Windows Recovery Environment Repair Script +
+echo +============================================+
+echo +                Version 2.0                 +
+echo +============================================+
 echo.
 
 :: Check if running in Windows RE
@@ -564,9 +566,9 @@ exit /b 0
 
 :end
 echo.
-echo =====================================
-echo Repair operations completed.
-echo =====================================
+echo +=============================+
+echo + Repair operations completed +
+echo +=============================+
 echo.
 echo Summary of actions taken:
 if "%choice%"=="5" (
