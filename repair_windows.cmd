@@ -82,6 +82,31 @@ if !errorlevel! neq 0 (
     echo Failed to clean component store.  Error code: !errorlevel!
 )
 
+echo Checking Windows Installer corruption...
+msiexec /unregserver >nul 2>&1
+if !errorlevel! neq 0 (
+    echo Failed to unregister Windows Installer.  Error code: !errorlevel!
+)
+
+msiexec /regserver >nul 2>&1
+if !errorlevel! neq 0 (
+    echo Failed to register Windows Installer.  Error code: !errorlevel!
+)
+
+echo Checking COM+ components...
+regsvr32 /s ole32.dll >nul 2>&1
+if !errorlevel! neq 0 (
+    echo Failed to register OLE32.DLL.  Error code: !errorlevel!
+)
+
+regsvr32 /s oleaut32.dll >nul 2>&1
+if !errorlevel! neq 0 (
+    echo Failed to register OLEAUT32.DLL.  Error code: !errorlevel!
+)
+
+echo Windows repair completed.
+echo.
+
 timeout /t 10 /nobreak
 endlocal
 exit /b 0
