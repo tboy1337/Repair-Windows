@@ -20,34 +20,32 @@ if %errorlevel% neq 0 (
 
 echo Checking for corruption flags in the local Windows image...
 DISM /Online /Cleanup-Image /CheckHealth > "%TEMP_FILE_1%" 2>&1
-set "DISM_ERROR=%errorlevel%"
+set "DISM_ERROR=!errorlevel!"
 if !DISM_ERROR! neq 0 (
     echo Failed to check for corruption flags in the local Windows image.  Error code: !DISM_ERROR!
 ) else (
     findstr /c:"No component store corruption detected" "%TEMP_FILE_1%" >nul
-    set "FIND_ERROR=%errorlevel%"
-    if !FIND_ERROR! neq 0 set HAS_CORRUPTION=1
+    if !errorlevel! neq 0 set "HAS_CORRUPTION=1"
 )
 
 echo Checking for corruption in the local Windows image...
 DISM /Online /Cleanup-Image /ScanHealth > "%TEMP_FILE_2%" 2>&1
-set "DISM_ERROR=%errorlevel%"
+set "DISM_ERROR=!errorlevel!"
 if !DISM_ERROR! neq 0 (
     echo Failed to check for corruption in the local Windows image.  Error code: !DISM_ERROR!
 ) else (
     findstr /c:"No component store corruption detected" "%TEMP_FILE_2%" >nul
-    set "FIND_ERROR=%errorlevel%"
-    if !FIND_ERROR! neq 0 set HAS_CORRUPTION=1
+    if !errorlevel! neq 0 set "HAS_CORRUPTION=1"
 )
 
 del "%TEMP_FILE_1%" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to delete temporary file: %TEMP_FILE_1%.  Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to delete temporary file: %TEMP_FILE_1%.  Error code: !errorlevel!
 )
 
 del "%TEMP_FILE_2%" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to delete temporary file: %TEMP_FILE_2%.  Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to delete temporary file: %TEMP_FILE_2%.  Error code: !errorlevel!
 )
 
 if !HAS_CORRUPTION! equ 1 (
@@ -87,6 +85,8 @@ msiexec /unregserver >nul 2>&1
 if !errorlevel! neq 0 (
     echo Failed to unregister Windows Installer.  Error code: !errorlevel!
 )
+
+timeout /t 2 /nobreak >nul 2>&1
 
 msiexec /regserver >nul 2>&1
 if !errorlevel! neq 0 (
