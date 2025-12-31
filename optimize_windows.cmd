@@ -43,6 +43,7 @@ if %errorLevel% neq 0 (
 ) else (
     echo    SUCCESS: TdrDelay optimized
 )
+
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v TdrDdiDelay /t REG_DWORD /d 10 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize TdrDdiDelay
@@ -65,6 +66,7 @@ if %errorLevel% neq 0 (
 ) else (
     echo    SUCCESS: DefaultTTL optimized
 )
+
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" /v TcpMaxDupAcks /t REG_DWORD /d 2 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize TcpMaxDupAcks
@@ -95,12 +97,14 @@ if %errorLevel% neq 0 (
 ) else (
     echo    SUCCESS: GPU Priority optimized
 )
+
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v Priority /t REG_DWORD /d 6 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize Priority
 ) else (
     echo    SUCCESS: Priority optimized
 )
+
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d High /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize Scheduling Category
@@ -139,12 +143,14 @@ if %errorLevel% neq 0 (
 ) else (
     echo    SUCCESS: MouseSpeed optimized
 )
+
 reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d 0 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize MouseThreshold1
 ) else (
     echo    SUCCESS: MouseThreshold1 optimized
 )
+
 reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d 0 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize MouseThreshold2
@@ -159,6 +165,7 @@ if %errorLevel% neq 0 (
 ) else (
     echo    SUCCESS: USB selective suspend disabled
 )
+
 powercfg /SETDCVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0 >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to disable USB selective suspend on DC
