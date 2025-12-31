@@ -28,7 +28,7 @@ echo.
 echo Applying performance tweaks...
 echo.
 
-echo [1/12] Enabling Hardware-accelerated GPU Scheduling...
+echo [1/13] Enabling Hardware-accelerated GPU Scheduling...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v HwSchMode /t REG_DWORD /d 2 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to enable GPU scheduling
@@ -36,7 +36,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: GPU scheduling enabled
 )
 
-echo [2/12] Optimizing GPU timeout detection and recovery...
+echo [2/13] Optimizing GPU timeout detection and recovery...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v TdrDelay /t REG_DWORD /d 10 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize TdrDelay
@@ -50,7 +50,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: TdrDdiDelay optimized
 )
 
-echo [3/12] Disabling Network Throttling Index...
+echo [3/13] Disabling Network Throttling Index...
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v NetworkThrottlingIndex /t REG_DWORD /d 0xffffffff /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to disable network throttling
@@ -58,7 +58,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: Network throttling disabled
 )
 
-echo [4/12] Optimizing network adapter settings...
+echo [4/13] Optimizing network adapter settings...
 reg add "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" /v DefaultTTL /t REG_DWORD /d 64 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize DefaultTTL
@@ -80,7 +80,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: Network adapter power management disabled
 )
 
-echo [5/12] Improving system responsiveness...
+echo [5/13] Improving system responsiveness...
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v SystemResponsiveness /t REG_DWORD /d 10 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to improve system responsiveness
@@ -88,7 +88,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: System responsiveness improved
 )
 
-echo [6/12] Optimizing task scheduling for games/multimedia...
+echo [6/13] Optimizing task scheduling for games/multimedia...
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize GPU Priority
@@ -108,7 +108,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: Scheduling Category optimized
 )
 
-echo [7/12] Disabling paging executive (requires 8GB+ RAM)...
+echo [7/13] Disabling paging executive (requires 8GB+ RAM)...
 powershell -Command "$totalRAM = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2); Write-Host \"    Detected RAM: $totalRAM GB\"; if ($totalRAM -ge 8) { Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name 'DisablePagingExecutive' -Value 1 -Type DWord -ErrorAction Stop; Write-Host '    SUCCESS: Paging executive disabled' } else { Write-Host '    SKIPPED: Less than 8GB RAM detected' }" 2>nul
 if %errorLevel% neq 0 (
     echo    ERROR: Cannot detect RAM amount, skipping this tweak for safety
@@ -116,7 +116,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: Paging executive disabled
 )
 
-echo [8/12] Optimizing large system cache...
+echo [8/13] Optimizing large system cache...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v LargeSystemCache /t REG_DWORD /d 0 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize system cache
@@ -124,7 +124,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: System cache optimized
 )
 
-echo [9/12] Reducing menu show delay...
+echo [9/13] Reducing menu show delay...
 reg add "HKCU\Control Panel\Desktop" /v MenuShowDelay /t REG_SZ /d 0 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to reduce menu delay
@@ -132,7 +132,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: Menu delay reduced
 )
 
-echo [10/12] Disabling mouse acceleration...
+echo [10/13] Disabling mouse acceleration...
 reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d 0 /f >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to optimize MouseSpeed
@@ -152,7 +152,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: MouseThreshold2 optimized
 )
 
-echo [11/12] Disabling USB selective suspend...
+echo [11/13] Disabling USB selective suspend...
 powercfg /SETACVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0 >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to disable USB selective suspend
@@ -166,7 +166,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: USB selective suspend disabled on DC
 )
 
-echo [12/12] Setting processor power management to maximum performance...
+echo [12/13] Setting processor power management to maximum performance...
 powercfg /SETACVALUEINDEX SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 893dee8e-2bef-41e0-89c6-b55d0929964c 100 >nul 2>&1
 if %errorLevel% neq 0 (
     echo    ERROR: Failed to set processor power management
@@ -174,10 +174,7 @@ if %errorLevel% neq 0 (
     echo    SUCCESS: Processor set to maximum performance
 )
 
-echo.
-echo Additional optimizations...
-
-echo    Checking for SSD and disabling Superfetch if needed...
+echo [13/13] Checking for SSD and disabling Superfetch if needed...
 powershell -Command "$hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' }; if ($hasSSD) { Stop-Service -Name 'SysMain' -Force -ErrorAction SilentlyContinue; Set-Service -Name 'SysMain' -StartupType Disabled -ErrorAction SilentlyContinue; Write-Host '    SUCCESS: Superfetch disabled (SSD detected)' } else { Write-Host '    INFO: No SSD detected, keeping Superfetch enabled' }" 2>nul
 if %errorLevel% neq 0 (
     echo    WARNING: Could not check for SSD or modify Superfetch service
