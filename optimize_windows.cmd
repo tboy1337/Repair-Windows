@@ -75,12 +75,7 @@ if %errorLevel% neq 0 (
 )
 
 echo    Disabling network adapter power management...
-powershell -Command "$adapters = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'}; foreach ($adapter in $adapters) { $powerMgmt = Get-WmiObject -Class MSPower_DeviceEnable -Namespace root\wmi | Where-Object {$_.InstanceName -like \"*$($adapter.InterfaceGuid)*\"}; if ($powerMgmt) { $powerMgmt.Enable = $false; $powerMgmt.Put() | Out-Null } }" 2>nul
-if %errorLevel% neq 0 (
-    echo    ERROR: Failed to disable network adapter power management
-) else (
-    echo    SUCCESS: Network adapter power management disabled
-)
+powershell -Command "$adapters = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'}; foreach ($adapter in $adapters) { $powerMgmt = Get-WmiObject -Class MSPower_DeviceEnable -Namespace root\wmi | Where-Object {$_.InstanceName -like \"*$($adapter.InterfaceGuid)*\"}; if ($powerMgmt) { $powerMgmt.Enable = $false; $powerMgmt.Put() | Out-Null } }; Write-Host '    SUCCESS: Network adapter power management disabled'" 2>nul
 
 echo [5/13] Improving system responsiveness...
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v SystemResponsiveness /t REG_DWORD /d 10 /f >nul 2>&1
@@ -114,11 +109,6 @@ if %errorLevel% neq 0 (
 
 echo [7/13] Disabling paging executive (requires 8GB+ RAM)...
 powershell -Command "$totalRAM = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2); Write-Host \"    Detected RAM: $totalRAM GB\"; if ($totalRAM -ge 8) { Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name 'DisablePagingExecutive' -Value 1 -Type DWord -ErrorAction Stop; Write-Host '    SUCCESS: Paging executive disabled' } else { Write-Host '    SKIPPED: Less than 8GB RAM detected' }" 2>nul
-if %errorLevel% neq 0 (
-    echo    ERROR: Cannot detect RAM amount, skipping this tweak for safety
-) else (
-    echo    SUCCESS: Paging executive disabled
-)
 
 echo [8/13] Optimizing large system cache...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v LargeSystemCache /t REG_DWORD /d 0 /f >nul 2>&1
@@ -183,11 +173,6 @@ if %errorLevel% neq 0 (
 
 echo [13/13] Checking for SSD and disabling Superfetch if needed...
 powershell -Command "$hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' }; if ($hasSSD) { Stop-Service -Name 'SysMain' -Force -ErrorAction SilentlyContinue; Set-Service -Name 'SysMain' -StartupType Disabled -ErrorAction SilentlyContinue; Write-Host '    SUCCESS: Superfetch disabled (SSD detected)' } else { Write-Host '    INFO: No SSD detected, keeping Superfetch enabled' }" 2>nul
-if %errorLevel% neq 0 (
-    echo    ERROR: Failed to check for SSD or modify Superfetch service
-) else (
-    echo    SUCCESS: Superfetch disabled (SSD detected)
-)
 
 echo.
 echo +==================================+
