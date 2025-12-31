@@ -1,10 +1,15 @@
 @echo off
 
+cd /d "%SystemDrive%" >nul 2>&1
+if !errorlevel! neq 0 (
+    echo Failed to change to %SystemDrive%. Error code: !errorlevel!
+)
+
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo ERROR: This script requires Administrator privileges.
-    echo Right-click and select "Run as administrator"
-    timeout /t 10 /nobreak
+    echo Please right-click and select "Run as administrator"
+    pause
     exit /b 1
 )
 

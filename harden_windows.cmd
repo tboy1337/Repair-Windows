@@ -1,10 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo +===================================+
-echo + Windows Security Hardening Script +
-echo +===================================+
-echo.
+cd /d "%SystemDrive%" >nul 2>&1
+if !errorlevel! neq 0 (
+    echo Failed to change to %SystemDrive%. Error code: !errorlevel!
+)
 
 net session >nul 2>&1
 if %errorLevel% neq 0 (
@@ -13,6 +13,11 @@ if %errorLevel% neq 0 (
     pause
     exit /b 1
 )
+
+echo +===================================+
+echo + Windows Security Hardening Script +
+echo +===================================+
+echo.
 
 echo [*] Starting Windows hardening process...
 echo.
