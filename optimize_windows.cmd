@@ -184,7 +184,7 @@ if %errorLevel% neq 0 (
 echo [13/13] Checking for SSD and disabling Superfetch if needed...
 powershell -Command "$hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' }; if ($hasSSD) { Stop-Service -Name 'SysMain' -Force -ErrorAction SilentlyContinue; Set-Service -Name 'SysMain' -StartupType Disabled -ErrorAction SilentlyContinue; Write-Host '    SUCCESS: Superfetch disabled (SSD detected)' } else { Write-Host '    INFO: No SSD detected, keeping Superfetch enabled' }" 2>nul
 if %errorLevel% neq 0 (
-    echo    WARNING: Could not check for SSD or modify Superfetch service
+    echo    ERROR: Failed to check for SSD or modify Superfetch service
 ) else (
     echo    SUCCESS: Superfetch disabled (SSD detected)
 )
