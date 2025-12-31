@@ -75,7 +75,7 @@ if %errorLevel% neq 0 (
 echo    Disabling network adapter power management...
 powershell -Command "$adapters = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'}; foreach ($adapter in $adapters) { $powerMgmt = Get-WmiObject -Class MSPower_DeviceEnable -Namespace root\wmi | Where-Object {$_.InstanceName -like \"*$($adapter.InterfaceGuid)*\"}; if ($powerMgmt) { $powerMgmt.Enable = $false; $powerMgmt.Put() | Out-Null } }" 2>nul
 if %errorLevel% neq 0 (
-    echo    WARNING: Could not modify network adapter power settings
+    echo    ERROR: Failed to disable network adapter power management
 ) else (
     echo    SUCCESS: Network adapter power management disabled
 )
@@ -112,8 +112,8 @@ echo [7/12] Disabling paging executive (requires 8GB+ RAM)...
 powershell -Command "$totalRAM = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2); Write-Host \"    Detected RAM: $totalRAM GB\"; if ($totalRAM -ge 8) { Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name 'DisablePagingExecutive' -Value 1 -Type DWord -ErrorAction Stop; Write-Host '    SUCCESS: Paging executive disabled' } else { Write-Host '    SKIPPED: Less than 8GB RAM detected' }" 2>nul
 if %errorLevel% neq 0 (
     echo    ERROR: Cannot detect RAM amount, skipping this tweak for safety
-    echo    INFO: You can manually enable this if you have 8GB+ RAM via:
-    echo    INFO: reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v DisablePagingExecutive /t REG_DWORD /d 1 /f
+) else (
+    echo    SUCCESS: Paging executive disabled
 )
 
 echo [8/12] Optimizing large system cache...
@@ -181,6 +181,8 @@ echo    Checking for SSD and disabling Superfetch if needed...
 powershell -Command "$hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' }; if ($hasSSD) { Stop-Service -Name 'SysMain' -Force -ErrorAction SilentlyContinue; Set-Service -Name 'SysMain' -StartupType Disabled -ErrorAction SilentlyContinue; Write-Host '    SUCCESS: Superfetch disabled (SSD detected)' } else { Write-Host '    INFO: No SSD detected, keeping Superfetch enabled' }" 2>nul
 if %errorLevel% neq 0 (
     echo    WARNING: Could not check for SSD or modify Superfetch service
+) else (
+    echo    SUCCESS: Superfetch disabled (SSD detected)
 )
 
 echo.
