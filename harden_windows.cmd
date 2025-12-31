@@ -2,8 +2,8 @@
 setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
-if !errorlevel! neq 0 (
-    echo Failed to change to %SystemDrive%. Error code: !errorlevel!
+if %errorLevel% neq 0 (
+    echo Failed to change to %SystemDrive%. Error code: %errorLevel%
 )
 
 net session >nul 2>&1

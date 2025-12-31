@@ -2,12 +2,12 @@
 setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
-if !errorlevel! neq 0 (
-    echo Failed to change to %SystemDrive%. Error code: !errorlevel!
+if %errorLevel% neq 0 (
+    echo Failed to change to %SystemDrive%. Error code: %errorLevel%
 )
 
 net session >nul 2>&1
-if !errorlevel! neq 0 (
+if %errorLevel% neq 0 (
     echo This script requires administrator privileges.
     echo Please right-click and select "Run as administrator".
     timeout /t 10 /nobreak
