@@ -1,10 +1,5 @@
 @echo off
 
-echo +=========================================+
-echo + Windows Performance Optimization Script +
-echo +=========================================+
-echo.
-
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo ERROR: This script requires Administrator privileges.
@@ -12,6 +7,11 @@ if %errorLevel% neq 0 (
     timeout /t 10 /nobreak
     exit /b 1
 )
+
+echo +=========================================+
+echo + Windows Performance Optimization Script +
+echo +=========================================+
+echo.
 
 echo Creating system restore point...
 powershell -Command "Checkpoint-Computer -Description 'Before Performance Tweaks' -RestorePointType 'MODIFY_SETTINGS'" >nul 2>&1
