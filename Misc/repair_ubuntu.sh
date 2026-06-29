@@ -15,29 +15,39 @@ readonly NC='\033[0m' # No Color
 # Global variables
 HAS_CORRUPTION=0
 REPAIR_NEEDED=0
+REPAIR_SUCCEEDED=0
 DRY_RUN=0
 LOG_FILE=""
 TEMP_FILES=()
 
+# Write output to console and log file when logging is initialized
+write_log() {
+    if [[ -n "$LOG_FILE" ]]; then
+        echo -e "$1" | tee -a "$LOG_FILE"
+    else
+        echo -e "$1"
+    fi
+}
+
 # Function to print colored output with timestamps
 print_status() {
     local message="[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1"
-    echo -e "${BLUE}${message}${NC}" | tee -a "$LOG_FILE"
+    write_log "${BLUE}${message}${NC}"
 }
 
 print_success() {
     local message="[$(date '+%Y-%m-%d %H:%M:%S')] [SUCCESS] $1"
-    echo -e "${GREEN}${message}${NC}" | tee -a "$LOG_FILE"
+    write_log "${GREEN}${message}${NC}"
 }
 
 print_warning() {
     local message="[$(date '+%Y-%m-%d %H:%M:%S')] [WARNING] $1"
-    echo -e "${YELLOW}${message}${NC}" | tee -a "$LOG_FILE"
+    write_log "${YELLOW}${message}${NC}"
 }
 
 print_error() {
     local message="[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1"
-    echo -e "${RED}${message}${NC}" | tee -a "$LOG_FILE"
+    write_log "${RED}${message}${NC}"
 }
 
 # Cleanup function to remove temporary files
@@ -84,7 +94,7 @@ show_usage() {
 check_required_commands() {
     print_status "Validating required system commands..."
     local missing_commands=()
-    local required_commands=("apt" "dpkg" "systemctl" "dmesg" "df" "awk" "grep" "wc")
+    local required_commands=("apt" "dpkg" "dmesg" "df" "awk" "grep" "wc" "timeout")
     
     for cmd in "${required_commands[@]}"; do
         if ! command -v "$cmd" &> /dev/null; then
@@ -147,8 +157,7 @@ init_log() {
         if [[ -d "/var/log" ]]; then
             LOG_FILE="/var/log/system_integrity_check_$(date +%Y%m%d_%H%M%S).log"
         else
-            LOG_FILE=$(mktemp /tmp/system_integrity_check.XXXXXX.log)
-            TEMP_FILES+=("$LOG_FILE")
+            LOG_FILE=$(mktemp --suffix=.log /tmp/system_integrity_check.XXXXXX)
         fi
     fi
     
@@ -220,7 +229,7 @@ check_broken_packages() {
     
     # Check for packages in inconsistent state
     local broken_packages
-    broken_packages=$(dpkg -l | grep -cE "^(iU|rc)" || echo "0")
+    broken_packages=$(dpkg -l | grep -cE "^(iU|iF|iH)" || echo "0")
     if [[ $broken_packages -gt 0 ]]; then
         print_warning "Found $broken_packages packages in inconsistent state"
         HAS_CORRUPTION=1
@@ -260,17 +269,26 @@ check_package_integrity() {
         temp_file=$(create_temp_file)
         
         print_status "Running package integrity check (this may take a few minutes)..."
-        if timeout 300 debsums -c > "$temp_file" 2>&1; then
+        set +e
+        timeout 300 debsums -c > "$temp_file" 2>&1
+        local debsums_exit=$?
+        set -e
+
+        if [[ $debsums_exit -eq 0 ]]; then
             print_success "All package files have correct checksums"
+        elif [[ $debsums_exit -eq 124 ]]; then
+            print_warning "Package integrity check timed out after 300 seconds"
+            HAS_CORRUPTION=1
         else
             local changed_files
-            changed_files=$(grep -c "FAILED" "$temp_file" 2>/dev/null || echo "0")
-            if [[ $changed_files -gt 0 ]]; then
+            changed_files=$(grep -cE "changed|doesn't match" "$temp_file" 2>/dev/null || echo "0")
+            if [[ "$changed_files" =~ ^[0-9]+$ ]] && [[ $changed_files -gt 0 ]]; then
                 print_warning "Found $changed_files files with incorrect checksums"
                 print_status "Run 'debsums -c' manually to see details"
                 HAS_CORRUPTION=1
             else
-                print_success "Package integrity check completed"
+                print_warning "Package integrity check reported issues (exit code: $debsums_exit)"
+                HAS_CORRUPTION=1
             fi
         fi
     else
@@ -283,7 +301,7 @@ check_filesystem() {
     print_status "Checking filesystem integrity..."
     
     # Check for filesystem errors in dmesg and system logs
-    if dmesg | grep -i "filesystem error\|ext[234]-fs error\|corruption\|journal\|superblock" > /dev/null 2>&1; then
+    if dmesg | grep -iE "filesystem error|ext[234]-fs error|corruption|journal error|journal abort|I/O error|superblock" > /dev/null 2>&1; then
         print_warning "Filesystem errors detected in kernel messages"
         HAS_CORRUPTION=1
     else
@@ -337,6 +355,7 @@ repair_packages() {
         print_status "Fixing broken dependencies..."
         if apt --fix-broken install -y > "$temp_log" 2>&1; then
             print_success "Fixed broken package dependencies"
+            REPAIR_SUCCEEDED=1
         else
             print_error "Failed to fix broken packages"
             tail -5 "$temp_log" | while IFS= read -r line; do
@@ -348,6 +367,7 @@ repair_packages() {
         print_status "Reconfiguring packages..."
         if dpkg --configure -a >> "$temp_log" 2>&1; then
             print_success "Package reconfiguration completed"
+            REPAIR_SUCCEEDED=1
         else
             print_error "Failed to reconfigure packages"
             tail -5 "$temp_log" | while IFS= read -r line; do
@@ -451,9 +471,14 @@ check_system_logs() {
 # Check system services status
 check_services() {
     print_status "Checking critical system services..."
-    
+
+    if ! command -v systemctl &> /dev/null; then
+        print_status "systemctl not available, skipping service check"
+        return 0
+    fi
+
     local failed_services
-    failed_services=$(systemctl --failed --no-legend --no-pager 2>/dev/null | wc -l)
+    failed_services=$(systemctl --failed --no-legend --no-pager 2>/dev/null | wc -l) || true
     
     if [[ $failed_services -gt 0 ]]; then
         print_warning "Found $failed_services failed system services"
@@ -495,20 +520,19 @@ print_summary() {
 
 # Main execution function
 main() {
+    init_log
+
     echo "================================================"
     echo "Ubuntu System Integrity Check and Repair Script"
     echo "Fixed Version - $(date)"
     echo "================================================"
     echo
-    
+
     if [[ $DRY_RUN -eq 1 ]]; then
         print_status "Running in DRY-RUN mode - no changes will be made"
         echo
     fi
-    
-    # Initialize logging first
-    init_log
-    
+
     # Check system requirements
     check_required_commands
     
@@ -523,7 +547,7 @@ main() {
     
     # Run all system checks
     check_broken_packages
-    check_package_integrity
+    check_package_integrity || print_warning "Package integrity check could not be completed"
     check_filesystem
     check_system_logs
     check_services
@@ -531,7 +555,7 @@ main() {
     # Perform repairs if needed
     echo
     if [[ $HAS_CORRUPTION -eq 1 ]] || [[ $REPAIR_NEEDED -eq 1 ]]; then
-        print_status "Issues detected, performing repairs..."
+        print_status "Package repair issues detected, performing repairs..."
         repair_packages
     else
         print_success "No corruption or issues detected requiring repair"
@@ -547,16 +571,20 @@ main() {
     print_summary
     
     # Suggest reboot if repairs were made
-    if [[ $HAS_CORRUPTION -eq 1 ]] || [[ $REPAIR_NEEDED -eq 1 ]]; then
+    if [[ $REPAIR_SUCCEEDED -eq 1 ]]; then
         if [[ $DRY_RUN -eq 0 ]]; then
             echo
             print_warning "System repairs were performed. A reboot is recommended."
             print_status "Run 'sudo reboot' when convenient."
         fi
     fi
-    
+
     echo
-    print_success "System integrity check completed successfully"
+    if [[ $HAS_CORRUPTION -eq 1 ]]; then
+        print_warning "System integrity check completed with issues detected"
+    else
+        print_success "System integrity check completed successfully"
+    fi
     print_status "Full log available at: $LOG_FILE"
     echo
 }
@@ -565,13 +593,11 @@ main() {
 trap 'echo; print_status "Script interrupted by user"; cleanup' INT TERM
 trap 'cleanup' EXIT
 
-# Validate root privileges early
-check_root
-
-# Parse command line arguments
+# Parse command line arguments before requiring root (allows --help without sudo)
 parse_args "$@"
+
+# Validate root privileges
+check_root
 
 # Run main function
 main
-
-exit 0

@@ -21,6 +21,21 @@
 
 #Requires -Version 5.0
 
+function Wait-ForUserKey {
+    if ([Environment]::UserInteractive) {
+        $null = $Host.UI.RawUI.ReadKey()
+    }
+}
+
+try {
+    Import-Module PrintManagement -ErrorAction Stop
+}
+catch {
+    Write-Host "Error: PrintManagement module is required but could not be loaded." -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+    exit 1
+}
+
 function Show-PrinterMenu {
     <#
     .SYNOPSIS
@@ -48,7 +63,7 @@ function Show-PrinterMenu {
         if ($printers.Count -eq 0) {
             Write-Host "No printers found on this system." -ForegroundColor Yellow
             Write-Host "Press any key to exit..."
-            $null = $Host.UI.RawUI.ReadKey()
+            Wait-ForUserKey
             return $null
         }
 
@@ -96,7 +111,7 @@ function Show-PrinterMenu {
         Write-Host "Error retrieving printers: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "You may need administrator privileges to access printer information." -ForegroundColor Yellow
         Write-Host "Press any key to exit..."
-        $null = $Host.UI.RawUI.ReadKey()
+        Wait-ForUserKey
         return $null
     }
 }
@@ -138,6 +153,11 @@ function Show-PrintQueue {
                 Write-Host "Q) Quit"
 
                 $choice = Read-Host "Select an option"
+                if ([string]::IsNullOrWhiteSpace($choice)) {
+                    Write-Host "Invalid option. Please select B or Q." -ForegroundColor Red
+                    Start-Sleep -Seconds 1
+                    continue
+                }
                 switch ($choice.ToUpper()) {
                     'B' { return }
                     'Q' { exit 0 }
@@ -180,8 +200,14 @@ function Show-PrintQueue {
 
                 $choice = Read-Host "Select an option"
 
-                switch -Regex ($choice.ToUpper()) {
-                    '^[0-9]+$' {
+                if ([string]::IsNullOrWhiteSpace($choice)) {
+                    Write-Host "Invalid option. Please select from the available choices." -ForegroundColor Red
+                    Start-Sleep -Seconds 1
+                    continue
+                }
+
+                switch ($choice.ToUpper()) {
+                    { $_ -match '^[0-9]+$' } {
                         $jobIndex = [int]$choice - 1
                         if ($jobIndex -ge 0 -and $jobIndex -lt $jobs.Count) {
                             $jobToCancel = $jobs[$jobIndex]  # Fixed typo: was $jobToCanel
@@ -254,7 +280,7 @@ function Show-PrintQueue {
             Write-Host "The printer may be offline or inaccessible." -ForegroundColor Yellow
             Write-Host
             Write-Host "Press any key to return to printer selection..."
-            $null = $Host.UI.RawUI.ReadKey()
+            Wait-ForUserKey
             return
         }
     }
@@ -281,7 +307,7 @@ function Start-PrintQueueManager {
         Write-Host "Consider running PowerShell as Administrator for full functionality." -ForegroundColor Yellow
         Write-Host
         Write-Host "Press any key to continue..."
-        $null = $Host.UI.RawUI.ReadKey()
+        Wait-ForUserKey
     }
 
     # Main application loop

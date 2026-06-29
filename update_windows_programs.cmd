@@ -23,12 +23,15 @@ if %errorlevel% neq 0 (
 echo Updating all programs via winget...
 echo It might take a long time and there might be many UAC prompts...
 winget upgrade --all --accept-package-agreements --accept-source-agreements --silent >nul 2>&1
-if %errorlevel% equ 0 (
+set "WINGET_EXIT=%errorlevel%"
+if %WINGET_EXIT% equ 0 (
     echo All updates completed successfully.
-) else if %errorlevel% equ -1978335189 (
+) else if %WINGET_EXIT% equ -1978335189 (
+    echo No updates were available.
+) else if %WINGET_EXIT% equ 2316135511 (
     echo No updates were available.
 ) else (
-    echo Update process completed with some issues.  Error code: %errorlevel%
+    echo Update process completed with some issues.  Error code: %WINGET_EXIT%
     timeout /t 10 /nobreak
     exit /b 1
 )

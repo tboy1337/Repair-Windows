@@ -20,12 +20,12 @@ if (-NOT $IsElevated -or $CurrentPolicy -eq "Undefined" -or $CurrentPolicy -eq "
 
         if (-NOT $IsElevated) {
             # Need elevation
-            Start-Process PowerShell -Verb RunAs -ArgumentList $Arguments -Wait
+            $ChildProcess = Start-Process PowerShell -Verb RunAs -ArgumentList $Arguments -PassThru -Wait
         } else {
             # Just need execution policy bypass
-            Start-Process PowerShell -ArgumentList $Arguments -Wait
+            $ChildProcess = Start-Process PowerShell -ArgumentList $Arguments -PassThru -Wait
         }
-        exit 0
+        exit $ChildProcess.ExitCode
     }
     catch {
         Write-Error "Failed to restart script with proper parameters: $_"
@@ -69,10 +69,6 @@ function Update-StoreApp {
     Write-Host "`nUpdating Windows Store apps using modern methods..." -ForegroundColor Cyan
 
     try {
-        # Reset Windows Store cache first
-        Write-Host "Resetting Windows Store cache..." -ForegroundColor Gray
-        Start-Process "wsreset.exe" -NoNewWindow -Wait
-
         # Get the Windows Store app to verify it exists
         Write-Host "Verifying Windows Store availability..." -ForegroundColor Gray
         $StoreApp = Get-AppxPackage -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
@@ -159,7 +155,10 @@ function Update-StoreAppViaWinGet {
         Write-Host "Updating Microsoft Store apps via WinGet..." -ForegroundColor Gray
 
         # Get list of Store apps that can be updated
-        $AvailableUpdates = Get-WinGetPackage -Source msstore | Where-Object { $_.AvailableVersions.Count -gt 0 }
+        $AvailableUpdates = @(Get-WinGetPackage -Source msstore | Where-Object { $_.AvailableVersions.Count -gt 0 })
+
+        $UpdatedCount = 0
+        $ErrorCount = 0
 
         if ($AvailableUpdates.Count -gt 0) {
             Write-Host "Found $($AvailableUpdates.Count) Store app updates available" -ForegroundColor White
@@ -167,19 +166,22 @@ function Update-StoreAppViaWinGet {
             foreach ($Package in $AvailableUpdates) {
                 try {
                     Write-Host "Updating: $($Package.Name)" -ForegroundColor Gray
-                    Update-WinGetPackage -Id $Package.Id -Source msstore -ErrorAction Continue
+                    Update-WinGetPackage -Id $Package.Id -Source msstore -ErrorAction Stop
                     Write-Host "Updated: $($Package.Name)" -ForegroundColor Green
+                    $UpdatedCount++
                 }
                 catch {
                     Write-Host "Failed to update $($Package.Name): $($_.Exception.Message)" -ForegroundColor Yellow
+                    $ErrorCount++
                 }
             }
             Write-Host "WinGet Store app updates completed" -ForegroundColor Green
         } else {
             Write-Host "No Store app updates available via WinGet" -ForegroundColor Green
+            return $true
         }
 
-        return $true
+        return ($UpdatedCount -gt 0 -or $ErrorCount -eq 0)
     }
     catch {
         Write-Host "WinGet method failed: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -208,7 +210,12 @@ function Update-StoreAppViaWinRT {
         # Set up WinRT async support
         Write-Host "Setting up WinRT async operations..." -ForegroundColor Gray
         Add-Type -AssemblyName System.Runtime.WindowsRuntime
-        $asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' })[0]
+        $asTaskMethods = [System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' }
+        if (-not $asTaskMethods -or $asTaskMethods.Count -eq 0) {
+            Write-Host "WinRT async support unavailable on this system" -ForegroundColor Yellow
+            return $false
+        }
+        $asTaskGeneric = $asTaskMethods[0]
 
         function Await($WinRtTask, $ResultType) {
             $asTask = $asTaskGeneric.MakeGenericMethod($ResultType)
@@ -224,11 +231,11 @@ function Update-StoreAppViaWinRT {
 
         # Discover all installed Store apps dynamically
         Write-Host "Discovering installed Windows Store apps..." -ForegroundColor Gray
-        $StoreApps = Get-AppxPackage | Where-Object {
+        $StoreApps = @(Get-AppxPackage | Where-Object {
             $_.SignatureKind -eq "Store" -and
             $null -ne $_.PackageFamilyName -and
             $_.InstallLocation -like "*WindowsApps*"
-        }
+        })
 
         if ($StoreApps.Count -eq 0) {
             Write-Host "No Windows Store apps found to update" -ForegroundColor Yellow
@@ -339,7 +346,7 @@ function Update-StoreAppViaWinRT {
         }
         Write-Host "WinRT Store app updates completed" -ForegroundColor Green
 
-        return $true
+        return ($ErrorCount -eq 0 -or $UpdatedCount -gt 0)
     }
     catch {
         Write-Host "WinRT API method failed: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -359,68 +366,34 @@ function Update-StoreAppLegacy {
     Write-Host "Using legacy update methods as final fallback..." -ForegroundColor Gray
 
     try {
-        # Method 1: Use Windows Update PowerShell cmdlets for Store apps
-        try {
-            Write-Host "Attempting to trigger Store app updates via Windows Update..." -ForegroundColor Gray
-            # This triggers the same update mechanism that Windows Update uses for Store apps
-            $UpdateSession = New-Object -ComObject Microsoft.Update.Session
-            $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
-            $SearchResult = $UpdateSearcher.Search("IsInstalled=0 and Type='Software'")
+        $TasksStarted = 0
 
-            if ($SearchResult.Updates.Count -gt 0) {
-                Write-Host "Found $($SearchResult.Updates.Count) potential app updates" -ForegroundColor White
-
-                # Download and install updates
-                $UpdatesToDownload = New-Object -ComObject Microsoft.Update.UpdateColl
-                foreach ($Update in $SearchResult.Updates) {
-                    $UpdatesToDownload.Add($Update) | Out-Null
-                }
-
-                if ($UpdatesToDownload.Count -gt 0) {
-                    $Downloader = $UpdateSession.CreateUpdateDownloader()
-                    $Downloader.Updates = $UpdatesToDownload
-                    $DownloadResult = $Downloader.Download()
-
-                    if ($DownloadResult.ResultCode -eq 2) {  # Success
-                        $Installer = $UpdateSession.CreateUpdateInstaller()
-                        $Installer.Updates = $UpdatesToDownload
-                        $InstallResult = $Installer.Install()
-
-                        if ($InstallResult.ResultCode -eq 2) {  # Success
-                            Write-Host "Store app updates processed successfully via Windows Update mechanism" -ForegroundColor Green
-                        } else {
-                            Write-Host "Some Store app updates had issues (Result: $($InstallResult.ResultCode))" -ForegroundColor Yellow
-                        }
-                    } else {
-                        Write-Host "Failed to download some Store app updates (Result: $($DownloadResult.ResultCode))" -ForegroundColor Yellow
-                    }
-                } else {
-                    Write-Host "No Store app updates available via Windows Update" -ForegroundColor Green
-                }
-            } else {
-                Write-Host "No app updates found via Windows Update mechanism" -ForegroundColor Green
-            }
-        }
-        catch {
-            Write-Host "Windows Update method not available: $($_.Exception.Message)" -ForegroundColor Gray
-        }
-
-        # Method 2: Trigger Store background tasks
+        # Trigger Store background update tasks
         Write-Host "Triggering Store background update tasks..." -ForegroundColor Gray
         try {
-            # Get and start Store-related scheduled tasks that handle updates
-            $StoreTasks = Get-ScheduledTask | Where-Object { $_.TaskName -like "*Store*" -and $_.State -eq "Ready" }
-            foreach ($Task in $StoreTasks) {
-                Start-ScheduledTask -TaskName $Task.TaskName -ErrorAction SilentlyContinue
-                Write-Host "Started task: $($Task.TaskName)" -ForegroundColor Gray
+            $KnownStoreTasks = @(
+                "Microsoft\Windows\Store\StoreAutomaticUpdates",
+                "Microsoft\Windows\Store\StoreMaintenance"
+            )
+            foreach ($TaskPath in $KnownStoreTasks) {
+                $Task = Get-ScheduledTask -TaskPath (Split-Path $TaskPath -Parent) -TaskName (Split-Path $TaskPath -Leaf) -ErrorAction SilentlyContinue
+                if ($Task -and $Task.State -eq "Ready") {
+                    Start-ScheduledTask -InputObject $Task -ErrorAction SilentlyContinue
+                    Write-Host "Started task: $TaskPath" -ForegroundColor Gray
+                    $TasksStarted++
+                }
             }
-            Write-Host "Store background tasks triggered" -ForegroundColor Green
+            if ($TasksStarted -gt 0) {
+                Write-Host "Store background tasks triggered" -ForegroundColor Green
+            } else {
+                Write-Host "No Store background tasks were available to start" -ForegroundColor Yellow
+            }
         }
         catch {
-            Write-Host "Could not trigger all Store background tasks: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "Could not trigger Store background tasks: $($_.Exception.Message)" -ForegroundColor Yellow
         }
 
-        return $true
+        return ($TasksStarted -gt 0)
     }
     catch {
         Write-Host "Legacy methods failed: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -432,8 +405,8 @@ function Update-StoreAppLegacy {
 function Test-WindowsStoreHealth {
     Write-Host "`nDiagnosing Windows Store health..." -ForegroundColor Cyan
 
-    $IssuesFound = $false
-    $CriticalIssuesFound = $false
+    $IssuesFound = 0
+    $CriticalIssuesFound = 0
 
     try {
         # Check 1: Verify Store app package exists and is properly registered
@@ -441,10 +414,10 @@ function Test-WindowsStoreHealth {
         $StoreApp = Get-AppxPackage -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
         if (-not $StoreApp) {
             Write-Host "Windows Store app package not found" -ForegroundColor Red
-            $CriticalIssuesFound = $true
+            $CriticalIssuesFound++
         } elseif ($StoreApp.Status -ne "Ok") {
             Write-Host "Windows Store app package status: $($StoreApp.Status)" -ForegroundColor Yellow
-            $IssuesFound = $true
+            $IssuesFound++
         } else {
             Write-Host "Windows Store app package healthy (Version: $($StoreApp.Version), Status: $($StoreApp.Status))" -ForegroundColor Green
         }
@@ -458,12 +431,12 @@ function Test-WindowsStoreHealth {
                 Write-Host "Store app manifest accessible" -ForegroundColor Green
             } else {
                 Write-Host "Store app manifest not accessible" -ForegroundColor Yellow
-                $IssuesFound = $true
+                $IssuesFound++
             }
         }
         catch {
             Write-Host "Store app accessibility check failed: $($_.Exception.Message)" -ForegroundColor Yellow
-            $IssuesFound = $true
+            $IssuesFound++
         }
 
         # Check 3: Verify critical Store services (improved logic for on-demand services)
@@ -477,19 +450,19 @@ function Test-WindowsStoreHealth {
             $Service = Get-Service -Name $ServiceInfo.Name -ErrorAction SilentlyContinue
             if (-not $Service) {
                 Write-Host "$($ServiceInfo.DisplayName) ($($ServiceInfo.Name)) service not found" -ForegroundColor Red
-                if ($ServiceInfo.Critical) { $CriticalIssuesFound = $true }
-                else { $IssuesFound = $true }
+                if ($ServiceInfo.Critical) { $CriticalIssuesFound++ }
+                else { $IssuesFound++ }
             } elseif ($Service.StartType -eq "Disabled") {
                 Write-Host "$($ServiceInfo.DisplayName) service is disabled" -ForegroundColor Red
-                if ($ServiceInfo.Critical) { $CriticalIssuesFound = $true }
-                else { $IssuesFound = $true }
+                if ($ServiceInfo.Critical) { $CriticalIssuesFound++ }
+                else { $IssuesFound++ }
             } elseif ($Service.Status -eq "Running") {
                 Write-Host "$($ServiceInfo.DisplayName) service is running" -ForegroundColor Green
             } elseif ($Service.StartType -eq "Manual" -or $Service.StartType -eq "Automatic") {
                 Write-Host "$($ServiceInfo.DisplayName) service is available (Start: $($Service.StartType), Status: $($Service.Status))" -ForegroundColor Green
             } else {
                 Write-Host "$($ServiceInfo.DisplayName) service issue (Start: $($Service.StartType), Status: $($Service.Status))" -ForegroundColor Yellow
-                $IssuesFound = $true
+                $IssuesFound++
             }
         }
 
@@ -500,15 +473,15 @@ function Test-WindowsStoreHealth {
             Write-Host "Store cache directory exists" -ForegroundColor Green
         } else {
             Write-Host "Store cache directory missing" -ForegroundColor Yellow
-            $IssuesFound = $true
+            $IssuesFound++
         }
 
         # Only report issues if critical problems found, or if multiple minor issues detected
         $TotalIssues = $IssuesFound + $CriticalIssuesFound
-        if ($CriticalIssuesFound) {
+        if ($CriticalIssuesFound -gt 0) {
             Write-Host "`nCritical Store issues detected - repair recommended" -ForegroundColor Red
             return $true
-        } elseif ($IssuesFound -and $TotalIssues -gt 1) {
+        } elseif ($IssuesFound -gt 1) {
             Write-Host "`nMultiple minor Store issues detected - repair may help" -ForegroundColor Yellow
             return $true
         } else {

@@ -9,7 +9,7 @@ Write-Host "Starting video file organization in: $rootPath" -ForegroundColor Gre
 Write-Host "Scanning for .mp4 and .mkv files in all subfolders..." -ForegroundColor Yellow
 
 # Get all .mp4 and .mkv files recursively
-$videoFiles = Get-ChildItem -Path $rootPath -Recurse -Include "*.mp4", "*.mkv" -File
+$videoFiles = @(Get-ChildItem -Path $rootPath -Recurse -Include "*.mp4", "*.mkv" -File)
 
 if ($videoFiles.Count -eq 0) {
     Write-Host "No .mp4 or .mkv files found." -ForegroundColor Yellow
@@ -61,5 +61,7 @@ foreach ($file in $videoFiles) {
 }
 
 Write-Host "`nVideo file organization complete!" -ForegroundColor Green
-Write-Host "Press any key to exit..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+if ([Environment]::UserInteractive) {
+    Write-Host "Press any key to exit..."
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}

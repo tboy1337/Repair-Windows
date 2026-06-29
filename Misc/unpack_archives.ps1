@@ -19,8 +19,8 @@ function Test-SevenZip {
     param([string]$Path)
     
     try {
-        $null = & $Path 2>&1
-        return $true
+        & $Path --help 2>&1 | Out-Null
+        return ($LASTEXITCODE -eq 0)
     }
     catch {
         return $false
@@ -37,8 +37,8 @@ function Get-ArchiveFiles {
     foreach ($ext in $extensions) {
         $files += Get-ChildItem -Path $Path -Filter $ext -File
     }
-    
-    return $files
+
+    return @($files | Sort-Object FullName -Unique)
 }
 
 # Function to get archive contents listing
@@ -126,7 +126,7 @@ function Test-SingleTopLevelFolder {
 }
 
 # Function to extract archive
-function Expand-Archive {
+function Expand-SevenZipArchive {
     param(
         [string]$ArchivePath,
         [string]$DestinationPath,
@@ -290,7 +290,7 @@ foreach ($archive in $archiveFiles) {
     
     # Extract archive
     Write-ColorOutput "Extracting archive..." "Yellow"
-    if (Expand-Archive -ArchivePath $archive.FullName -DestinationPath $destinationFolder -SevenZipExe $workingSevenZip -FlattenSingleFolder $shouldFlatten) {
+    if (Expand-SevenZipArchive -ArchivePath $archive.FullName -DestinationPath $destinationFolder -SevenZipExe $workingSevenZip -FlattenSingleFolder $shouldFlatten) {
         Write-ColorOutput "Successfully extracted: $($archive.Name)" "Green"
         $successCount++
     } else {

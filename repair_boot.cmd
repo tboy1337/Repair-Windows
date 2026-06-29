@@ -88,8 +88,8 @@ for /f "tokens=4 delims=: " %%A in ('fsutil fsinfo volumeinfo %WINDOWS_DRIVE%\^|
     set "FS_TYPE=%%A"
 )
 
-echo File system: %FS_TYPE%
-echo %FS_TYPE% | findstr /i /r "^FAT" >nul
+echo File system: !FS_TYPE!
+echo !FS_TYPE! | findstr /i /r "^FAT" >nul
 if !errorlevel! equ 0 (
     echo Repairing FAT file system...
     chkdsk "%WINDOWS_DRIVE%" /r /x >nul 2>&1
@@ -173,7 +173,7 @@ if !HAS_CORRUPTION! equ 1 (
 
 echo.
 echo Checking integrity of protected system files...
-sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir% >nul 2>&1
+sfc /scannow /offbootdir=%WINDOWS_DRIVE%\ /offwindir=%windir%
 if !errorlevel! neq 0 (
     echo Failed to check integrity of all protected system files. Error code: !errorlevel!
     echo This may indicate access issues or missing files.
@@ -356,13 +356,25 @@ if exist "%WINDOWS_DRIVE%\Boot\BCD" (
 
 echo Creating new BCD store...
 bcdedit /createstore "%WINDOWS_DRIVE%\Boot\BCD.new" >nul 2>&1
+if !errorlevel! neq 0 exit /b !errorlevel!
 bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /create {bootmgr} >nul 2>&1
 bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} device boot >nul 2>&1
 bcdedit /store "%WINDOWS_DRIVE%\Boot\BCD.new" /set {bootmgr} path \bootmgr >nul 2>&1
 
+if exist "%WINDOWS_DRIVE%\Boot\BCD" (
+    move /y "%WINDOWS_DRIVE%\Boot\BCD" "%WINDOWS_DRIVE%\Boot\BCD.old" >nul 2>&1
+)
+move /y "%WINDOWS_DRIVE%\Boot\BCD.new" "%WINDOWS_DRIVE%\Boot\BCD" >nul 2>&1
+if !errorlevel! neq 0 (
+    if exist "%WINDOWS_DRIVE%\Boot\BCD.old" (
+        move /y "%WINDOWS_DRIVE%\Boot\BCD.old" "%WINDOWS_DRIVE%\Boot\BCD" >nul 2>&1
+    )
+    exit /b 1
+)
+
 :: Try rebuilding again
 bootrec /rebuildbcd >nul 2>&1
-exit /b %errorlevel%
+exit /b !errorlevel!
 
 :repair_efi_boot
 echo Locating EFI system partition...
@@ -400,7 +412,7 @@ for /f "skip=6 tokens=2" %%d in ('diskpart /s "%tmpfile%"') do (
     echo list partition >> "%tmpfile%"
     
     for /f "tokens=1,2,3,4* delims= " %%a in ('diskpart /s "%tmpfile%" ^| findstr /i "System"') do (
-        if "%%e"=="System" (
+        if /i "%%c"=="System" (
             set "EFI_DISK=%%d"
             set "EFI_PARTITION=%%b"
             goto efi_found
@@ -495,7 +507,6 @@ echo Creating new EFI partition (260MB)...
 echo create partition efi size=260 >> "%tmpfile%"
 echo format fs=fat32 quick label="System" >> "%tmpfile%"
 echo assign letter=%NEW_EFI_DRIVE:~0,1% >> "%tmpfile%"
-echo active >> "%tmpfile%"
 
 diskpart /s "%tmpfile%"
 if %errorlevel% neq 0 (
@@ -514,7 +525,7 @@ echo Removing temporary drive letter...
 echo select disk %EFI_DISK% > "%tmpfile%"
 echo list partition >> "%tmpfile%"
 for /f "tokens=1,2,3,4* delims= " %%a in ('diskpart /s "%tmpfile%" ^| findstr /i "System"') do (
-    if "%%e"=="System" (
+    if /i "%%c"=="System" (
         echo select partition %%b >> "%tmpfile%"
         echo remove letter=%NEW_EFI_DRIVE:~0,1% >> "%tmpfile%"
         diskpart /s "%tmpfile%" >nul
@@ -535,14 +546,18 @@ if exist "%WINDOWS_DRIVE%\Boot\BCD" (
 )
 
 echo 2. Rebuilding master boot record...
-bootrec /fixmbr >nul 2>&1
-if %errorlevel% neq 0 echo MBR rebuild failed.
+if not "%BOOT_MODE%"=="UEFI" (
+    bootrec /fixmbr >nul 2>&1
+    if !errorlevel! neq 0 echo MBR rebuild failed.
 
-echo 3. Rebuilding boot sector...
-bootrec /fixboot >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Standard boot sector repair failed, trying alternative...
-    bootsect /nt60 %WINDOWS_DRIVE% /mbr /force >nul 2>&1
+    echo 3. Rebuilding boot sector...
+    bootrec /fixboot >nul 2>&1
+    if !errorlevel! neq 0 (
+        echo Standard boot sector repair failed, trying alternative...
+        bootsect /nt60 %WINDOWS_DRIVE% /mbr /force >nul 2>&1
+    )
+) else (
+    echo 2-3. Skipping MBR/boot sector repair on UEFI system.
 )
 
 echo 4. Scanning for all Windows installations...
@@ -552,9 +567,17 @@ echo 5. Rebuilding BCD with all found installations...
 bootrec /rebuildbcd >nul 2>&1
 
 echo 6. Setting boot configuration policies...
-bcdedit /set {default} recoveryenabled yes >nul 2>&1
-bcdedit /set {default} bootstatuspolicy IgnoreAllFailures >nul 2>&1
-bcdedit /set {bootmgr} timeout 10 >nul 2>&1
+set "ADV_BCD_PATH=%WINDOWS_DRIVE%\Boot\BCD"
+if "%BOOT_MODE%"=="UEFI" (
+    call :find_efi_partition
+    if !errorlevel! equ 0 if exist "!EFI_DRIVE!\EFI\Microsoft\Boot\BCD" (
+        set "ADV_BCD_PATH=!EFI_DRIVE!\EFI\Microsoft\Boot\BCD"
+    )
+)
+bcdedit /store "!ADV_BCD_PATH!" /set {default} recoveryenabled yes >nul 2>&1
+bcdedit /store "!ADV_BCD_PATH!" /set {default} bootstatuspolicy IgnoreAllFailures >nul 2>&1
+bcdedit /store "!ADV_BCD_PATH!" /set {bootmgr} timeout 10 >nul 2>&1
+if "%BOOT_MODE%"=="UEFI" if defined EFI_DRIVE call :cleanup_efi_drive
 
 if "%BOOT_MODE%"=="UEFI" (
     echo 7. Repairing UEFI boot entries...

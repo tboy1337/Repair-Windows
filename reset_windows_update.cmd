@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 cd /d "%SystemDrive%" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -13,25 +14,38 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+set "STOP_FAILED=0"
+
 echo Stopping Windows Update Components...
 net stop wuauserv >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to stop wuauserv.  Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to stop wuauserv.  Error code: !errorlevel!
+    set "STOP_FAILED=1"
 )
 
 net stop cryptSvc >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to stop cryptSvc.  Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to stop cryptSvc.  Error code: !errorlevel!
+    set "STOP_FAILED=1"
 )
 
 net stop bits >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to stop bits.  Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to stop bits.  Error code: !errorlevel!
+    set "STOP_FAILED=1"
 )
 
 net stop msiserver >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Failed to stop msiserver.  Error code: %errorlevel%
+if !errorlevel! neq 0 (
+    echo Failed to stop msiserver.  Error code: !errorlevel!
+    set "STOP_FAILED=1"
+)
+
+if !STOP_FAILED! equ 1 (
+    echo ERROR: One or more Windows Update services could not be stopped.
+    echo Aborting reset to avoid deleting files while services are still running.
+    timeout /t 10 /nobreak
+    exit /b 1
 )
 
 timeout /t 3 /nobreak >nul 2>&1
@@ -84,9 +98,9 @@ timeout /t 3 /nobreak >nul 2>&1
 
 echo.
 echo Resetting BITS queue...
-bitsadmin /reset /allusers >nul 2>&1
+powershell -NoProfile -Command "Get-BitsTransfer -AllUsers -ErrorAction SilentlyContinue | Remove-BitsTransfer -Confirm:$false -ErrorAction SilentlyContinue" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Failed to reset BITS queue.  Error code: %errorlevel%
+    echo Warning: BITS queue reset via PowerShell failed.  Error code: %errorlevel%
 )
 
 timeout /t 10 /nobreak
