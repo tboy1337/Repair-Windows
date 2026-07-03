@@ -14,12 +14,12 @@ if (-NOT $IsElevated -or $CurrentPolicy -eq "Undefined" -or $CurrentPolicy -eq "
         $Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
         if (-NOT $IsElevated) {
             # Need elevation
-            Start-Process PowerShell -Verb RunAs -ArgumentList $Arguments -Wait
+            $ChildProcess = Start-Process PowerShell -Verb RunAs -ArgumentList $Arguments -PassThru -Wait
         } else {
             # Just need execution policy bypass
-            Start-Process PowerShell -ArgumentList $Arguments -Wait
+            $ChildProcess = Start-Process PowerShell -ArgumentList $Arguments -PassThru -Wait
         }
-        exit 0
+        exit $ChildProcess.ExitCode
     }
     catch {
         Write-Error "Failed to restart script with proper parameters: $_"
@@ -57,15 +57,22 @@ function Show-RestartCountdown {
         Write-Host "`rRestart in: $i seconds... " -NoNewline -ForegroundColor Red
 
         # Check if user pressed a key
-        if ([Console]::KeyAvailable) {
-            $key = [Console]::ReadKey($true)
-            if ($key.Key -eq 'C') {
-                Write-Host "`n`nRestart cancelled by user." -ForegroundColor Green
-                Write-Host "Please restart your computer manually when convenient to complete the updates." -ForegroundColor Yellow
-                return $false
-            } else {
-                Write-Host "`n`nRestarting immediately..." -ForegroundColor Yellow
-                return $true
+        if ([Environment]::UserInteractive) {
+            try {
+                if ([Console]::KeyAvailable) {
+                    $key = [Console]::ReadKey($true)
+                    if ($key.Key -eq 'C') {
+                        Write-Host "`n`nRestart cancelled by user." -ForegroundColor Green
+                        Write-Host "Please restart your computer manually when convenient to complete the updates." -ForegroundColor Yellow
+                        return $false
+                    } else {
+                        Write-Host "`n`nRestarting immediately..." -ForegroundColor Yellow
+                        return $true
+                    }
+                }
+            }
+            catch {
+                # Non-interactive host; continue countdown
             }
         }
 
@@ -106,7 +113,13 @@ function Install-WindowsUpdateModule {
     }
 
     # Import the module
-    Import-Module PSWindowsUpdate -Force
+    try {
+        Import-Module PSWindowsUpdate -Force -ErrorAction Stop
+    }
+    catch {
+        Write-Error "Failed to import PSWindowsUpdate module: $_"
+        exit 1
+    }
 }
 
 # Main script
@@ -122,7 +135,7 @@ Write-Host "`nChecking for available updates..." -ForegroundColor Cyan
 
 try {
     # Get list of available updates
-    $Updates = Get-WUList -MicrosoftUpdate -Verbose
+    $Updates = @(Get-WUList -MicrosoftUpdate -Verbose)
 
     if ($Updates.Count -eq 0) {
         Write-Host "No updates available. Your system is up to date!" -ForegroundColor Green
@@ -140,7 +153,7 @@ try {
     Write-Host "This may take several minutes depending on update size." -ForegroundColor Gray
 
     # Install updates and capture the result
-    $InstallResult = Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Verbose
+    $InstallResult = @(Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Verbose)
 
     Write-Host "`nUpdate installation completed!" -ForegroundColor Green
 
@@ -161,10 +174,17 @@ try {
         }
     }
     catch {
-        # Fallback: check Windows Update registry key for pending restart
-        $PendingReboot = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -ErrorAction SilentlyContinue
-        if ($PendingReboot) {
-            $RestartRequired = $true
+        # Fallback: check Windows Update registry keys for pending restart
+        $RebootKeys = @(
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+            "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations"
+        )
+        foreach ($RebootKey in $RebootKeys) {
+            if (Test-Path $RebootKey) {
+                $RestartRequired = $true
+                break
+            }
         }
     }
 

@@ -31,16 +31,12 @@ if %errorlevel% neq 0 (
 :: Generate timestamp using PowerShell with fallback
 for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "Get-Date -Format 'yyyyMMdd_HHmmss'" 2^>nul`) do set "TIMESTAMP=%%I"
 if not defined TIMESTAMP (
-    :: Improved fallback using WMIC for locale-independent timestamp
     for /f "skip=1 tokens=1" %%a in ('wmic os get localdatetime 2^>nul') do (
-        set "dt=%%a"
-        if defined dt goto :gottime
+        if not defined dt set "dt=%%a"
     )
-    :gottime
     if defined dt (
         set "TIMESTAMP=!dt:~0,8!_!dt:~8,6!"
     ) else (
-        :: Last resort: use simple counter
         set "TIMESTAMP=backup_%RANDOM%_%RANDOM%"
     )
 )

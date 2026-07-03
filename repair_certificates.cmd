@@ -25,17 +25,26 @@ set "STORE_DISALLOWED=0"
 set "STORE_TRUSTEDPUBLISHER=0"
 set "DETECTION_FAILED=0"
 
-rem Run certutil -store and parse output to detect available stores
-for /f "tokens=1 delims= " %%a in ('certutil -store 2^>nul ^| findstr /r "^[A-Za-z]"') do (
-    if /i "%%a"=="My" set "STORE_MY=1"
-    if /i "%%a"=="Root" set "STORE_ROOT=1"
-    if /i "%%a"=="CA" set "STORE_CA=1"
-    if /i "%%a"=="AuthRoot" set "STORE_AUTHROOT=1"
-    if /i "%%a"=="Disallowed" set "STORE_DISALLOWED=1"
-    if /i "%%a"=="TrustedPublisher" set "STORE_TRUSTEDPUBLISHER=1"
-)
+rem Detect available certificate stores by querying each known store
+certutil -store My >nul 2>&1
+if %errorlevel% equ 0 set "STORE_MY=1"
 
-rem Check if certutil -store command failed
+certutil -store Root >nul 2>&1
+if %errorlevel% equ 0 set "STORE_ROOT=1"
+
+certutil -store CA >nul 2>&1
+if %errorlevel% equ 0 set "STORE_CA=1"
+
+certutil -store AuthRoot >nul 2>&1
+if %errorlevel% equ 0 set "STORE_AUTHROOT=1"
+
+certutil -store Disallowed >nul 2>&1
+if %errorlevel% equ 0 set "STORE_DISALLOWED=1"
+
+certutil -store TrustedPublisher >nul 2>&1
+if %errorlevel% equ 0 set "STORE_TRUSTEDPUBLISHER=1"
+
+rem Check if certutil is working at all
 certutil -store >nul 2>&1
 if %errorlevel% neq 0 (
     echo Warning: Failed to detect certificate stores. Using fallback behavior.

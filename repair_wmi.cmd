@@ -35,6 +35,18 @@ if %errorlevel% neq 0 (
 
 echo Restarting WMI service...
 net start winmgmt >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: Failed to start WMI service.  Error code: %errorlevel%
+    timeout /t 10 /nobreak
+    exit /b 1
+)
+
+sc query winmgmt | findstr /i "RUNNING" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: WMI service is not running after repair.
+    timeout /t 10 /nobreak
+    exit /b 1
+)
 
 timeout /t 10 /nobreak
 exit /b 0
